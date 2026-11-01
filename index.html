@@ -376,7 +376,7 @@ body.bigtext .wrap{zoom:1.15}
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; // worker code is inlined above (pdfjsWorker global) → works offline
 
 /* ================= storage (IndexedDB, this browser only) ================= */
-const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 2;
+const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 4;
 let idb;
 function openDB(){
   return new Promise((res, rej) => {
@@ -426,7 +426,7 @@ const DICT = [
  ["μπαταρ",["battery"]],["ασφαλει",["fuse"]],["λαμπ",["bulb"]],["φαναρ",["headlight","light"]],["φλασ",["turn signal"]],
  ["συμπλεκτ",["clutch"]],["ταχυτ",["gear","speed"]],["κιβωτ",["transmission","gearbox"]],["κινητηρ",["engine"]],["μοτερ",["engine"]],
  ["κυλινδρ",["cylinder"]],["κεφαλ",["cylinder head","head"]],["βαλβιδ",["valve"]],["μπεκ",["injector"]],
- ["ρεζερβουαρ",["fuel tank","tank"]],["ντεποζιτ",["fuel tank","tank"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
+ ["ρεζερβουαρ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["ντεποζιτ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
  ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork"]],["αναρτ",["suspension"]],["αμορτισ",["shock absorber","shock"]],
  ["ρυθμ",["adjust","adjuster","setting"]],["προφορτ",["preload","pre-load"]],["αποσβεσ",["damping","rebound","compression"]],
  ["σελα",["seat"]],["τιμον",["handlebar"]],["σασι",["frame"]],["μαρσπιε",["footpeg","step"]],["σταντ",["stand"]],
@@ -448,15 +448,22 @@ const EN_INTENT = {torque:"torque", pressure:"pressure", capacity:"capacity", cl
 
 /* value patterns found in Honda manuals */
 const RX = {
-  torque: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm)\b|kgf[·.]?m|lbf[·.]?ft/i,
+  torque: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm)\b|kgf[·.]?m|lbf[·.]?ft/i,
   torqueTable: /(?:^|[\s│])\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*\)/,   // workshop tables: 30 (3.1, 22)
-  pressure: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:kpa|psi)\b|kgf\/cm/i,
-  capacity: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:l|liters?|litres?|cm3|cm³|ml|us qt|us oz)\b/i,
+  pressure: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:kpa|psi|bar)\b|kgf\/cm/i,
+  capacity: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|us qt|us oz)\b/i,
   length: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:mm|in)\b|\d\.\d+\s*\(\d/i
 };
-const VALUE_ANY = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgf|lbf|kpa|psi|l|liters?|litres?|cm3|cm³|ml|mm|v|a|w|°c|kg|rpm|min)\b|\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*(?:,\s*\d+(?:\.\d+)?\s*)?\)/i;
+const VALUE_ANY = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm|kgf|lbf|kpa|bar|psi|l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|mm|v|a|w|°c|kg|rpm|min)\b|\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*(?:,\s*\d+(?:\.\d+)?\s*)?\)/i;
 function intentsOf(t){ const s = new Set(); for (const k of ["torque","pressure","capacity","length"]) if (RX[k].test(t)) s.add(k); if (RX.torqueTable.test(t)) s.add("torque"); return s; }
 
+// Greek stem for searching Greek manuals: drop the ending, keep the root ("λαδιού" → "λαδ", "ελαστικών" → "ελαστικ")
+const G_END = ["ιουσ","ιου","ιων","ουσ","ου","ων","εσ","ησ","ασ","οσ","ια","ει","α","η","ο","ι","ε","σ","υ"];
+function gStem(t){
+  if (!/[α-ω]/.test(t)) return t;
+  let w = t; for (const e of G_END) if (w.length - e.length >= 3 && w.endsWith(e)){ w = w.slice(0, -e.length); break; }
+  return w.slice(0, 7);
+}
 function parseQuery(q){
   const raw = tokens(q).filter(t => !STOP.has(t));
   const concepts = []; const intents = new Set();
@@ -473,14 +480,15 @@ function parseQuery(q){
       const part = DICT.filter(e => norm(e[0]).startsWith(t));
       if (part.length && part.length <= 3) best = [t, [...new Set(part.flatMap(e => e[1]))], part.every(e => e[2] === part[0][2]) ? part[0][2] : undefined];
     }
-    if (best){ concepts.push({src:t, alts:best[1].map(norm), intent:best[2], act: best[2] === "act"}); if (best[2] && best[2] !== "act") intents.add(best[2]); }
-    else if (t.length >= 3) concepts.push({src:t, alts:[t]});
+    const gs = gStem(t);
+    if (best){ concepts.push({src:t, alts:[...new Set([...best[1].map(norm), gs])], intent:best[2], act: best[2] === "act"}); if (best[2] && best[2] !== "act") intents.add(best[2]); }
+    else if (t.length >= 3) concepts.push({src:t, alts:[gs]});
   }
   const seen = new Set(), out = [];
   for (const c of concepts){ const k = c.alts.join("|"); if (!seen.has(k)){ seen.add(k); out.push(c); } }
   return {concepts: out, intents, objects: out.filter(c => !c.intent)};
 }
-const hasAlt = (n, a) => a.includes(" ") || a.length < 4 ? new RegExp("(^|[^a-z])" + a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(n) : n.includes(a);
+const hasAlt = (n, a) => a.includes(" ") || a.length < 4 ? new RegExp("(^|[^a-z\u0370-\u03ff])" + a.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(n) : n.includes(a);
 const conceptIn = (n, c) => c.alts.some(a => hasAlt(n, a));
 
 /* ================= indexing: PDF → positioned text cells ================= */
@@ -488,10 +496,11 @@ async function indexPdf(data, onProgress){
   const pdf = await pdfjsLib.getDocument({data}).promise;
   let labels = null;
   try{ labels = await pdf.getPageLabels(); if (labels && labels.every((l, i) => l === String(i + 1))) labels = null; }catch(_){}
-  const pages = []; let textPages = 0;
+  const pages = []; let textPages = 0; const shiftState = {k: 0};
   for (let i = 1; i <= pdf.numPages; i++){
     const pg = await pdf.getPage(i); const vp = pg.getViewport({scale: 1});
     const tc = await pg.getTextContent();
+    fixShiftedText(tc.items, shiftState);
     const cells = cellsFromContent(tc, vp.width);
     if (cells.reduce((s, c) => s + c[0].length, 0) > 40) textPages++;
     const [vx, vy] = pg.view; // page origin (usually 0,0)
@@ -501,6 +510,42 @@ async function indexPdf(data, onProgress){
   }
   const n = pdf.numPages; await pdf.destroy();
   return {v: INDEX_VERSION, pages, labels, numPages: n, textPages};
+}
+/* Some PDFs (e.g. Honda US owner's manuals) embed fonts without a proper character map: the text comes out as
+   "6SHFLILFDWLRQV" instead of "Specifications" — every character moved by a fixed amount. Per font, find the
+   shift that turns the text into English and undo it (the printed page is not affected, only the searchable text). */
+const ENG_BI = /th|he|in|er|an|re|on|at|en|nd|ti|es|or|te|of|ed|is|it|al|ar|st|to|nt|ng|se|ha|ou|le|ve|co|me|de|ri|ro|ea|ra|ce|li|ch|ll/g;
+const ENG_SET = new Set(ENG_BI.source.split("|"));
+const engScore = t => { const l = t.toLowerCase(); let n = 0; for (let i = 0; i < l.length - 1; i++) if (ENG_SET.has(l[i] + l[i + 1])) n++; return n; };   // overlapping English letter pairs
+const shiftStr = (str, k) => { let o = ""; for (const ch of str){ const c = ch.charCodeAt(0), n = c + k; o += ch !== " " && c < 0x80 && n >= 0x20 && n <= 0x7e ? String.fromCharCode(n) : ch; } return o.replace(/([A-Za-z])[\u00c0-\u00ff]([A-Za-z])/g, "$1·$2"); };
+function fixShiftedText(items, state = {k: 0}){
+  const byFont = new Map();
+  for (const it of items){ if (!it.str) continue; if (!byFont.has(it.fontName)) byFont.set(it.fontName, []); byFont.get(it.fontName).push(it); }
+  const apply = (list, k) => { for (const it of list) it.str = shiftStr(it.str, k); };
+  for (const list of byFont.values()){
+    const text = list.map(it => it.str).join(" ");
+    const letters = (text.match(/[A-Za-z]/g) || []).length, kinds = new Set(text.toLowerCase().match(/[a-z]/g) || []).size;
+    // control characters in place of digits/spaces = the tell-tale of a broken character map
+    const ctrl = (text.match(/[\x00-\x1f]/g) || []).length, garbled = ctrl > text.replace(/\s/g, "").length * .1;
+    if (garbled && state.k){ apply(list, state.k); continue; }  // the whole document was made the same way
+    const base = engScore(text);
+    if (letters < 12 || kinds < 6){ if (!garbled && state.k && kinds >= 4 && engScore(shiftStr(text, state.k)) > base + 1) apply(list, state.k); continue; }
+    if (state.k && letters >= 6 && engScore(shiftStr(text, state.k)) > base + 1){ apply(list, state.k); continue; }   // a heading font of the same broken kind
+    if (!garbled && base >= letters * .08) continue;          // ordinary text
+    if (garbled){
+      // the commonest control character is the word space: that fixes the shift
+      const cnt = {}; for (const ch of text) if (ch < " ") cnt[ch] = (cnt[ch] || 0) + 1;
+      const sp = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0], k0 = 32 - sp.charCodeAt(0);
+      if (engScore(shiftStr(text, k0)) > base + 2){ state.k = k0; apply(list, k0); continue; }
+    }
+    let best = 0, bestK = 0;
+    for (let k = -64; k <= 64; k++){
+      if (!k) continue;
+      const sc = engScore(shiftStr(text, k));
+      if (sc > best){ best = sc; bestK = k; }
+    }
+    if (bestK && best >= 10 && best > base * 4 + 6 && best > letters * .3){ if (garbled) state.k = bestK; apply(list, bestK); }
+  }
 }
 function cellsFromContent(tc, pageW){
   const items = [];
@@ -548,7 +593,8 @@ async function loadIndex(m, onProgress){
   }
   const pages = t.pages.map((p, pi) => {
     const cells = p.c.map(([s, x0, y, x1, fh], i) => ({i, s, x0, y, x1, fh, n: norm(s)}));
-    cells.forEach(c => { c.isVal = VALUE_ANY.test(c.s); c.intents = intentsOf(c.s); });
+    cells.forEach(c => { c.isVal = VALUE_ANY.test(c.s.replace(/(?<![\d.,])(\d{2,})L\b/g, (m, n) => +n >= 50 ? n + " links" : m));   // "122L" on a chain = links, not litres
+    c.intents = intentsOf(c.s); });
     const txt = cells.map(c => c.s).join("\n"); const n = norm(txt);
     const toks = n.match(tokRe) || []; const tf = new Map();
     for (const w of toks) tf.set(w, (tf.get(w) || 0) + 1);
@@ -579,7 +625,11 @@ function computeLabels(pages, pdfLabels){
 function altScore(p, alt, df, N, avg){
   let tf = 0;
   if (alt.includes(" ") || alt.includes("-")) tf = p.n.split(alt).length - 1;
-  else { tf = p.tf.get(alt) || 0; if (!tf && alt.length >= 4) for (const [w, c] of p.tf) if (w.startsWith(alt) && w.length - alt.length <= 3) tf += c; }
+  else {
+    tf = p.tf.get(alt) || 0;
+    const gr = /[α-ω]/.test(alt);                            // Greek stems: "λαδ" matches "λαδι", "λαδιου"…
+    if (!tf && (alt.length >= 4 || (gr && alt.length >= 3))) for (const [w, c] of p.tf) if (w.startsWith(alt) && w.length - alt.length <= (gr ? 7 : 3)) tf += c;
+  }
   if (!tf) return 0;
   const d = df.get(alt) || 0;
   return Math.log(1 + (N - d + .5) / (d + .5)) * (tf * 2.2) / (tf + 1.2 * (.25 + .75 * p.len / avg));
@@ -591,7 +641,7 @@ function isHeading(c){
   if (/^(ITEM|STANDARD|SERVICE LIMIT|SPECIFICATIONS?|UNIT|NOTES?|REMARKS)\b/.test(c.s.trim()) && c.s.length < 30) return false;
   const letters = words.join(""); return letters.replace(/[^A-Z]/g, "").length / letters.length > .85;
 }
-const hasLetters = c => /[A-Za-z]{3,}/.test(c.s);
+const hasLetters = c => /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(c.s);   // Latin or Greek words
 /* For each value cell, find ITS label without crossing into a neighbouring column:
    - tables/spec lists: the text cell directly to its left (skipping only numeric columns such as qty / thread size);
    - label wrapped over two lines: the nearest text line just above-left (plus its continuation just below);
@@ -599,10 +649,14 @@ const hasLetters = c => /[A-Za-z]{3,}/.test(c.s);
 function pairsOnPage(p, pq){
   const pairs = [];
   // a line level with a value of its own is a table row, not the continuation of a multi-line name
-  const levelVal = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
+  const levelRow = c => p.cells.some(o => o !== c && o.x0 > c.x1 && o.x0 - c.x1 < p.w * .4 && o.fh > c.fh * .8 && !CODE_FULL.test(o.s) && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
+  const levelVal = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && o.x0 - c.x1 < p.w * .4 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
+  // the row name for a centred layout: the label column closest to the value, then the line closest to the centre
+  const nearestCol = (cs, ay) => { if (!cs.length) return null; const mx = Math.max(...cs.map(c => c.x1)); return cs.filter(c => c.x1 > mx - 15).sort((a, b) => Math.abs(a.y - ay) - Math.abs(b.y - ay))[0]; };
   const objHit = cs => pq.objects.filter(o => cs.some(c => conceptIn(c.n, o))).length;
   for (const v of p.cells){
     if (!v.isVal) continue;
+    if (p.cells.some(o => o !== v && o.isVal && /,\s*$/.test(o.s) && Math.abs(o.x0 - v.x0) < 3 && o.y > v.y + .5 && o.y - v.y < v.fh * 1.8)) continue;
     const rowTol = Math.max(1.5, v.fh * .4);
     // a label cell belongs to this value if it is level with it (± most of a line) and no other value in this column is closer
     const colVals = p.cells.filter(o => o.isVal && Math.abs(o.x0 - v.x0) < 12);
@@ -612,34 +666,46 @@ function pairsOnPage(p, pq){
     for (const c of sameRow){
       const gap = lastX - c.x1;
       if (c.isVal) break;                                     // another value = another column
-      if (gotText){ if (hasLetters(c) && gap < p.w * .12) { label.unshift(c); lastX = c.x0; continue; } break; }
-      if (gap > p.w * .33) break;
+      if (gotText){ if (hasLetters(c) && gap < p.w * .12 && !(label[0].x0 > p.w * .48 && c.x1 < p.w * .52)) { label.unshift(c); lastX = c.x0; continue; } break; }
+      // spec lists print the name far left and the value mid-page ("ΧΩΡΗΤΙΚΟΤΗΣ ΨΥΚΤΙΚΟΥ ΥΓΡΟΥ ........ 1,75 LIT")
+      if (gap > p.w * .33 && !(gap < p.w * .55 && c.s.length < 60 && !/[.!?:]$/.test(c.s.trim()) && hasLetters(c))) break;
       label.unshift(c); lastX = c.x0; if (hasLetters(c)) gotText = true;
     }
     if (!gotText) label = [];
     // values stacked under their version code ("CRF1000A/D" / "200 kPa", "CRF1000A II/D II" / "225 kPa"):
     // the row name ("Front") is centred on the code+value pair, not level with the value
+    let anchored = null, leftVar = "";
     const stk = p.cells.find(c => c !== v && CODE_FULL.test(c.s) && Math.abs(c.x0 - v.x0) < 3 && c.y > v.y + .5 && c.y - v.y < v.fh * 1.8);
     if (stk){
       const ay = (stk.y + v.y) / 2;
-      const sub = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && !CODE_FULL.test(c.s) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .12 && Math.abs(c.y - ay) < v.fh * 1.6)
-                         .sort((a, b) => b.x0 - a.x0 || Math.abs(a.y - ay) - Math.abs(b.y - ay))[0];
-      if (sub) label = [sub];
+      const subs = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && !CODE_FULL.test(c.s) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .12 && Math.abs(c.y - ay) < v.fh * 1.6)
+                         ; const sub = nearestCol(subs, ay);
+      if (sub){ label = [sub]; anchored = sub; }
+    }
+    // version code printed left of the value, maybe over two lines ("CRF1000A" / "II/D II"); the row name ("Front") is centred on it
+    if (!stk && label.length && CODE_FULL.test(label[label.length - 1].s)){
+      const code = label[label.length - 1];
+      const cont = p.cells.find(c => c !== code && Math.abs(c.x0 - code.x0) < 3 && c.y < code.y - .5 && code.y - c.y < code.fh * 1.8 && /^(I{1,3}\b|\/)/.test(c.s));
+      leftVar = code.s + (cont ? " " + cont.s : "");
+      const ay = cont ? (code.y + cont.y) / 2 : code.y;
+      const subs = p.cells.filter(c => c !== code && !c.isVal && hasLetters(c) && !CODE_FULL.test(c.s) && c.x1 <= code.x0 + 1 && code.x0 - c.x1 < p.w * .12 && Math.abs(c.y - ay) < v.fh * 1.6)
+                         ; const sub = nearestCol(subs, ay);
+      if (sub){ label = [sub]; anchored = sub; } else label = label.slice(0, -1);
     }
     // prose from a neighbouring text column (sentences, long lines) is not a table label
-    if (label.length && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .06 && label.some(c => /[.!?](\s|$)/.test(c.s.trim()) || c.s.length > 45 || c.s.trim().split(/\s+/).length >= 7)) label = [];
+    if (label.length && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .06 && label.some(c => /[a-zα-ωά-ώ]/.test(c.s) && (/[.!?](\s+[a-zα-ωά-ώ]|$)/.test(c.s.trim()) || c.s.length > 45 || c.s.trim().split(/\s+/).length >= 7))) label = [];
     else if (label.length === 1){
       // grouped tables: the group name ("Cold tire pressure") sits in the column to the left, on this row or a row above
-      const gc = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && c.x1 <= label[0].x0 - 2 && label[0].x0 - c.x1 < p.w * .12);
+      const gc = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && c.x1 <= label[0].x0 - 2 && label[0].x0 - c.x1 < p.w * .12 && !(label[0].x0 > p.w * .5 && c.x0 < p.w * .45));   // not across the page's middle gutter
       // same row or just above; otherwise a group name centred lower down in the same table (e.g. "Engine oil capacity")
-      const g = gc.filter(c => c.y - v.y > -rowTol && c.y - v.y < v.fh * 4).sort((a, b) => a.y - b.y)[0]
+      const g = (anchored && gc.slice().sort((a, b) => Math.abs(a.y - anchored.y) - Math.abs(b.y - anchored.y))[0]) || gc.filter(c => c.y - v.y > -rowTol && c.y - v.y < v.fh * 4).sort((a, b) => a.y - b.y)[0]
              || gc.filter(c => v.y - c.y > 0 && v.y - c.y < v.fh * 12).sort((a, b) => b.y - a.y)[0]
              || gc.filter(c => c.y - v.y > 0 && c.y - v.y < v.fh * 12).sort((a, b) => a.y - b.y)[0];
       if (g){
         // a group name printed over several lines ("Tyre air" / "pressure" / "(Driver only)"): take the whole block
         const blk = [g];
         for (const dir of [1, -1]) for (let cur = g;;){
-          const nx = gc.filter(c => !blk.includes(c) && Math.abs(c.x0 - cur.x0) < 3 && !levelVal(c) && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
+          const nx = p.cells.filter(c => c !== v && !blk.includes(c) && /[A-Za-zΑ-Ωα-ω]{2}/.test(c.s) && (!c.isVal || /^[A-Za-z(]/.test(c.s)) && c.x1 <= label[0].x0 - 2 && Math.abs(c.x0 - cur.x0) < 3 && !levelVal(c) && !(levelRow(c) && !p.cells.some(o => o !== c && o.x0 > c.x1 && o.x1 <= label[0].x0 + 2 && Math.abs(o.y - c.y) < 3)) && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
           if (!nx) break; blk.push(nx); cur = nx;
         }
         label.unshift(...blk.sort((a, b) => b.y - a.y));
@@ -649,7 +715,7 @@ function pairsOnPage(p, pq){
     if (label.length >= 2 && label[1].x0 - label[0].x1 > 8 && /^[A-Za-z(]{3,}/.test(label[1].s) && !/\d/.test(label[1].s)){   // group name + row name ("Front"), not name + qty/size columns
       const L0 = label[0], blk = [L0];
       for (const dir of [1, -1]) for (let cur = L0;;){
-        const nx = p.cells.filter(c => !blk.includes(c) && !c.isVal && hasLetters(c) && Math.abs(c.x0 - L0.x0) < 3 && !levelVal(c) && c.x1 < label[1].x0 && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
+        const nx = p.cells.filter(c => !blk.includes(c) && !c.isVal && hasLetters(c) && Math.abs(c.x0 - L0.x0) < 3 && !levelVal(c) && !levelRow(c) && c.x1 < label[1].x0 && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
         if (!nx) break; blk.push(nx); cur = nx;
       }
       if (blk.length > 1) label.splice(0, 1, ...blk.sort((a, b) => b.y - a.y));
@@ -662,8 +728,20 @@ function pairsOnPage(p, pq){
     }
     let how = "row";
     const prefix = v.s.split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit)\b/gi, "");
-    const selfLabeled = /[A-Za-z]{3,}/.test(prefix);           // e.g. "Drive chain adjusting lock nut 27 N·m"
-    if (selfLabeled){ label = []; how = "self"; }
+    const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Drive chain adjusting lock nut 27 N·m"
+    if (selfLabeled){
+      label = []; how = "self";
+      // a figure inside a sentence: the start of the sentence on the line(s) above names the part ("…τη βίδα / αποστράγγισης … με / ροπή 30 Nm")
+      if (objHit([v]) < pq.objects.length){
+        let cur = v;
+        for (let k = 0; k < 2; k++){
+          const up = p.cells.find(c => c !== cur && !c.isVal && !levelVal(c) && !label.includes(c) && Math.abs(c.x0 - cur.x0) < 14 && c.y > cur.y + .5 && c.y - cur.y < cur.fh * 1.8 && hasLetters(c));
+          if (!up) break; label.unshift(up); cur = up;
+          if (objHit([...label, v]) >= pq.objects.length) break;
+        }
+        if (objHit([...label, v]) <= objHit([v])) label = [];
+      }
+    }
     else if (!label.length){
       const near = c => c !== v && c.y > v.y + .5 && c.y - v.y < v.fh * 3.2 && !c.isVal;
       let above = p.cells.filter(c => near(c) && c.x0 < v.x1 && c.x1 > v.x0).sort((a, b) => a.y - b.y).slice(0, 2);
@@ -680,24 +758,34 @@ function pairsOnPage(p, pq){
         if (al){
           how = "wrap"; label = [al];
           const cont = p.cells.find(c => c !== v && !c.isVal && c.y < v.y - .5 && v.y - c.y < v.fh * 1.6 && Math.abs(c.x0 - al.x0) < 3);
-          if (cont) label.push(cont);
+          if (cont && !levelVal(cont)) label.push(cont);   // (a line with its own value is the next row, not a wrapped name)
         }
       }
     }
     if (how === "row" && label.length){
       const lx = Math.max(...label.map(c => c.x1));
       const vals = p.cells.filter(c => c.isVal && c.x0 < v.x1 && c.x1 > v.x0);
-      const between = p.cells.filter(c => !c.isVal && hasLetters(c) && !label.includes(c) && c.x0 >= lx - 1 && c.x1 <= v.x0 + 1 && Math.abs(c.y - v.y) <= v.fh * 1.25
+      const between = p.cells.filter(c => !c.isVal && hasLetters(c) && !label.includes(c) && !(leftVar && CODE_FULL.test(c.s)) && c.x0 >= lx - 1 && c.x1 <= v.x0 + 1 && Math.abs(c.y - v.y) <= v.fh * 1.25
         && vals.every(o => o === v || Math.abs(o.y - c.y) >= Math.abs(v.y - c.y))).sort((a, b) => b.y - a.y);
       label.push(...between);
     }
     // (a) value text that wraps onto the next line: "4.0 L (4.2 US qt, 3.5" + "Imp qt)"
     let vText = v.s;
-    if ((vText.match(/\(/g) || []).length > (vText.match(/\)/g) || []).length){
+    if ((vText.match(/\(/g) || []).length > (vText.match(/\)/g) || []).length || /,\s*$/.test(vText)){
       const nx = p.cells.find(c => c !== v && Math.abs(c.x0 - v.x0) < 4 && c.y < v.y - .5 && v.y - c.y < v.fh * 2.2);
       if (nx) vText += " " + nx.s;
     }
     label = [...new Set(label)].sort((a, b) => (a.x0 - b.x0 > 3 ? 1 : b.x0 - a.x0 > 3 ? -1 : b.y - a.y));
+    // the row above names the part and has no figure of its own ("ΜΠΟΥΖΙ NGK  LMAR8J-9E" over "ΔΙΑΚΕΝΟ  0.8-0.9mm")
+    // short row names in a list ("Οπίσθιος τροχός:", "ΔΙΑΚΕΝΟ") take the list's heading line above them ("Πίεση ελαστικών", "ΜΠΟΥΖΙ NGK")
+    if (label.length && label.map(c => c.s).join(" ").length < 22 && objHit([...label, v]) < pq.objects.length){
+      const L = label[0];
+      const col = p.cells.filter(c => c !== L && hasLetters(c) && !c.isVal && Math.abs(c.x0 - L.x0) < 8 && c.y > L.y + .5 && c.y - L.y < L.fh * 7).sort((a, b) => a.y - b.y);
+      const level = (c, f) => p.cells.some(o => o !== c && f(o) && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
+      // (a) the row right above, if what it gives is not a figure ("ΜΠΟΥΖΙ NGK  LMAR8J-9E"); (b) otherwise a heading line alone on its row
+      const up = col.find(c => c.y - L.y < L.fh * 2.4 && !level(c, o => o.isVal) && Math.abs(c.x0 - L.x0) < 3) || col.find(c => !level(c, o => true));
+      if (up && up.s.length < 40 && !/[.!?]$/.test(up.s.trim()) && objHit([up, ...label, v]) > objHit([...label, v])) label.unshift(up);
+    }
     const objs = objHit([...label, v]);
     if (!objs && (pq.objects.length || !pq.intents.size)) continue;
     let s = objs * 2;
@@ -712,7 +800,7 @@ function pairsOnPage(p, pq){
         && !p.cells.some(o => o !== c && o.fh > c.fh * .8 && o.x0 > c.x1 && o.x0 < v.x1 + 5 && Math.abs(o.y - c.y) < c.fh * .9)   // (superscripts like "²" don't count)
         && !p.cells.some(o => o !== v && o.isVal && o.y > v.y + .5 && o.y < c.y - .5 && o.x0 < v.x1 && o.x1 > v.x0)).sort((a, b) => a.y - b.y)[0];   // no other value of this column in between
     const inline = [...label, v].map(c => c.s).join(" ").match(CODE_RE);
-    pairs.push({value: v, vText, label, how, score: s, objs, head: head ? head.s : "", variant: inline ? inline[0].trim() : varCell ? varCell.s : ""});
+    pairs.push({value: v, vText, label, how, score: s, objs, head: head ? head.s : "", variant: leftVar || (inline ? inline[0].trim() : varCell ? varCell.s : "")});
   }
   return pairs.sort((a, b) => b.score - a.score);
 }
@@ -978,8 +1066,9 @@ function checkPdf(idx, bike, chosen){
   const words = toks.filter(w => !/\d/.test(w)).map(norm);
   const match = !toks.length || codes.some(c => c.length >= 3 && nh.includes(c)) || (words.length && words.every(w => nh.includes(w)));
   const first = norm(idx.pages.slice(0, 6).map(p => p.c.map(c => c[0]).join(" ")).join(" "));
-  const iS = first.search(/(service|workshop|shop|repair) manual/), iO = first.search(/owner.?s manual|rider.?s manual|owners manual/);
-  const kind = iS < 0 && iO < 0 ? null : iO >= 0 && (iS < 0 || iO < iS) ? "owner" : "service";
+  // which kind of manual it calls itself more often (an owner's manual may mention the service manual once)
+  const nS = (first.match(/(service|workshop|shop|repair) manual/g) || []).length, nO = (first.match(/owner.?s manual|rider.?s manual|owners manual/g) || []).length;
+  const kind = !nS && !nO ? null : nO >= nS ? "owner" : "service";
   return {match, kind: kind && kind !== chosen ? kind : null};
 }
 async function removeManual(id){ await delOne("manuals", id); await delOne("files", id); await delOne("texts", id); cache.delete(id); pdfCache.delete(id); }
@@ -1212,7 +1301,7 @@ const pairLabel = pr => pr.label.map(c => c.s).join(" ");
 const trHTML = s => { if (L() === "en") return ""; const g = translate(s); return g ? ` <span class="tr">(${esc(g)})</span>` : ""; };
 // a value written inside a sentence ("DRIVE CHAIN SLACK: 35 – 45 mm (1.4 – 1.8 in)", "Excessive chain slack, 60 mm (2.4 in) or more")
 // → the measurement becomes the value, the sentence stays (verbatim) as its label
-const MEASURE_RE = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|mL|ml|L|liters?|litres?|in|°C|kg|rpm)(?![A-Za-z])(?:\s*\([^()]*\))?/;
+const MEASURE_RE = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|in|°C|kgm|kg|bar|rpm)(?![A-Za-z])(?:\s*\([^()]*\))?/;
 function extractMeasure(s){
   const m = s.match(MEASURE_RE);
   if (!m) return {measure: s, text: ""};
