@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Vida Vida</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0f1419">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0f1419" id="themeColor">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vida Vida">
@@ -16,7 +17,7 @@
 /* Layout: one working column — question bar on top, answer "spec card" + page proof below; library in a second tab. */
 :root{
   --paper:#eef1f3; --panel:#ffffff; --ink:#151d24; --muted:#5a6670; --line:#d3d9de;
-  --accent:#d99a06; --accent-ink:#1d1500; --hl:rgba(255,193,7,.40); --hl-strong:rgba(255,120,0,.45);
+  --accent:#f2b31b; --accent-ink:#1d1500; --accent-edge:rgba(120,82,0,.55); --hl:rgba(255,193,7,.40); --hl-strong:rgba(255,120,0,.45);
   --danger:#b3261e; --ok:#1e7a45;
   --f-display:"Fira Sans Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Noto Sans","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -25,10 +26,10 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
-  --accent:#f0b429; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}}
+  --accent:#f0b429; --accent-ink:#1d1500; --accent-edge:transparent; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
-  --accent:#f0b429; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}
+  --accent:#f0b429; --accent-edge:transparent; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -44,7 +45,7 @@ header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding-bloc
 .brand i::after{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--accent)}
 .brand small{font:500 12px var(--f-mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .bname{white-space:nowrap}
-.bname .bgar{color:var(--accent)}
+.bname .bgar{color:var(--accent);-webkit-text-stroke:.7px var(--accent-edge);paint-order:stroke fill}
 .brand .tagline{font:italic 600 13px/1 var(--f-display);letter-spacing:.04em;text-transform:none;color:var(--accent)}
 .dhead .brand .tagline{font-size:12px}
 .bikepick{margin-left:auto;display:flex;align-items:center;gap:8px;min-width:0}
@@ -876,6 +877,8 @@ window.addEventListener("unhandledrejection", e => toast(t("appError", (e.reason
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
+  const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  const tc = document.getElementById("themeColor"); if (tc) tc.content = dark ? "#0f1419" : "#eef1f3";
   document.body.classList.toggle("bigtext", !!settings.big);
 }
 
