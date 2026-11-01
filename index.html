@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Vida Vida</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" id="colorScheme" content="light dark">
 <meta name="theme-color" content="#0f1419" id="themeColor">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,7 +22,7 @@
   --f-display:"Fira Sans Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Noto Sans","Segoe UI",system-ui,-apple-system,sans-serif;
   --f-mono:"Noto Sans","Segoe UI",system-ui,-apple-system,sans-serif;
-  color-scheme:light;
+  color-scheme:only light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
@@ -879,6 +879,8 @@ function applyLook(){
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
   const tc = document.getElementById("themeColor"); if (tc) tc.content = dark ? "#0f1419" : "#ffffff";
+  // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
+  const cs = document.getElementById("colorScheme"); if (cs) cs.content = settings.theme === "light" ? "only light" : settings.theme === "dark" ? "dark" : "light dark";
   document.body.classList.toggle("bigtext", !!settings.big);
 }
 
