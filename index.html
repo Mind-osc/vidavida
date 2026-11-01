@@ -376,7 +376,7 @@ body.bigtext .wrap{zoom:1.15}
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; // worker code is inlined above (pdfjsWorker global) → works offline
 
 /* ================= storage (IndexedDB, this browser only) ================= */
-const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 4;
+const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 5;
 let idb;
 function openDB(){
   return new Promise((res, rej) => {
@@ -418,7 +418,7 @@ const DICT = [
  ["πιεσ",["pressure"],"pressure"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
  ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["ελευθερ",["freeplay","free play","free"],"length"],["διαδρομ",["freeplay","free play","travel"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
  ["βιδ",["bolt","screw"]],["μπουλον",["bolt"]],["παξιμαδ",["nut"]],["ροδελ",["washer"]],
- ["λαδ",["oil"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement"],"act"],["λιπαιν",["lubricate","lubricating","lubrication"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging"],"act"],["γεμιζ",["fill","filling","add"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
+ ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement"],"act"],["λιπαιν",["lubricate","lubricating","lubrication"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging"],"act"],["γεμιζ",["fill","filling","add"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
  ["αλυσιδ",["chain"]],["γραναζ",["sprocket"]],["τανυσ",["tension","slack"]],
  ["λαστιχ",["tire","tyre"]],["ελαστικ",["tire","tyre"]],["τροχ",["wheel"]],["ροδ",["wheel","rim"]],["ζαντ",["rim","wheel"]],
  ["αξον",["axle","shaft"]],["αξων",["axle","shaft"]],["φρεν",["brake"]],["δαγκαν",["caliper"]],["δισκ",["disc","disk"]],
@@ -435,8 +435,8 @@ const DICT = [
  ["αντικατασ",["replace","replacement"]],["σερβισ",["maintenance","service"]],["συντηρ",["maintenance","service"]],["διαστημ",["interval","schedule"]],
  ["χιλιομετρ",["km","mileage"]],["θερμοκρασ",["temperature"]],["θερμοστατ",["thermostat"]],["αντλ",["pump"]],
  ["ψαλιδ",["swingarm"]],["ρουλεμαν",["bearing"]],["τσιμουχ",["seal"]],["φλαντζ",["gasket"]],["καπακ",["cover","cap"]],
- ["αισθητηρ",["sensor"]],["βαρ",["weight"]],["διαστασ",["dimensions"]],["μπροστ",["front"]],["πισω",["rear"]],["οπισθ",["rear"]],
- ["εμπροσθ",["front"]],["αριστερ",["left"]],["δεξ",["right"]],["αποστραγγ",["drain"]],["αδειασ",["drain"]],["ταπα",["plug","cap"]],
+ ["αισθητηρ",["sensor"]],["βαρ",["weight"]],["διαστασ",["dimensions"]],["μπροστ",["front","μπροστ","εμπροσθ","εμπροσ"]],["πισω",["rear","πισω","οπισθ"]],["οπισθ",["rear","πισω","οπισθ"]],
+ ["εμπροσθ",["front","μπροστ","εμπροσθ","εμπροσ"]],["αριστερ",["left"]],["δεξ",["right"]],["αποστραγγ",["drain"]],["αδειασ",["drain"]],["ταπα",["plug","cap"]],
  ["στροφ",["rpm","idle"]],["ρελαντι",["idle"]],["κλειδ",["key","ignition"]],["ταμπλο",["meter","display"]],
  ["οργαν",["meter","instrument"]],["σφαλμ",["error","fault","dtc"]],["κωδικ",["code","dtc"]],["ελεγχ",["check","checking","inspection","inspect","inspecting"],"act"],
  ["γρασ",["grease"]],["λιπαν",["lubrication","lubricate","grease","lubricant"]],["κοντερ",["odometer","speedometer"]],["φτερ",["fender"]],
@@ -501,6 +501,7 @@ async function indexPdf(data, onProgress){
     const pg = await pdf.getPage(i); const vp = pg.getViewport({scale: 1});
     const tc = await pg.getTextContent();
     fixShiftedText(tc.items, shiftState);
+    try{ await dropHiddenText(pg, vp, tc); }catch(_){}
     const cells = cellsFromContent(tc, vp.width);
     if (cells.reduce((s, c) => s + c[0].length, 0) > 40) textPages++;
     const [vx, vy] = pg.view; // page origin (usually 0,0)
@@ -510,6 +511,48 @@ async function indexPdf(data, onProgress){
   }
   const n = pdf.numPages; await pdf.destroy();
   return {v: INDEX_VERSION, pages, labels, numPages: n, textPages};
+}
+/* Some PDFs keep an older version of a page underneath, covered by the new one (white boxes over old text).
+   The text layer still has both, mixed together. When a page has many overlapping text runs, draw the page and
+   keep only the text that actually shows: its box must have ink across most of its width. */
+async function dropHiddenText(pg, vp, tc){
+  const it = tc.items.filter(i => i.str && i.str.trim() && Math.abs(i.transform[1]) < .01 && i.transform[0] > 0);
+  const box = i => { const fh = Math.abs(i.transform[3]) || Math.abs(i.transform[0]) || 8; return {x0: i.transform[4], x1: i.transform[4] + i.width, y0: i.transform[5] - fh * .2, y1: i.transform[5] + fh * .8}; };
+  const bs = it.map(box); let overl = 0;
+  for (let a = 0; a < it.length && overl < 3; a++) for (let b = a + 1; b < it.length; b++){
+    const A = bs[a], B = bs[b]; const w = Math.min(A.x1, B.x1) - Math.max(A.x0, B.x0), h = Math.min(A.y1, B.y1) - Math.max(A.y0, B.y0);
+    if (w > 2 && h > (A.y1 - A.y0) * .4 && it[a].str.trim() !== it[b].str.trim() && w > Math.min(A.x1 - A.x0, B.x1 - B.x0) * .3){ if (++overl >= 3) break; }
+  }
+  if (overl < 3 || typeof document === "undefined") return;
+  const sc = 1.5, v2 = pg.getViewport({scale: sc});
+  const cv = document.createElement("canvas"); cv.width = Math.ceil(v2.width); cv.height = Math.ceil(v2.height);
+  const ctx = cv.getContext("2d", {willReadFrequently: true});
+  await pg.render({canvasContext: ctx, viewport: v2}).promise;
+  const keep = new Set();
+  it.forEach((i, k) => {
+    const [x0, y0, x1, y1] = v2.convertToViewportRectangle([bs[k].x0, bs[k].y0, bs[k].x1, bs[k].y1]);
+    const L = Math.max(0, Math.floor(Math.min(x0, x1))), T = Math.max(0, Math.floor(Math.min(y0, y1)));
+    const W = Math.min(cv.width - L, Math.ceil(Math.abs(x1 - x0))), H = Math.min(cv.height - T, Math.ceil(Math.abs(y1 - y0)));
+    if (W < 2 || H < 2){ keep.add(i); return; }
+    const d = ctx.getImageData(L, T, W, H).data, lum = q => d[q] * .3 + d[q + 1] * .59 + d[q + 2] * .11;
+    const hist = new Map(); for (let q = 0; q < d.length; q += 4){ const k2 = Math.round(lum(q) / 16); hist.set(k2, (hist.get(k2) || 0) + 1); }
+    const bg = [...hist.entries()].sort((a, b) => b[1] - a[1])[0][0] * 16;
+    const ink = (x, y) => Math.abs(lum((y * W + x) * 4) - bg) > 45;
+    // table rules and borders run across the whole box: leave those pixel rows out
+    const rows = []; for (let y = 0; y < H; y++){ let n = 0; for (let x = 0; x < W; x++) if (ink(x, y)) n++; if (n < W * .8) rows.push(y); }
+    // …and the same for vertical rules: a pixel column inked from top to bottom is a line, not a letter
+    let cols = 0;
+    for (let x = 0; x < W; x++){ let n = 0; for (const y of rows) if (ink(x, y)) n++; if (n && n < rows.length * .9) cols++; }
+    if (cols / W >= (i.str.trim().length <= 3 ? .2 : .45)) keep.add(i);   // (a single letter is only a few pixels wide)
+  });
+  // a font whose text is mostly hidden belongs to the covered layer: its runs that overlap other text go too
+  const fs = new Map(); for (const i of it){ const f = fs.get(i.fontName) || {n: 0, gone: 0}; f.n++; if (!keep.has(i)) f.gone++; fs.set(i.fontName, f); }
+  it.forEach((i, k) => {
+    const f = fs.get(i.fontName); if (!keep.has(i) || f.gone < f.n * .5) return;
+    const A = bs[k];
+    if (it.some((j, m) => j.fontName !== i.fontName && keep.has(j) && Math.min(A.x1, bs[m].x1) - Math.max(A.x0, bs[m].x0) > 2 && Math.min(A.y1, bs[m].y1) - Math.max(A.y0, bs[m].y0) > (A.y1 - A.y0) * .4)) keep.delete(i);
+  });
+  tc.items = tc.items.filter(i => !it.includes(i) || keep.has(i));
 }
 /* Some PDFs (e.g. Honda US owner's manuals) embed fonts without a proper character map: the text comes out as
    "6SHFLILFDWLRQV" instead of "Specifications" — every character moved by a fixed amount. Per font, find the
@@ -788,6 +831,7 @@ function pairsOnPage(p, pq){
     }
     const objs = objHit([...label, v]);
     if (!objs && (pq.objects.length || !pq.intents.size)) continue;
+    if (pq.intents.size && v.intents.size && ![...pq.intents].some(i => v.intents.has(i))) continue;
     let s = objs * 2;
     for (const it of pq.intents){ if (v.intents.has(it)) s += 3; else s -= 4; }
     if (pq.objects.length && objs === pq.objects.length) s += 2;
@@ -875,6 +919,8 @@ const T = {
   scanned: [" · ⚠ σχεδόν χωρίς κείμενο (σκαναρισμένο;) — δεν θα βρίσκει πολλά", " · ⚠ almost no text (scanned?) — search will find little"],
   remove: ["Αφαίρεση", "Remove"], noManual: ["Δεν υπάρχει ακόμα manual για αυτή τη μηχανή.", "No manual for this bike yet."],
   kindOther: ["Άλλο", "Other"],
+  qualOther: [(q, o) => `Το manual δεν δίνει τιμή για «${q}». Η τιμή παρακάτω αφορά «${o}» — δεν είναι αυτή που ζήτησες.`, (q, o) => `The manual gives no value for "${q}". The value below is for "${o}" — not what you asked.`],
+  qualMissing: [q => `Δεν βρήκα τιμή που να γράφει «${q}». Η τιμή παρακάτω δεν λέει σε ποιο σημείο αφορά — έλεγξε τη σελίδα.`, q => `No value found that says "${q}". The value below doesn't say which side it is for — check the page.`],
   partialMatch: ["Δεν βρέθηκε τιμή που να ταιριάζει σε όλα όσα ρώτησες· αυτή είναι η πιο κοντινή. Έλεγξε τη σελίδα.", "No value matches everything you asked; this is the closest one. Check the page."],
   ownerNone: ["Στο Owner's manual δεν βρέθηκε τιμή γι' αυτό· η απάντηση είναι από το service manual.", "No value for this in the owner's manual; the answer is from the service manual."],
   ownerMissing: ["Δεν έχεις ανεβάσει Owner's manual γι' αυτή τη μηχανή (ή είναι καταχωρημένο ως άλλο είδος — δες «Μηχανές & manuals»).", "No owner's manual uploaded for this bike (or it is filed as another type — see \"Bikes & manuals\")."], addPdf: ["Πρόσθεσε PDF", "Add PDF"], pickPdf: ["Επιλογή PDF", "Choose PDF"],
@@ -1490,7 +1536,11 @@ const SCHED_IGNORE = new Set(["maintenance","service","interval","schedule","cha
 const CODE_MEAN = {
   I: ["Έλεγχος (καθάρισμα, ρύθμιση, λίπανση ή αντικατάσταση αν χρειάζεται)", "Inspect (clean, adjust, lubricate or replace if necessary)"],
   C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"]};
-const codeMean = c => CODE_MEAN[c] ? CODE_MEAN[c][L() === "en" ? 1 : 0] : c;
+// Greek code letters (Voge and other Greek manuals); combined codes like "Ε/Ρ" read as "Έλεγχος / Ρύθμιση"
+Object.assign(CODE_MEAN, {"Ε": ["Έλεγχος (καθάρισμα, λίπανση, ρύθμιση, συμπλήρωση ή αντικατάσταση αν χρειάζεται)", "Check (clean, lubricate, adjust, top up or replace if needed)"],
+  "Α": ["Αντικατάσταση", "Replace"], "Κ": ["Καθάρισμα", "Clean"], "Ρ": ["Ρύθμιση", "Adjust"], "Λ": ["Λίπανση", "Lubricate"], "Σ": ["Σφίξιμο", "Tighten"], "ΔΕ": ["Διαγνωστικός έλεγχος", "Diagnostic check"]});
+const codeMean = c => CODE_MEAN[c] ? CODE_MEAN[c][L() === "en" ? 1 : 0]
+  : /[\/-]/.test(c) ? c.split(/[\/-]/).map(x => CODE_MEAN[x] ? (x === "Ε" ? (L() === "en" ? "Check" : "Έλεγχος") : CODE_MEAN[x][L() === "en" ? 1 : 0]) : x).join(" / ") : c;
 
 function numsWithX(c, from){
   const out = []; const s = c.s; const re = /\d+(?:\.\d+)?/g; let m;
@@ -1544,13 +1594,91 @@ function parseSchedule(p){
   if (rows.length < 3) return null;                  // icons-only tables give no usable rows
   return {cols: cols.map(c => c.n), rows, legend: legend ? legend.s : "", hdr};
 }
+/* Schedule tables of other makes (e.g. Voge, in Greek): a header row "km | 1000 | ΚΑΘΕ 6000 | ΚΑΘΕ 12000", a "ΜΗΝΕΣ" row,
+   numbered item rows with Greek code letters (Α, Ε, Κ, Ρ, Λ, Σ, ΔΕ, combined as "Ε/Ρ") or a sentence across the columns
+   ("(Α) κάθε 24 μήνες ή 18.000χλμ"). Codes are taken from their place on the page; the sentence is kept verbatim. */
+const GCODE_RE = /^(?:ΔΕ|[ΑΕΚΡΛΣAEKP])(?:\s*[\/-]\s*(?:ΔΕ|[ΑΕΚΡΛΣAEKP]))*$/;
+const toGreekCode = s => s.replace(/\s+/g, "").replace(/A/g, "Α").replace(/E/g, "Ε").replace(/K/g, "Κ").replace(/P/g, "Ρ");
+const SCHED_HDR = p => p.cells.find(c => /^(km|χλμ)$/i.test(c.s.trim()) && p.cells.some(o => o !== c && Math.abs(o.y - c.y) < Math.max(2, c.fh * .6) && o.x0 > c.x1 && /^((ΚΑΘΕ|EVERY)\s*)?\d[\d.,]{2,}$/i.test(o.s.trim())));
+function parseScheduleGeneric(p){
+  const km = SCHED_HDR(p); if (!km) return null;
+  const tol = Math.max(2, km.fh * .6);
+  const hcells = p.cells.filter(o => o !== km && Math.abs(o.y - km.y) < tol && o.x0 > km.x1 && /^((ΚΑΘΕ|EVERY)\s*)?\d[\d.,]{2,}$/i.test(o.s.trim())).sort((a, b) => a.x0 - b.x0);
+  if (hcells.length < 2) return null;
+  const cols = hcells.map(c => ({n: parseInt(c.s.replace(/\D/g, ""), 10) / 1000, x: (c.x0 + c.x1) / 2, every: /ΚΑΘΕ|EVERY/i.test(c.s)}));
+  const spacing = (cols[cols.length - 1].x - cols[0].x) / (cols.length - 1);
+  const zoneL = cols[0].x - spacing * .6, zoneR = cols[cols.length - 1].x + spacing * .6;
+  // months under the columns ("ΜΗΝΕΣ  3  12")
+  const mh = p.cells.find(c => /^(ΜΗΝΕΣ|MONTHS)$/i.test(c.s.trim()) && Math.abs(c.x0 - km.x0) < 30);
+  const months = {};
+  if (mh) for (const c of p.cells) if (Math.abs(c.y - mh.y) < tol && /^\d{1,2}$/.test(c.s.trim())){
+    const cx = (c.x0 + c.x1) / 2, best = cols.reduce((a, b) => Math.abs(b.x - cx) < Math.abs(a.x - cx) ? b : a);
+    if (Math.abs(best.x - cx) < spacing * .55) months[best.n] = +c.s.trim();
+  }
+  const top = Math.min(km.y, mh ? mh.y : km.y) - tol;
+  // row anchors: the numbers in the left-most column (1, 2, 3 …); without them, the item names themselves
+  const nums = p.cells.filter(c => /^\d{1,2}$/.test(c.s.trim()) && c.y < top && c.x1 < km.x0);
+  const nx = nums.length ? Math.min(...nums.map(c => c.x0)) : 0;
+  let anchors = nums.filter(c => c.x0 < nx + 4);
+  const nameZone = c => c.y < top && /[A-Za-zΑ-Ωα-ω]{3,}/.test(c.s) && c.x1 < zoneL && c.x0 > (anchors.length ? nx + 4 : 0) && c.s.length < 60 && !/^(ΣΗΜΑΝΤΙΚ|ΕΚΤΙΜΗΣΗ|NOTE)/i.test(c.s);
+  if (anchors.length < 3) anchors = p.cells.filter(nameZone);
+  const nx0 = (() => { const h = new Map(); for (const c of p.cells.filter(nameZone)){ const k = Math.round(c.x0 / 3); h.set(k, (h.get(k) || 0) + 1); } const k = [...h.entries()].sort((a, b) => b[1] - a[1])[0]; return k ? k[0] * 3 : 0; })();
+  anchors.sort((a, b) => b.y - a.y);
+  if (anchors.length < 3) return null;
+  const gaps = anchors.slice(1).map((a, i) => anchors[i].y - a.y).sort((a, b) => a - b);
+  const rowH = gaps[Math.floor(gaps.length / 2)] || km.fh * 2, rtol = rowH * .5;
+  const rows = [];
+  for (const an of anchors){
+    const near = c => Math.abs(c.y - an.y) < rtol;
+    const names = p.cells.filter(c => (near(c) && nameZone(c) && c !== an && Math.abs(c.x0 - nx0) < 6) || (c === an && !/^\d+$/.test(an.s))).sort((a, b) => b.y - a.y);
+    const item = names.map(c => c.s.trim()).join(" ").replace(/([Α-ΩA-Z)])\d{1,2}$/, "$1").replace(/\s+/g, " ").trim();   // (stray row numbers of a hidden older layer)
+    if (!item) continue;
+    const codes = {}, dist = {}; let every = "", everyKmV = 0, years = 0, everyCode = "", note = "", user = false, shop = false; const used = [...names];
+    for (const c of p.cells){
+      if (!near(c) || names.includes(c) || c === an) continue;
+      const st = c.s.trim(), cx = (c.x0 + c.x1) / 2;
+      if (/^#$/.test(st)){ shop = true; continue; }
+      if (/^◊+$/.test(st)){ user = true; continue; }
+      if (cx > zoneL && cx < zoneR && GCODE_RE.test(st)){
+        const best = cols.reduce((a, b) => Math.abs(b.x - cx) < Math.abs(a.x - cx) ? b : a);
+        const d = Math.abs(c.y - an.y);
+        if (Math.abs(best.x - cx) < spacing * .3 && (dist[best.n] === undefined || d < dist[best.n])){ codes[best.n] = toGreekCode(st); dist[best.n] = d; used.push(c); }
+        continue;
+      }
+      if (c.x0 < zoneR && c.x1 > zoneL && /[α-ωΑ-Ωa-z]{3,}/.test(st) && /\d/.test(st)){   // "(Α) κάθε 24 μήνες ή 18.000χλμ …"
+        every = every ? every + " " + st : st; used.push(c);
+        const mk = st.match(/(\d{1,3}(?:[.,]\d{3})+|\d+)\s*(?:χλμ|km)/i); if (mk) everyKmV = parseInt(mk[1].replace(/[.,]/g, ""), 10);
+        const ns = norm(st), mm = ns.match(/(\d+)\s*(?:μην|months?)/); if (mm) years = +mm[1] / 12;
+        const yy = ns.match(/(\d+)\s*(?:χρον|ετ|years?)/); if (yy) years = +yy[1];
+        const cc = st.match(/^\(([^)]+)\)/); everyCode = cc ? toGreekCode(cc[1]) : /ελεγχ|check/i.test(norm(st)) ? "Ε" : "";
+        continue;
+      }
+      if (c.x0 >= zoneR - 4 && /[α-ωa-z]{3,}/i.test(st)) note = note ? note + " " + st : st;
+    }
+    if (!Object.keys(codes).length && !every) continue;
+    rows.push({cell: names[0], item, stars: 0, codes, annual: "", regular: "", every, everyKm: everyKmV, years, everyCode, ref: "", note: "", noteText: note, user, shop, page: p.pi + 1,
+      cells: used});
+  }
+  if (rows.length < 3) return null;
+  // the column that comes round every 12 months works like an annual check
+  const yearCol = Object.keys(months).find(n => months[n] === 12);
+  if (yearCol) for (const r of rows) if (r.codes[yearCol]) r.annual = r.codes[yearCol];
+  const legend = p.cells.filter(c => /^(ΔΕ|[ΑΕΚΡΛΣAEK]):\s*[Α-Ωα-ω]/.test(c.s.trim()) && c.y > km.y).map(c => c.s.trim()).join(" · ");
+  const colLabels = hcells.map((c, i) => c.s.trim().replace(/^ΚΑΘΕ/i, "κάθε").replace(/\d[\d.,]*/, m => kmFmt(parseInt(m.replace(/\D/g, ""), 10) / 1000)) + " km" + (months[cols[i].n] ? (L() === "en" ? ` (or ${months[cols[i].n]} months)` : ` (ή ${months[cols[i].n]} μήνες)`) : ""));
+  return {cols: cols.map(c => c.n), rows, legend, hdr: km, months, colLabels, repeat: cols.some(c => c.every) ? hcells.map(c => c.s).join(" · ") : undefined, generic: true};
+}
 const schedCache = new Map();
 async function findSchedules(bike){
   const out = [];
   for (const m of manuals.filter(m => m.bikeId === bike.id)){
     if (!schedCache.has(m.id)){
       const ix = await loadIndex(m); const found = [];
-      for (const p of ix.pages) if (/x\s*1,000\s*km/i.test(p.n.replace(/×/g, "x"))){ const s = parseSchedule(p); if (s) found.push({m, p, page: p.pi + 1, label: ix.labels[p.pi], ...s}); }
+      for (const p of ix.pages){
+        let s = null;
+        if (/x\s*1,000\s*km/i.test(p.n.replace(/×/g, "x"))) s = parseSchedule(p);
+        else if (/(^|\s)(km|χλμ)(\s|$)/.test(p.n) && /(καθε|every)\s*\d/.test(p.n)) s = parseScheduleGeneric(p);
+        if (s) found.push({m, p, page: p.pi + 1, label: ix.labels[p.pi], ...s});
+      }
       schedCache.set(m.id, found);
     }
     out.push(...schedCache.get(m.id));
@@ -1601,7 +1729,9 @@ async function answerSchedule(q, out){
   let hits = [];
   if (objs.length){
     for (const s of scheds) for (const r of s.rows){ const n = norm(r.item); const k = objs.filter(o => conceptIn(n, o)).length; if (k) hits.push({s, r, k}); }
-    const best = Math.max(0, ...hits.map(h => h.k)); hits = hits.filter(h => h.k === best && best === objs.length).slice(0, 6);
+    const best = Math.max(0, ...hits.map(h => h.k)); hits = hits.filter(h => h.k === best && best === objs.length).sort((a, b) => {
+      const st = h => objs.some(o => o.alts.some(x => norm(h.r.item).startsWith(x))) ? 0 : 1;   // "ΛΙΠΑΝΤΙΚΟ ΚΙΝΗΤΗΡΑ" before "ΦΙΛΤΡΟ ΛΙΠΑΝΤΙΚΟΥ"
+      return st(a) - st(b) || a.r.item.length - b.r.item.length; }).slice(0, 6);
     if (!hits.length) return false;                   // the item isn't in the schedule → normal search
   }
   const main = hits.length ? hits[0].s : sc;
@@ -1615,17 +1745,17 @@ async function answerSchedule(q, out){
   if (selVariant()) hits = hits.filter(h => { const codes = expandVariant(h.r.noteText || ""); if (!codes.length) return true;
     const ok = fitsVariant({variant: (h.r.noteText.match(CODE_RE) || [""])[0]}, false); if (!ok) hiddenSched++; return ok; });
   hits = hits.slice(0, 4);
-  const repeat = await scheduleNote(main, /at higher odometer readings/i);
+  const repeat = await scheduleNote(main, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα/i);
   const srcHead = s => `<div class="srchead"><b>${esc(kindName(s.m.kind))}</b> · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`;
   const general = `<div class="row big"><div class="rl"><span class="lbl">${t("serviceAt")}</span></div>
-      <div class="rv"><span class="val">${main.cols.map(kmFmt).join(" · ")} km</span>
-      ${main.rows.some(r => r.annual) ? `<span class="conv">${t("plusAnnual")}</span>` : ""}</div></div>`;
+      <div class="rv"><span class="val">${main.colLabels ? main.colLabels.map(esc).join(" · ") : main.cols.map(kmFmt).join(" · ") + " km"}</span>
+      ${main.rows.some(r => r.annual) && !main.colLabels ? `<span class="conv">${t("plusAnnual")}</span>` : ""}</div></div>`;
   out.innerHTML = `<article class="result">
     <div class="answer"><div class="eyebrow">${t("schedTitle")}</div>
       ${srcHead(main)}
       ${hits.length ? `<div class="rows">${hits.map(h => scheduleRowHTML(h.r, h.s, pq, hits.length === 1)).join("")}</div>` : `<div class="rows">${general}</div>`}
       ${hiddenSched ? `<div class="hint">${t("hiddenSched", hiddenSched)}</div>` : ""}
-      ${repeat ? `<div class="hint">“${esc(repeat.replace(/^\s*\d+\.\s*/, ""))}”${L() === "el" ? ` <span class="tr">(${t("repeatTr")})</span>` : ""}</div>` : ""}
+      ${repeat ? `<div class="hint">“${esc(repeat.replace(/^\s*\d+\.\s*/, ""))}”${L() === "el" && /[A-Za-z]{4}/.test(repeat) ? ` <span class="tr">(${t("repeatTr")})</span>` : ""}</div>` : ""}
       ${main.legend ? `<div class="hint">${esc(main.legend)}</div>` : ""}
     </div>
     <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", main.page)}</div></div>
@@ -1697,12 +1827,13 @@ $("askForm").addEventListener("submit", async e => {
       return p.objs >= Math.max(...shown.map(x => x.objs || 0)) && (!n1s.length || n1s.some(n1 => n2 / n1 < 2.5 && n1 / n2 < 2.5)); });   // service tables often put the unit in the column header
   if (second && !shown2.length) second = null;
   const srcHead = r => `<div class="srchead"><b>${esc(kindName(r.m.kind))}</b> · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
+  const sc0 = shown.length ? sideCheck(pq, top, shown) : {msg: "", ctxOk: 0}, sideWarn = sc0.msg;
 
   const answer = !shown.length
     ? `<div class="answer"><div class="eyebrow">${t("answer")}</div><p class="none">${t("noValue")}</p></div>`
     : `<div class="answer"><div class="eyebrow">${t("answer")}${vsel ? ` · ${esc(friendly(vsel))}` : ""}</div>
         ${second && valuesDiffer(shown, shown2) ? `<div class="warn">${t("differ")}</div>` : ""}
-        ${pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length > 1 && cover(top) < pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length ? `<div class="warn">${t("partialMatch")}</div>` : ""}
+        ${sideWarn ? `<div class="warn">${sideWarn}</div>` : pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length > 1 && cover(top) + sc0.ctxOk < pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length ? `<div class="warn">${t("partialMatch")}</div>` : ""}
         ${shown.length > 1 ? `<p class="multi">${t("multi", shown.length)}</p>` : ""}
         ${second ? srcHead(top) : ""}
         ${rowsHTML(shown, pq, shown.length === 1 && !second)}
@@ -1734,6 +1865,27 @@ $("askForm").addEventListener("submit", async e => {
   out.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { const r = results[+b.dataset.open]; openViewer(r, r.pairs.slice(0, 4)); });
   if (second) $("openSecond").onclick = () => openViewer(second, shown2);
 });
+// a side word in the question (front / rear, left / right, intake / exhaust) must be in what the value is about;
+// otherwise say so plainly, and name the other side when the text around the value gives it
+const SIDES = [["front", "rear"], ["rear", "front"], ["left", "right"], ["right", "left"], ["intake", "exhaust"], ["exhaust", "intake"]];
+function sideCheck(pq, top, shown){
+  let ctxOk = 0;
+  const sideAlts = en => [...new Set([en, ...DICT.filter(e => e[1].includes(en)).flatMap(e => e[1].map(norm))])];
+  for (const [side, opp] of SIDES){
+    const q = pq.objects.find(o => o.alts.includes(side)); if (!q) continue;
+    const own = norm(shown.map(p => pairLabel(p) + " " + p.vText + " " + (p.head || "")).join(" "));
+    const has = (n, en) => sideAlts(en).some(a => hasAlt(n, a));
+    if (has(own, side)) continue;
+    // text just above the value in its column, and the page's headings
+    const v = shown[0].value, ctx = norm([...top.p.cells.filter(c => c.y > v.y && c.y - v.y < v.fh * 8 && Math.abs(c.x0 - v.x0) < top.p.w * .25).map(c => c.s), ...pageHeadings(top.p).map(c => c.s)].join(" "));
+    const SW = {rear: "πίσω", front: "μπροστά", left: "αριστερά", right: "δεξιά", intake: "εισαγωγή", exhaust: "εξαγωγή"};
+    const word = L() === "en" ? side : SW[side];
+    if (!has(own, opp) && has(ctx, side) && !has(ctx, opp)){ ctxOk++; continue; }      // the text around it is about the asked side
+    if (has(own, opp) || (has(ctx, opp) && !has(ctx, side))){ const ow = L() === "en" ? opp : SW[opp]; return {msg: t("qualOther", word, ow), ctxOk}; }
+    return {msg: t("qualMissing", word), ctxOk};
+  }
+  return {msg: "", ctxOk};
+}
 // do the two manuals give different numbers? (compare the main figures, ignoring order)
 function valuesDiffer(a, b){
   const nums = ps => [...new Set(ps.map(p => (splitValue(p.vText).main.match(/\d+(?:\.\d+)?/) || [""])[0]))].sort().join(",");
@@ -1987,12 +2139,14 @@ async function getRecords(bike){
 async function planSchedule(bike){
   const all = await findSchedules(bike);
   if (!all.length) return null;
-  const sc = all.slice().sort((a, b) => b.rows.length - a.rows.length)[0];
+  let sc = all.slice().sort((a, b) => b.rows.length - a.rows.length)[0];
+  const same = all.filter(o => o.m === sc.m && o.cols.join() === sc.cols.join());
+  if (same.length > 1){ const first = same.sort((a, b) => a.page - b.page)[0]; sc = {...first, rows: same.flatMap(o => o.rows)}; }
   for (const r of sc.rows) if (r.note && r.noteText === undefined){
     const n = r.note.match(/\d+/)[0];
     r.noteText = (await scheduleNote(sc, new RegExp("^\\s*(NOTE\\s*)?" + n + "\\s*[:.]\\s+[A-Za-z]", "i"))).replace(/^\s*(NOTE\s*)?\d+\s*[:.]\s*/i, "");
   }
-  if (sc.repeat === undefined) sc.repeat = await scheduleNote(sc, /at higher odometer readings/i);
+  if (sc.repeat === undefined) sc.repeat = await scheduleNote(sc, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα/i);
   const rows = sc.rows.filter(r => { const code = (r.noteText || "").match(CODE_RE); return !code || fitsVariant({variant: code[0]}, false); });
   const cols = sc.cols.slice();
   const init = cols.length > 2 && (cols[1] - cols[0]) !== (cols[2] - cols[1]) ? cols[0] : null;
@@ -2004,6 +2158,8 @@ async function planSchedule(bike){
 // which code (R, I, …) the manual gives an item at a milestone (in ×1,000 km); past the table only if the manual says to repeat it
 function codeAt(plan, row, M){
   if (row.codes[M]) return row.codes[M];
+  // "(Α) κάθε 18.000χλμ": due at every multiple of that distance
+  if (row.everyCode && row.everyKm >= 1000 && M * 1000 >= row.everyKm && (M * 1000) % row.everyKm === 0) return row.everyCode;
   const last = plan.cols[plan.cols.length - 1];
   if (M > last && plan.canRepeat){ const eq = ((M - plan.regular[0]) % plan.period + plan.period) % plan.period + plan.regular[0]; return row.codes[eq] || ""; }
   return "";
@@ -2013,8 +2169,8 @@ function milestones(plan, upToKm){
   if (plan.canRepeat) while ((m += plan.step) * 1000 <= upToKm + plan.period * 1000) out.push(m);
   return out;
 }
-const everyKm = r => { const m = (r.every || "").match(/EVERY\s+([\d,]+)\s*km/i); return m ? +m[1].replace(/,/g, "") : 0; };
-const yearsOf = r => { const m = (r.regular || "").match(/(\d+)\s*YEARS?/i); return m ? +m[1] : 0; };
+const everyKm = r => { if (r.everyKm) return r.everyKm; const m = (r.every || "").match(/EVERY\s+([\d,]+)\s*km/i); return m ? +m[1].replace(/,/g, "") : 0; };
+const yearsOf = r => { if (r.years) return r.years; const m = (r.regular || "").match(/(\d+)\s*YEARS?/i); return m ? +m[1] : 0; };
 const recHas = (rec, row) => (rec.items || []).some(i => norm(i) === norm(row.item));
 
 function computeStatus(bike, plan, recs){
@@ -2049,11 +2205,14 @@ function computeStatus(bike, plan, recs){
 }
 
 /* ---------- rendering ---------- */
-const CODE_SHORT = {I: ["Έλεγχος", "Inspect"], C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"]};
+const CODE_SHORT = {I: ["Έλεγχος", "Inspect"], C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"],
+  "Ε": ["Έλεγχος", "Check"], "Α": ["Αντικατάσταση", "Replace"], "Κ": ["Καθάρισμα", "Clean"], "Ρ": ["Ρύθμιση", "Adjust"], "Λ": ["Λίπανση", "Lubricate"], "Σ": ["Σφίξιμο", "Tighten"], "ΔΕ": ["Διαγνωστικός έλεγχος", "Diagnostic check"]};
 function groupedItems(items){
-  const order = ["R", "A", "C", "L", "I"], g = {};
+  const g = {};
   for (const x of items) (g[x.code] = g[x.code] || []).push(x.row);
-  return `<div class="groups">${order.filter(c => g[c]).map(c => `<div class="grpline"><span class="code">${c}</span> <b>${CODE_SHORT[c] ? CODE_SHORT[c][L() === "en" ? 1 : 0] : c}</b>
+  const pri = ["R", "A", "C", "L", "I", "Α", "Ρ", "Κ", "Λ", "Σ", "ΔΕ", "Ε"];
+  const order = Object.keys(g).sort((a, b) => { const ia = pri.indexOf(a), ib = pri.indexOf(b); return (ia < 0 ? 50 : ia) - (ib < 0 ? 50 : ib) || a.localeCompare(b); });
+  return `<div class="groups">${order.filter(c => g[c]).map(c => `<div class="grpline"><span class="code">${c}</span> <b>${CODE_SHORT[c] ? CODE_SHORT[c][L() === "en" ? 1 : 0] : esc(codeMean(c))}</b>
     <div class="glist">${g[c].map(r => `<span>${esc(r.item)}${trHTML(r.item)}</span>`).join("")}</div></div>`).join("")}
     ${g.I ? `<p class="mnote">I = ${esc(codeMean("I"))}</p>` : ""}</div>`;
 }
@@ -2136,7 +2295,7 @@ function wireService(){
   if (pre) pre.onclick = () => {
     const plan = box._plan, km = parseInt($("recKm").value, 10) || currentBike.odo || 0; if (!plan) return;
     const ms = milestones(plan, km); const M = ms.reduce((a, b) => Math.abs(b * 1000 - km) < Math.abs(a * 1000 - km) ? b : a);
-    box.querySelectorAll(".checks input").forEach(cb => { const r = plan.rows[+cb.dataset.i]; cb.checked = !!codeAt(plan, r, M) || !!everyKm(r); });
+    box.querySelectorAll(".checks input").forEach(cb => { const r = plan.rows[+cb.dataset.i]; const e = everyKm(r); cb.checked = !!codeAt(plan, r, M) || (!!e && (e <= 1000 || (M * 1000 >= e - 500 && Math.abs(M * 1000 - Math.round(M * 1000 / e) * e) <= 1000))); });
     toast(t("prefilled", fmtKm(M * 1000)));
   };
   $("recAttachBtn").onclick = () => { $("recAttach").value = ""; $("recAttach").click(); };
