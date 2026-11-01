@@ -1,12 +1,12 @@
 /* Vida Vida service worker: keeps the app available offline.
-   The app is one page (index.html, with the PDF engine inside) plus its icons.
-   Strategy: answer from the cache at once, refresh the cache in the background,
-   and tell the open page when a newer version has been stored. */
-const CACHE = "vidavida-v2";
+   Online: the page always comes fresh from the server (so updates show up at once) and the copy is saved.
+   Offline: the saved copy is used. Icons and the manifest come from the saved copy first. */
+const CACHE = "vidavida-v3";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // "reload" skips the browser's HTTP cache, so the newest files are stored
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, {cache: "reload"})))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", e => {
@@ -15,26 +15,26 @@ self.addEventListener("activate", e => {
 
 self.addEventListener("fetch", e => {
   const req = e.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;   // links to other sites go straight to the network
-  const isPage = req.mode === "navigate";
-  e.respondWith(caches.open(CACHE).then(async cache => {
-    const key = isPage ? "./index.html" : req;
-    const cached = await cache.match(key, {ignoreSearch: true});
-    const network = fetch(req).then(async res => {
-      if (res && res.ok){
-        if (isPage && cached){
-          const [a, b] = await Promise.all([cached.clone().text(), res.clone().text()]);
-          if (a !== b) notifyUpdate();
-        }
-        await cache.put(key, res.clone());
+  if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;   // other sites: straight to the network
+  if (req.mode === "navigate" || /\/(index\.html)?$/.test(new URL(req.url).pathname)){
+    // the page: network first, saved copy when offline
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try{
+        const res = await fetch(req, {cache: "no-cache"});
+        if (res && res.ok) await cache.put("./index.html", res.clone());
+        return res;
+      }catch(_){
+        return (await cache.match("./index.html")) || new Response("Offline", {status: 503, headers: {"Content-Type": "text/plain"}});
       }
-      return res;
-    }).catch(() => null);
-    if (cached){ e.waitUntil(network); return cached; }
-    return (await network) || new Response("Offline", {status: 503, headers: {"Content-Type": "text/plain"}});
+    })());
+    return;
+  }
+  // icons, manifest: saved copy first, refreshed in the background
+  e.respondWith(caches.open(CACHE).then(async cache => {
+    const cached = await cache.match(req, {ignoreSearch: true});
+    const net = fetch(req).then(res => { if (res && res.ok) cache.put(req, res.clone()); return res; }).catch(() => null);
+    if (cached){ e.waitUntil(net); return cached; }
+    return (await net) || new Response("", {status: 504});
   }));
 });
-
-async function notifyUpdate(){
-  for (const c of await self.clients.matchAll({type: "window"})) c.postMessage({type: "updated"});
-}

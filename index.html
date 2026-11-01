@@ -16,8 +16,8 @@
 <style>
 /* Layout: one working column — question bar on top, answer "spec card" + page proof below; library in a second tab. */
 :root{
-  --paper:#eef1f3; --panel:#ffffff; --ink:#151d24; --muted:#5a6670; --line:#d3d9de;
-  --accent:#f2b31b; --accent-ink:#1d1500; --accent-edge:rgba(120,82,0,.55); --hl:rgba(255,193,7,.40); --hl-strong:rgba(255,120,0,.45);
+  --paper:#ffffff; --panel:#ffffff; --ink:#151d24; --muted:#5a6670; --line:#dfe3e7;
+  --accent:#fcab01; --accent-ink:#1d1200; --accent-edge:rgba(110,60,0,.45); --hl:rgba(255,193,7,.40); --hl-strong:rgba(255,120,0,.45);
   --danger:#b3261e; --ok:#1e7a45;
   --f-display:"Fira Sans Condensed","Roboto Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Noto Sans","Segoe UI",system-ui,-apple-system,sans-serif;
@@ -26,10 +26,10 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
-  --accent:#f0b429; --accent-ink:#1d1500; --accent-edge:transparent; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}}
+  --accent:#fcab01; --accent-ink:#1d1500; --accent-edge:transparent; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
-  --accent:#f0b429; --accent-edge:transparent; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}
+  --accent:#fcab01; --accent-edge:transparent; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -878,7 +878,7 @@ function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  const tc = document.getElementById("themeColor"); if (tc) tc.content = dark ? "#0f1419" : "#eef1f3";
+  const tc = document.getElementById("themeColor"); if (tc) tc.content = dark ? "#0f1419" : "#ffffff";
   document.body.classList.toggle("bigtext", !!settings.big);
 }
 
