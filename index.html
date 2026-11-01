@@ -416,7 +416,7 @@ const STOP = new Set(("ποσα ποσο ποση ποσοι ποιο ποια �
 const DICT = [
  ["ροπ",["torque","tighten"],"torque"],["συσφιξ",["torque","tighten"],"torque"],["σφιξ",["torque","tighten"],"torque"],["νιουτον",["torque"],"torque"],
  ["πιεσ",["pressure"],"pressure"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
- ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
+ ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["ελευθερ",["freeplay","free play","free"],"length"],["διαδρομ",["freeplay","free play","travel"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
  ["βιδ",["bolt","screw"]],["μπουλον",["bolt"]],["παξιμαδ",["nut"]],["ροδελ",["washer"]],
  ["λαδ",["oil"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement"],"act"],["λιπαιν",["lubricate","lubricating","lubrication"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging"],"act"],["γεμιζ",["fill","filling","add"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
  ["αλυσιδ",["chain"]],["γραναζ",["sprocket"]],["τανυσ",["tension","slack"]],
@@ -598,6 +598,8 @@ const hasLetters = c => /[A-Za-z]{3,}/.test(c.s);
    - step-by-step text: the line(s) directly above the value in the same column. */
 function pairsOnPage(p, pq){
   const pairs = [];
+  // a line level with a value of its own is a table row, not the continuation of a multi-line name
+  const levelVal = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
   const objHit = cs => pq.objects.filter(o => cs.some(c => conceptIn(c.n, o))).length;
   for (const v of p.cells){
     if (!v.isVal) continue;
@@ -615,6 +617,15 @@ function pairsOnPage(p, pq){
       label.unshift(c); lastX = c.x0; if (hasLetters(c)) gotText = true;
     }
     if (!gotText) label = [];
+    // values stacked under their version code ("CRF1000A/D" / "200 kPa", "CRF1000A II/D II" / "225 kPa"):
+    // the row name ("Front") is centred on the code+value pair, not level with the value
+    const stk = p.cells.find(c => c !== v && CODE_FULL.test(c.s) && Math.abs(c.x0 - v.x0) < 3 && c.y > v.y + .5 && c.y - v.y < v.fh * 1.8);
+    if (stk){
+      const ay = (stk.y + v.y) / 2;
+      const sub = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && !CODE_FULL.test(c.s) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .12 && Math.abs(c.y - ay) < v.fh * 1.6)
+                         .sort((a, b) => b.x0 - a.x0 || Math.abs(a.y - ay) - Math.abs(b.y - ay))[0];
+      if (sub) label = [sub];
+    }
     // prose from a neighbouring text column (sentences, long lines) is not a table label
     if (label.length && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .06 && label.some(c => /[.!?](\s|$)/.test(c.s.trim()) || c.s.length > 45 || c.s.trim().split(/\s+/).length >= 7)) label = [];
     else if (label.length === 1){
@@ -624,7 +635,24 @@ function pairsOnPage(p, pq){
       const g = gc.filter(c => c.y - v.y > -rowTol && c.y - v.y < v.fh * 4).sort((a, b) => a.y - b.y)[0]
              || gc.filter(c => v.y - c.y > 0 && v.y - c.y < v.fh * 12).sort((a, b) => b.y - a.y)[0]
              || gc.filter(c => c.y - v.y > 0 && c.y - v.y < v.fh * 12).sort((a, b) => a.y - b.y)[0];
-      if (g) label.unshift(g);
+      if (g){
+        // a group name printed over several lines ("Tyre air" / "pressure" / "(Driver only)"): take the whole block
+        const blk = [g];
+        for (const dir of [1, -1]) for (let cur = g;;){
+          const nx = gc.filter(c => !blk.includes(c) && Math.abs(c.x0 - cur.x0) < 3 && !levelVal(c) && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
+          if (!nx) break; blk.push(nx); cur = nx;
+        }
+        label.unshift(...blk.sort((a, b) => b.y - a.y));
+      }
+    }
+    // the name in the left column is printed over several lines ("Tyre air" / "pressure" / "(Driver and" / "passenger)"): take them all
+    if (label.length >= 2 && label[1].x0 - label[0].x1 > 8 && /^[A-Za-z(]{3,}/.test(label[1].s) && !/\d/.test(label[1].s)){   // group name + row name ("Front"), not name + qty/size columns
+      const L0 = label[0], blk = [L0];
+      for (const dir of [1, -1]) for (let cur = L0;;){
+        const nx = p.cells.filter(c => !blk.includes(c) && !c.isVal && hasLetters(c) && Math.abs(c.x0 - L0.x0) < 3 && !levelVal(c) && c.x1 < label[1].x0 && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
+        if (!nx) break; blk.push(nx); cur = nx;
+      }
+      if (blk.length > 1) label.splice(0, 1, ...blk.sort((a, b) => b.y - a.y));
     }
     // a label that starts in lower case ("pressure", "runout") is the second line of a wrapped name: add the line above it
     for (let k = 0; k < 2 && label.length && /^[a-z]/.test(label[0].s); k++){
@@ -681,7 +709,8 @@ function pairsOnPage(p, pq){
     // model variant heading in the table above this value (e.g. "CRF1000D/D II"), only if it is a heading row of its own
     const lx0 = Math.min(v.x0, ...label.map(c => c.x0));
     const varCell = p.cells.filter(c => CODE_FULL.test(c.s) && c.y > v.y + .5 && c.y - v.y < v.fh * 14 && c.x1 > lx0 - 2 && c.x0 < v.x1
-        && !p.cells.some(o => o !== c && o.x0 > c.x1 && o.x0 < v.x1 + 5 && Math.abs(o.y - c.y) < c.fh * .9)).sort((a, b) => a.y - b.y)[0];
+        && !p.cells.some(o => o !== c && o.fh > c.fh * .8 && o.x0 > c.x1 && o.x0 < v.x1 + 5 && Math.abs(o.y - c.y) < c.fh * .9)   // (superscripts like "²" don't count)
+        && !p.cells.some(o => o !== v && o.isVal && o.y > v.y + .5 && o.y < c.y - .5 && o.x0 < v.x1 && o.x1 > v.x0)).sort((a, b) => a.y - b.y)[0];   // no other value of this column in between
     const inline = [...label, v].map(c => c.s).join(" ").match(CODE_RE);
     pairs.push({value: v, vText, label, how, score: s, objs, head: head ? head.s : "", variant: inline ? inline[0].trim() : varCell ? varCell.s : ""});
   }
@@ -757,7 +786,10 @@ const T = {
   del: ["Διαγραφή", "Delete"], manualType: ["Τύπος manual", "Manual type"], pages: [n => `${n} σελίδες`, n => `${n} pages`],
   scanned: [" · ⚠ σχεδόν χωρίς κείμενο (σκαναρισμένο;) — δεν θα βρίσκει πολλά", " · ⚠ almost no text (scanned?) — search will find little"],
   remove: ["Αφαίρεση", "Remove"], noManual: ["Δεν υπάρχει ακόμα manual για αυτή τη μηχανή.", "No manual for this bike yet."],
-  kindOther: ["Άλλο", "Other"], addPdf: ["Πρόσθεσε PDF", "Add PDF"], pickPdf: ["Επιλογή PDF", "Choose PDF"],
+  kindOther: ["Άλλο", "Other"],
+  partialMatch: ["Δεν βρέθηκε τιμή που να ταιριάζει σε όλα όσα ρώτησες· αυτή είναι η πιο κοντινή. Έλεγξε τη σελίδα.", "No value matches everything you asked; this is the closest one. Check the page."],
+  ownerNone: ["Στο Owner's manual δεν βρέθηκε τιμή γι' αυτό· η απάντηση είναι από το service manual.", "No value for this in the owner's manual; the answer is from the service manual."],
+  ownerMissing: ["Δεν έχεις ανεβάσει Owner's manual γι' αυτή τη μηχανή (ή είναι καταχωρημένο ως άλλο είδος — δες «Μηχανές & manuals»).", "No owner's manual uploaded for this bike (or it is filed as another type — see \"Bikes & manuals\")."], addPdf: ["Πρόσθεσε PDF", "Add PDF"], pickPdf: ["Επιλογή PDF", "Choose PDF"],
   noBikes: ["Δεν υπάρχει καμία μηχανή. Πρόσθεσε μία παρακάτω.", "No bikes yet. Add one below."], sure: ["Σίγουρα;", "Sure?"], yes: ["Ναι", "Yes"], no: ["Όχι", "No"],
   delBikeQ: ["Διαγραφή μηχανής και των manual της;", "Delete this bike and its manuals?"],
   opening: [f => `Άνοιγμα ${f}…`, f => `Opening ${f}…`], reading: [(i, n) => `Διαβάζω σελίδα ${i}/${n}`, (i, n) => `Reading page ${i}/${n}`],
@@ -946,7 +978,8 @@ function checkPdf(idx, bike, chosen){
   const words = toks.filter(w => !/\d/.test(w)).map(norm);
   const match = !toks.length || codes.some(c => c.length >= 3 && nh.includes(c)) || (words.length && words.every(w => nh.includes(w)));
   const first = norm(idx.pages.slice(0, 6).map(p => p.c.map(c => c[0]).join(" ")).join(" "));
-  const kind = /(service|workshop|shop|repair) manual/.test(first) ? "service" : /owner.?s manual|rider.?s manual|owners manual/.test(first) ? "owner" : null;
+  const iS = first.search(/(service|workshop|shop|repair) manual/), iO = first.search(/owner.?s manual|rider.?s manual|owners manual/);
+  const kind = iS < 0 && iO < 0 ? null : iO >= 0 && (iS < 0 || iO < iS) ? "owner" : "service";
   return {match, kind: kind && kind !== chosen ? kind : null};
 }
 async function removeManual(id){ await delOne("manuals", id); await delOne("files", id); await delOne("texts", id); cache.delete(id); pdfCache.delete(id); }
@@ -1548,7 +1581,10 @@ $("askForm").addEventListener("submit", async e => {
   // owner's manual first, then service manual — among pages that are a real match (at least half as relevant as the best one)
   const KRANK = {owner: 0, service: 1, other: 2};
   const best = Math.max(...results.map(r => r.pairs.length ? r.score : 0), 0) || Math.max(...results.map(r => r.score));
-  const rank = r => (r.pairs.length || !best ? 0 : 1) * 10 + (r.score >= best * .5 ? (KRANK[r.m.kind] ?? 2) : 5);
+  // how many of the asked-about parts a page's values name (brake lever ≠ clutch lever)
+  const cover = r => r._cov ?? (r._cov = Math.max(0, ...r.pairs.map(p => { const n = norm(pairLabel(p) + " " + p.vText.replace(/[\d.,]+\s*\S*/g, " ") + " " + (p.head || "") + " " + (r._hd ?? (r._hd = pageHeadings(r.p).map(h => h.s).join(" ")))); return Math.max(p.objs || 0, pq.objects.filter(o => conceptIn(n, o)).length); })));
+  const bestCover = Math.max(0, ...results.map(cover));
+  const rank = r => (r.pairs.length || !best ? 0 : 1) * 100 + (r.pairs.length ? (bestCover - cover(r)) * 10 : 0) + (r.score >= best * (r.m.kind === "owner" && r.pairs.length && cover(r) >= bestCover ? .3 : .5) ? (KRANK[r.m.kind] ?? 2) : 5);
   results.sort((a, b) => rank(a) - rank(b) || b.score - a.score);
   const top = results[0];
   const pairs = top.pairs;
@@ -1556,14 +1592,28 @@ $("askForm").addEventListener("submit", async e => {
   const others = pairs.filter(p => !shown.includes(p));
   const vsel = selVariant();
   // the same answer from the other manual (e.g. service manual after the owner's), for a cross-check
-  const second = results.slice(1).find(r => r.pairs.length && r.m.id !== top.m.id && r.m.kind !== top.m.kind && r.score >= top.score * .35);
-  const shown2 = second ? second.pairs.filter(p => p.objs === second.pairs[0].objs && p.score >= second.pairs[0].score - 2).slice(0, 8) : [];
+  let second = (top.m.kind !== "owner" && results.slice(1).find(r => r.pairs.length && r.m.kind === "owner" && cover(r) >= cover(top) && r.score >= top.score * .15))
+    || results.slice(1).find(r => r.pairs.length && r.m.id !== top.m.id && r.m.kind !== top.m.kind && cover(r) >= cover(top) && r.score >= top.score * .35);
+  const hasOwner = manuals.some(m => m.bikeId === currentBike.id && m.kind === "owner");
+  const ownerNote = top.m.kind !== "owner" && !(second && second.m.kind === "owner")
+    ? `<div class="hint">${hasOwner ? t("ownerNone") : t("ownerMissing")}</div>` : "";
+  // the cross-check only counts when it measures the same kind of thing (a torque is not a free play)
+  const uclass = v => /n·?m|kgf·?m|lbf·?ft/i.test(v) ? "torque" : /kpa|psi|kgf\/cm/i.test(v) ? "pressure" : /\bl\b|liter|litre|qt|gal/i.test(v) ? "volume" : /\bmm\b|\bin\b|\bcm\b/i.test(v) ? "length" : /km|mile/i.test(v) ? "distance" : /°|deg/i.test(v) ? "angle" : /\bv\b|\ba\b|ah\b|\bw\b/i.test(v) ? "electric" : "";
+  const topCls = new Set(shown.map(p => uclass(p.vText)).filter(Boolean));
+  let shown2 = second ? second.pairs.filter(p => p.objs === second.pairs[0].objs && p.score >= second.pairs[0].score - 2).slice(0, 8) : [];
+  if (second && topCls.size) shown2 = shown2.filter(p => { const c = uclass(p.vText); if (c) return topCls.has(c);
+      // no unit printed next to it: same parts named, and a number of the same size (a spring length is not a free play)
+      const num = x => parseFloat((splitValue(x.vText).main.match(/\d+(?:\.\d+)?/) || ["NaN"])[0]);
+      const n2 = num(p), n1s = shown.map(num).filter(x => x > 0);
+      return p.objs >= Math.max(...shown.map(x => x.objs || 0)) && (!n1s.length || n1s.some(n1 => n2 / n1 < 2.5 && n1 / n2 < 2.5)); });   // service tables often put the unit in the column header
+  if (second && !shown2.length) second = null;
   const srcHead = r => `<div class="srchead"><b>${esc(kindName(r.m.kind))}</b> · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
 
   const answer = !shown.length
     ? `<div class="answer"><div class="eyebrow">${t("answer")}</div><p class="none">${t("noValue")}</p></div>`
     : `<div class="answer"><div class="eyebrow">${t("answer")}${vsel ? ` · ${esc(friendly(vsel))}` : ""}</div>
         ${second && valuesDiffer(shown, shown2) ? `<div class="warn">${t("differ")}</div>` : ""}
+        ${pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length > 1 && cover(top) < pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length ? `<div class="warn">${t("partialMatch")}</div>` : ""}
         ${shown.length > 1 ? `<p class="multi">${t("multi", shown.length)}</p>` : ""}
         ${second ? srcHead(top) : ""}
         ${rowsHTML(shown, pq, shown.length === 1 && !second)}
@@ -1575,6 +1625,7 @@ $("askForm").addEventListener("submit", async e => {
      <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", top.page)}</div></div>
      <div class="extra">
        ${srcLine(top)}
+       ${ownerNote}
        ${variantNote(top.p, shown)}
        ${top.hiddenByTrans ? `<div class="hint">${t("hiddenN", top.hiddenByTrans)}</div>` : ""}
        ${others.length ? `<details class="others"><summary>${t("otherVals", others.length)}</summary>${rowsHTML(others.slice(0, 8), pq, false)}</details>` : ""}
