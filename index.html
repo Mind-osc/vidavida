@@ -548,7 +548,7 @@ header{padding-block:10px 12px;gap:8px 14px}
 [data-pal="glass"] :is(.btn.primary,.fab):active:not(#_){box-shadow:0 0 0 6px var(--hl)}
 [data-pal="glass"] .pal[aria-checked=true]:not(#_){box-shadow:0 0 0 2px var(--accent)}
 /* glass: the button colour used as text or a thin line takes its text-safe shade */
-[data-pal="glass"] :is(.bgar,.brand .tagline,.steps li::marker){color:var(--accent-text,var(--accent))}
+[data-pal="glass"] :is(.brand .tagline,.steps li::marker){color:var(--accent-text,var(--accent))}
 [data-pal="glass"] :is(.row .val,.bigdue .val,.docs li.soon):not(#_){border-color:var(--accent-text,var(--accent))}
 [data-pal="glass"] :is(.warn,.alert,.answer blockquote.sect,.sugg li.fromman){border-left-color:var(--accent-text,var(--accent))}
 [data-pal="glass"] :is(select,input,textarea,button):focus-visible{outline-color:var(--accent-text,var(--accent))}
@@ -556,7 +556,7 @@ header{padding-block:10px 12px;gap:8px 14px}
    only the letters of the name (V I D A) are embedded */
 @font-face{font-family:"VV Logo";src:url(data:font/woff2;base64,d09GMgABAAAAAAMYAA4AAAAAB2AAAALDAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbgWwcGgZgAHQRCAqDMIJCATYCJAMoCxYABCAFg2oHIBvlBVFUK0YJfibYdPoWWITLqKHsaXHSegzDMqLjoNjFHzv1KR7extD3D4qsAOMhvrKsqqqqgC0ONAmDepN+co7ALbuLuf3mERrxE2nmJNGqdfoM1VC5TuikSkpExvbb08S1MpKuQ/VQqWzmSSXhUTTh6WgkS/DFovbX/wD+4ef/crcr3xTQLT+Q1PbQD9jaOLdYwvcOjxr7eeDZprZZINlm4xDm9ggUkSXmI3zEHh2IQB8gCXQLgR7TFMxFetmBrECDCsQ5nXYgIxCKhNAleargmXe6dNLqhj8xh8b2js0J2qj9NvInpodcvT55YxNZkgFZp+vNfx3q6iLL1siWztoJtekBSvkRBVVXfVVtEKv2582vHCUSSCp0gwCAjR3EiJl169L8L0HXWjQRUG8EL4BZLBIyxnACY3iHwJgKTjGrqWNoJlVYujUo9B3Mwc7K2EBPS7kgxKMpgR4w5rD3gfeQFEASymJDXXmswOfy15MCE8D6MFan0x5w4bPv9ts3BhfA2rHpq+166Ql47/nxftavHnkTe9eDAChol94C/OwtEAA1T1bP1TDy69dZfi1SN81CixDeFK3x5GQh9acE72NhQBCIjoMwu+qle7wFHVSCekWSkCMuzD75d6p3BggEL18u38SDur8yugt8+nw0WSEAgZc9gy4He25hgtMIdB+GpNWx/Is+orCnfiT+YZ0rOhj/GBkf/JcK9NjDW8YL+D5xOh3gROnGEfDIMGVOJn0ek9m6F1ks+5LVg//qHRbDDRNPB2QulSPoY1ZH6qQ0ZMNGPRt7/oIGWQwWB55mkG9kqbRwcb4mIWfk5IYUxq4O7EAKbSzl+/DQRepXFm1GBpEZ7sPZ0t4OMmkMRk1lw9GAjDIvyFZWFzM5lOYhV0MvL3zRdkJSF/uEyyo0a2PmNo8PeRyqzNLlpcVDVz0aR/uhyXsTAAAA) format("woff2");font-display:swap}
 .bname{display:inline-block;font-family:"VV Logo",var(--f-display);font-weight:400;text-transform:uppercase;letter-spacing:.02em;padding-right:.1em}
-.bname .bgar{-webkit-text-stroke:0}
+.bname .bgar{color:var(--accent);-webkit-text-stroke:.6px var(--accent-edge);paint-order:stroke fill}   /* same colour as the buttons; on light pages a hairline edge in a deeper shade keeps it crisp */
 </style>
 </head>
 <body>
@@ -1820,7 +1820,7 @@ function applyLook(){
   if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   if (settings.palette === "glass" && settings.glassAcc && settings.glassAcc !== "blue" && GLASS_ACC[settings.glassAcc]) r.dataset.acc = settings.glassAcc; else delete r.dataset.acc;
   const isDark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  for (const k of ["--accent", "--accent-ink", "--hl", "--accent-fill", "--accent-text"]) r.style.removeProperty(k);
+  for (const k of ["--accent", "--accent-ink", "--hl", "--accent-fill", "--accent-text", "--accent-edge"]) r.style.removeProperty(k);
   if (settings.palette === "glass"){
     let base;
     if (settings.glassAcc === "custom" && /^#[0-9a-f]{6}$/i.test(settings.glassHex || "")){
@@ -1834,7 +1834,7 @@ function applyLook(){
     // where the colour is used as text or a thin line (logo, value frames, step numbers), a deeper shade of it that reads on the page
     { const bgc = isDark ? "#2a2b2f" : "#e9eef9"; let {h, s: sa, l} = hex2hsl(base), tx = base;
       for (let k = 0; k < 40 && contrast(tx, bgc) < 3.2; k++){ l = isDark ? Math.min(1, l + .025) : Math.max(0, l - .025); tx = hsl2hex(h, sa, l); }
-      r.style.setProperty("--accent-text", tx); }
+      r.style.setProperty("--accent-text", tx); r.style.setProperty("--accent-edge", isDark ? "transparent" : `rgba(${hex2rgb(tx).join(",")},.55)`); }
     // see-through buttons: the fill lets the background show; the text on it is chosen for what the eye actually sees (fill over background)
     const al = Math.max(.25, Math.min(1, +settings.glassAlpha || 1));
     if (al < .995){
