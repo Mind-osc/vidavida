@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="#ελληνικά">Ελληνικά</a> · <a href="#english">English</a>
+  <a href="#ελληνικά">Ελληνικά</a> · <a href="#english">English</a> · <a href="CHANGELOG.md">Τι νέο / What's new</a>
 </p>
 
 <p align="center">
