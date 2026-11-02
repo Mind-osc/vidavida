@@ -435,9 +435,9 @@ body.bigtext .wrap{zoom:1.15}
 .confirm{display:inline-flex;gap:6px;align-items:center;font-size:13px}
 /* viewer */
 .viewer{position:fixed;inset:0;background:rgba(10,14,18,.92);z-index:50;display:flex;flex-direction:column}
-.vbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:#eee;font:13px var(--f-mono);
+.vbar{display:flex;gap:6px;align-items:center;flex-wrap:nowrap;color:#eee;font:13px var(--f-mono);background:#0b0f13;border-bottom:1px solid #222a31;
   padding:calc(10px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px))}
-.vbar .sp{flex:1}
+.vbar .sp{flex:1 1 0;min-width:0}
 .vbar .btn{background:#222a31;color:#eee;border-color:#3a444d}
 .vbody{flex:1;overflow:auto;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))}
 .vbody img{display:block;margin:0 auto;background:#fff;max-width:none}
@@ -577,6 +577,12 @@ header{padding-block:10px 12px;gap:8px 14px}
 .second #openSecond{margin-top:4px;justify-self:start}
 /* "looking for: …" (the word roots the search uses) helped while testing, not users */
 #terms{display:none!important}
+#viewer .vbar .vbtn:not(#_){flex:none;width:44px;height:44px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#222a31;color:#eee;border:1px solid #3a444d;box-shadow:none}
+#viewer .vbar .vbtn:disabled{opacity:.35}
+#viewer .vbar .vx:not(#_){background:#3a444d}
+#vLabel .vsub{display:block;opacity:.75}
+#vLabel{flex:0 1 auto;white-space:nowrap;min-width:0;text-align:center;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:420px){.vbar{gap:4px}#viewer .vbar .vbtn:not(#_){width:40px;height:40px}#vLabel{font-size:12px}}
 </style>
 </head>
 <body>
@@ -654,13 +660,13 @@ header{padding-block:10px 12px;gap:8px 14px}
 
 <div class="viewer" id="viewer" hidden>
   <div class="vbar">
-    <button class="btn" id="vPrev" data-t="prev"></button>
+    <button type="button" class="btn vbtn" id="vPrev" data-tlabel="prevPage" data-ttitle="prevPage"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
     <span id="vLabel"></span>
-    <button class="btn" id="vNext" data-t="next"></button>
+    <button type="button" class="btn vbtn" id="vNext" data-tlabel="nextPage" data-ttitle="nextPage"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
     <span class="sp"></span>
-    <button class="btn" id="vZoomOut">−</button>
-    <button class="btn" id="vZoomIn">+</button>
-    <button class="btn" id="vClose" data-t="close"></button>
+    <button type="button" class="btn vbtn" id="vZoomOut" data-tlabel="zoomOut" data-ttitle="zoomOut"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12"/></svg></button>
+    <button type="button" class="btn vbtn" id="vZoomIn" data-tlabel="zoomIn" data-ttitle="zoomIn"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6v12M6 12h12"/></svg></button>
+    <button type="button" class="btn vbtn vx" id="vClose" data-tlabel="close" data-ttitle="close"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
   <div class="vbody" id="vBody"></div>
 </div>
@@ -1547,7 +1553,7 @@ const T = {
   installed: ["Εγκαταστάθηκε! Θα το βρεις στην αρχική οθόνη.", "Installed! You'll find it on your home screen."],
   updatedApp: ["Υπάρχει νέα έκδοση — κλείσε και ξανάνοιξε την εφαρμογή.", "A new version is ready — close and reopen the app."],
   procTitle: ["Διαδικασία", "Procedure"],
-  procNearest: ["Δεν βρήκα σελίδα με διαδικασία για ακριβώς αυτή την ενέργεια. Αυτή είναι η πιο σχετική σελίδα — δες τη.", "No page with a procedure for exactly that action was found. This is the most relevant page — check it."], procWord: ["διαδικασία", "procedure"], nextPage: ["Επόμενη σελίδα", "Next page"],
+  procNearest: ["Δεν βρήκα σελίδα με διαδικασία για ακριβώς αυτή την ενέργεια. Αυτή είναι η πιο σχετική σελίδα — δες τη.", "No page with a procedure for exactly that action was found. This is the most relevant page — check it."], procWord: ["διαδικασία", "procedure"], nextPage: ["Επόμενη σελίδα", "Next page"], prevPage: ["Προηγούμενη σελίδα", "Previous page"], zoomIn: ["Μεγέθυνση", "Zoom in"], zoomOut: ["Σμίκρυνση", "Zoom out"],
   stepsPages: [p => `Τα βήματα είναι στις σελίδες PDF ${p}.`, p => `Steps are on PDF pages ${p}.`],
   procNoSteps: ["Η διαδικασία είναι στη σελίδα παρακάτω (χωρίς αριθμημένα βήματα). Πάτα την εικόνα για μεγέθυνση και τις επόμενες σελίδες.", "The procedure is on the page below (no numbered steps). Tap the image to enlarge and see the next pages."],
   procVerbatim: ["Τα βήματα είναι αυτούσια από το manual. Διάβασε και τις προειδοποιήσεις (NOTICE / WARNING) στη σελίδα.", "Steps are verbatim from the manual. Also read the NOTICE / WARNING boxes on the page."],
@@ -3864,7 +3870,7 @@ function openViewer(hit, pairs){ vState = {m: hit.m, page: hit.page, hit, pairs,
 async function drawViewer(){
   const {m, page, hit, pairs, zoom} = vState;
   const ix = await loadIndex(m); const label = ix.labels[page - 1];
-  $("vLabel").textContent = `PDF ${page}/${m.pages}${label ? ` · ${t("pAbbr")} ` + label : ""}`;
+  { const vl = $("vLabel"); vl.textContent = `PDF ${page}/${m.pages}`; if (label){ const b = document.createElement("span"); b.className = "vsub"; b.textContent = `${t("pAbbr")} ${label}`; vl.appendChild(b); } }
   $("vPrev").disabled = page <= 1; $("vNext").disabled = page >= m.pages;
   const body = $("vBody"); body.innerHTML = `<div style="color:#ccc;padding:40px;text-align:center">${t("loading")}</div>`;
   const w = Math.min(body.clientWidth - 24, 1000) * zoom;
