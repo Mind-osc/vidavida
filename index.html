@@ -62,7 +62,13 @@ nav button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent
 .ask{display:grid;gap:10px}
 .askrow{display:flex;gap:8px}
 .askrow input{flex:1;font-size:16px;padding:12px}
-.askrow .sugg-wrap{flex:1}
+.askrow .sugg-wrap{flex:1;min-width:0}
+.askrow input{min-width:0;width:100%}
+.micbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;border:0;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.micbtn:not([hidden]) ~ .sugg{right:0}
+#q:has(+ .micbtn:not([hidden])){padding-right:46px}
+.micbtn.on{background:var(--danger);color:#fff;animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{font:13px var(--f-body);border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 10px;cursor:pointer}
 .chip:hover{color:var(--ink);border-color:var(--muted)}
@@ -183,6 +189,42 @@ nav button{white-space:nowrap}
 .menubtn{width:44px;height:44px;display:grid;place-content:center;gap:5px;background:transparent;border:1px solid var(--line);border-radius:8px;cursor:pointer;color:var(--ink);padding:0}
 .menubtn span{display:block;width:20px;height:2px;border-radius:1px;background:currentColor}
 .scrim{position:fixed;inset:0;background:rgba(8,12,16,.45);z-index:40}
+/* documents, fuel */
+.docs{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
+.docs li{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.docs li.bad{border-color:var(--danger)} .docs li.bad b{color:var(--danger)}
+.docs li.soon{border-color:var(--accent)}
+.fstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.fstats>div{display:grid;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--paper)}
+.fstats b{font-size:20px}
+.fuelform{display:flex;flex-wrap:wrap;gap:8px;align-items:end}
+.fuelform label{display:grid;gap:2px;font-size:13px;color:var(--muted);flex:1 1 120px}
+.fuelform label.fbinc{flex:1 1 100%;color:var(--ink)}
+/* bike card */
+.chead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.crows{display:grid;gap:6px;margin-top:8px}
+.crow{display:grid;grid-template-columns:minmax(110px,38%) 1fr;gap:10px;text-align:left;width:100%;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--ink);font:inherit;cursor:pointer}
+.crow:hover{border-color:var(--accent)}
+.ctitle{font-weight:600}
+.cbody{display:grid;gap:4px;min-width:0}
+.cval{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline;min-width:0}
+.cval b{font-size:17px;white-space:nowrap}
+.clbl{color:var(--muted);font-size:13px;flex-basis:100%;overflow-wrap:anywhere}
+.cnone{color:var(--muted);font-size:13px}
+.csrc{color:var(--muted);font-size:12px}
+.pinrow{display:flex;gap:6px;align-items:stretch}
+.pinrow .crow{flex:1}
+.iconbtn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:8px;min-width:36px;cursor:pointer}
+.partform{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.partform input{flex:1 1 140px;min-width:0}
+.parts{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
+.parts li{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.parts code{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:14px}
+#partSugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+#partSugg .mlabel{flex-basis:100%}
+#bikeNotes{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+@media (max-width:420px){.crow{grid-template-columns:1fr}}
 /* contact button and sheet */
 .fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:30;width:48px;height:48px;border-radius:50%;border:0;
   background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -292,6 +334,7 @@ body.bigtext .wrap{zoom:1.15}
 </header>
 <nav role="tablist">
   <button role="tab" id="tabAsk" aria-selected="true" data-t="tabAsk"></button>
+  <button role="tab" id="tabCard" aria-selected="false" data-t="tabCard"></button>
   <button role="tab" id="tabSvc" aria-selected="false" data-t="tabSvc"></button>
   <button role="tab" id="tabLib" aria-selected="false" data-t="tabLib"></button>
 </nav>
@@ -300,7 +343,7 @@ body.bigtext .wrap{zoom:1.15}
   <div id="svcBanner" class="banner" role="status" hidden></div>
   <form class="ask" id="askForm">
     <div class="askrow">
-      <div class="sugg-wrap"><input type="text" id="q" data-tph="qPh" data-tlabel="question" autocomplete="off"><ul id="qsugg" class="sugg" role="listbox" hidden></ul></div>
+      <div class="sugg-wrap"><input type="text" id="q" data-tph="qPh" data-tlabel="question" autocomplete="off"><button type="button" class="micbtn" id="micBtn" data-tlabel="voice" data-ttitle="voice" hidden><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="currentColor"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><ul id="qsugg" class="sugg" role="listbox" hidden></ul></div>
       <button class="btn primary" type="submit" data-t="search"></button>
     </div>
     <div class="chips" id="examples"></div>
@@ -309,6 +352,7 @@ body.bigtext .wrap{zoom:1.15}
   <div id="out"></div>
 </section>
 
+<section id="pCard" hidden><div id="card"></div></section>
 <section id="pSvc" hidden><div id="svc"></div></section>
 
 <section id="pLib" hidden>
@@ -659,6 +703,42 @@ function cellsFromContent(tc, pageW){
   return cells.map(c => [c.s.replace(/\s+/g, " ").trim(), R(c.x0), R(c.y), R(c.x1), R(c.fh)]).filter(c => c[0]);
 }
 
+/* ================= OCR for scanned manuals =================
+   A page with no text layer is drawn and read with Tesseract (Greek + English). The OCR engine and language data are
+   downloaded the first time (internet needed once); the text found is stored with the manual, so search stays offline. */
+const OCR_JS = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+const loadScript = src => new Promise((res, rej) => { if ([...document.scripts].some(s => s.src === src)) return res(); const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("offline")); document.head.appendChild(s); });
+const needsOcr = idx => idx.textPages < idx.numPages * .5;
+async function ocrIndex(data, idx, onProgress){
+  const cfg = window.VV_OCR || {js: OCR_JS, workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",
+    corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1", langPath: "https://tessdata.projectnaptha.com/4.0.0"};
+  await loadScript(cfg.js);
+  const worker = await Tesseract.createWorker(["ell", "eng"], 1, {workerPath: cfg.workerPath, corePath: cfg.corePath, langPath: cfg.langPath});
+  await worker.setParameters({tessedit_pageseg_mode: "3"});   // automatic layout: tables and two-column pages read far better than "one block"
+  const pdf = await pdfjsLib.getDocument({data}).promise;
+  const todo = idx.pages.map((p, i) => i).filter(i => idx.pages[i].c.reduce((s, c) => s + c[0].length, 0) < 40);
+  let k = 0;
+  idx.ocrPages = idx.ocrPages || {};
+  for (const i of todo){
+    onProgress && onProgress(++k, todo.length);
+    const pg = await pdf.getPage(i + 1), sc = Math.min(5, Math.max(2, 2480 / pg.getViewport({scale: 1}).width)), vp = pg.getViewport({scale: sc});   // ~300 dpi for an A4 page
+    const cv = document.createElement("canvas"); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+    await pg.render({canvasContext: cv.getContext("2d"), viewport: vp}).promise;
+    const {data: r} = await worker.recognize(cv);
+    const [vx, vy] = pg.view, items = [];
+    for (const w of r.words || []){
+      if (!w.text || !w.text.trim() || w.confidence < 30) continue;
+      const fh = Math.max(4, (w.bbox.y1 - w.bbox.y0) / sc);
+      items.push({str: w.text, width: (w.bbox.x1 - w.bbox.x0) / sc, transform: [fh, 0, 0, fh, vx + w.bbox.x0 / sc, vy + (cv.height - w.bbox.y1) / sc + fh * .15]});
+    }
+    const cells = cellsFromContent({items}, vp.width / sc);
+    idx.pages[i].c = cells; idx.ocrPages[i] = cells; pg.cleanup();
+  }
+  await worker.terminate(); await pdf.destroy();
+  idx.textPages = idx.pages.filter(p => p.c.reduce((s, c) => s + c[0].length, 0) > 40).length; idx.ocr = true;
+  return idx;
+}
+
 /* ================= in-memory index ================= */
 const cache = new Map();
 async function loadIndex(m, onProgress){
@@ -666,7 +746,9 @@ async function loadIndex(m, onProgress){
   let t = await getOne("texts", m.id);
   if (!t || t.v !== INDEX_VERSION){                 // older format → rebuild from the stored PDF
     const blob = await getOne("files", m.id);
-    t = await indexPdf(new Uint8Array(await blob.arrayBuffer()), onProgress);
+    const old = t; t = await indexPdf(new Uint8Array(await blob.arrayBuffer()), onProgress);
+    if (old && old.ocrPages){ t.ocrPages = old.ocrPages; t.ocr = true; for (const k in old.ocrPages) if (t.pages[k] && t.pages[k].c.reduce((s, c) => s + c[0].length, 0) < 40) t.pages[k].c = old.ocrPages[k];
+      t.textPages = t.pages.filter(p => p.c.reduce((s, c) => s + c[0].length, 0) > 40).length; }
     await putOne("texts", t, m.id);
   }
   const pages = t.pages.map((p, pi) => {
@@ -944,7 +1026,7 @@ function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(
 const L = () => settings.lang === "en" ? "en" : "el";
 const T = {
   bike: ["Μηχανή", "Bike"], version: ["Έκδοση", "Version"], allVersions: ["Όλες οι εκδόσεις", "All versions"],
-  tabAsk: ["Ρώτα το manual", "Ask the manual"], tabLib: ["Μηχανές & manuals", "Bikes & manuals"],
+  tabAsk: ["Ρώτα", "Ask"], tabLib: ["Μηχανές", "Bikes"], tabCard: ["Κάρτα", "Card"],
   qPh: ["Γράψε π.χ. ροπή, πίεση, λάδι…", "Type e.g. torque, pressure, oil…"], search: ["Ψάξε", "Search"], question: ["Ερώτηση", "Question"],
   newBike: ["Νέα μηχανή", "New bike"], bikePh: ["Γράψε π.χ. afr, tenere, gs…", "Type e.g. afr, tenere, gs…"], bikeName: ["Όνομα μηχανής", "Bike name"], add: ["Προσθήκη", "Add"],
   libNote: ["Τα PDF και το ευρετήριο αποθηκεύονται μόνο σε αυτόν τον browser, σε αυτή τη συσκευή. Δεν στέλνεται τίποτα πουθενά. Για μεταφορά σε άλλη συσκευή χρησιμοποίησε το «Αντίγραφο ασφαλείας» από το μενού. Τα σκαναρισμένα PDF (μόνο εικόνα, χωρίς κείμενο) δεν μπορούν να αναζητηθούν.",
@@ -953,7 +1035,41 @@ const T = {
   del: ["Διαγραφή", "Delete"], manualType: ["Τύπος manual", "Manual type"], pages: [n => `${n} σελίδες`, n => `${n} pages`],
   scanned: [" · ⚠ σχεδόν χωρίς κείμενο (σκαναρισμένο;) — δεν θα βρίσκει πολλά", " · ⚠ almost no text (scanned?) — search will find little"],
   remove: ["Αφαίρεση", "Remove"], noManual: ["Δεν υπάρχει ακόμα manual για αυτή τη μηχανή.", "No manual for this bike yet."],
-  kindOther: ["Άλλο", "Other"], cancel: ["Άκυρο", "Cancel"],
+  kindOther: ["Άλλο", "Other"],
+  ocrStart: ["Το PDF είναι σκαναρισμένο — ξεκινάω αναγνώριση κειμένου (OCR)…", "The PDF is scanned — starting text recognition (OCR)…"],
+  ocrPage: [(i, n) => `Αναγνώριση κειμένου σελ. ${i}/${n} — μπορεί να πάρει λίγα λεπτά…`, (i, n) => `Recognising text, page ${i}/${n} — this can take a few minutes…`],
+  ocrFail: ["Η αναγνώριση κειμένου θέλει internet την πρώτη φορά. Δοκίμασε ξανά από «Μηχανές» με το κουμπί OCR.", "Text recognition needs internet the first time. Try again from Bikes with the OCR button."],
+  ocrBtn: ["Αναγνώριση κειμένου (OCR)", "Recognise text (OCR)"], ocrDone: [n => `Έτοιμο: διαβάστηκαν ${n} σελίδες.`, n => `Done: ${n} pages read.`],
+  shareBk: ["Αντίγραφο στο Drive / αλλού", "Back up to Drive / elsewhere"],
+  shareBkHint: ["Ανοίγει την κοινοποίηση του κινητού: διάλεξε Google Drive (ή email, Viber…) για να κρατήσεις το αρχείο εκτός κινητού.", "Opens your phone's share sheet: pick Google Drive (or email…) to keep the file off the phone."],
+  lastBk: [d => `Τελευταίο αντίγραφο: ${d}.`, d => `Last backup: ${d}.`], sharedBk: ["Το αντίγραφο στάλθηκε.", "Backup shared."],
+  noShareBk: ["Αυτή η συσκευή δεν μπορεί να το κοινοποιήσει — κατεβαίνει ως αρχείο.", "This device can't share it — downloading it as a file instead."],
+  bkRemind: ["Δεν έχεις κάνει αντίγραφο ασφαλείας τον τελευταίο μήνα.", "You haven't backed up in the last month."],
+  docsTitle: ["Έγγραφα & λήξεις", "Documents & expiry dates"], docsEmpty: ["Βάλε πότε λήγουν ΚΤΕΟ, ασφάλεια, τέλη ή δίπλωμα — θα σε ειδοποιεί 30 μέρες πριν.", "Add when the MOT, insurance, road tax or licence expire — you'll be reminded 30 days before."],
+  expires: ["Λήγει", "Expires"], expiredAgo: [n => `έληξε πριν από ${n} ${n === 1 ? "μέρα" : "μέρες"}`, n => `expired ${n} day${n === 1 ? "" : "s"} ago`], inDays: [n => `σε ${n} ${n === 1 ? "μέρα" : "μέρες"}`, n => `in ${n} day${n === 1 ? "" : "s"}`],
+  docExpired: [(d, x) => `${d}: έληξε στις ${x}`, (d, x) => `${d}: expired on ${x}`], docSoon: [(d, n, x) => `${d}: λήγει σε ${n} ${n === 1 ? "μέρα" : "μέρες"} (${x})`, (d, n, x) => `${d}: expires in ${n} day${n === 1 ? "" : "s"} (${x})`],
+  docNotePh: ["σημείωση (π.χ. εταιρεία, αρ. συμβολαίου)", "note (e.g. company, policy no.)"], toCalendar: ["Στο ημερολόγιο", "Add to calendar"],
+  fuelTitle: ["Καύσιμα & κατανάλωση", "Fuel & consumption"], fuelEmpty: ["Γράφε κάθε γέμισμα (χιλιόμετρα, λίτρα, ποσό) για να βλέπεις κατανάλωση και κόστος.", "Log each fill-up (km, litres, amount) to see consumption and cost."],
+  fuelAvg: ["Μέση κατανάλωση", "Average"], fuelLast: ["Τελευταία", "Last"], fuelCost100: ["Κόστος", "Cost"], fuelYear: ["Φέτος", "This year"],
+  fuelNeedTwo: ["Η κατανάλωση βγαίνει από γέμισμα σε γέμισμα με γεμάτο ρεζερβουάρ — χρειάζονται τουλάχιστον δύο.", "Consumption is worked out from one full tank to the next — at least two are needed."],
+  liters: ["Λίτρα", "Litres"], costEur: ["Ποσό €", "Amount €"], fullTank: ["Γέμισα το ρεζερβουάρ", "Filled the tank"], fuelAdd: ["Καταχώρηση", "Log"],
+  fuelSaved: ["Το γέμισμα καταχωρήθηκε.", "Fill-up logged."], fuelHistory: [n => `Γεμίσματα (${n})`, n => `Fill-ups (${n})`], partial: ["όχι γεμάτο", "partial"],
+  voice: ["Φωνητική αναζήτηση", "Voice search"], listening: ["Σε ακούω… πες π.χ. «ροπή άξονα πίσω τροχού»", "Listening… say e.g. \"rear axle nut torque\""],
+  voiceFail: ["Η φωνητική αναζήτηση δεν δούλεψε (θέλει internet και άδεια μικροφώνου).", "Voice search didn't work (it needs internet and microphone permission)."],
+  share: ["Κοινοποίηση", "Share"], shareMade: ["Η εικόνα αποθηκεύτηκε.", "Image saved."],
+  cardTitle: ["Κάρτα μηχανής", "Bike card"], cardRefresh: ["Ανανέωση", "Refresh"], cardLoading: ["Διαβάζω τα manual…", "Reading the manuals…"],
+  cardNoManual: ["Ανέβασε πρώτα το manual της μηχανής (καρτέλα «Μηχανές») — η κάρτα γεμίζει μόνη της από αυτό.", "Upload the bike's manual first (Bikes tab) — the card fills itself from it."],
+  cardHint: ["Οι τιμές είναι αυτούσιες από το manual. Πάτα μια γραμμή για να δεις την απάντηση και τη σελίδα.", "Values are verbatim from the manual. Tap a line to see the full answer and the page."],
+  cardNone: ["δεν βρέθηκε καθαρή τιμή στο manual", "no clear value in the manual"],
+  pinsTitle: ["Αγαπημένα", "Favourites"], pinsEmpty: ["Πάτα «☆ Στην κάρτα» κάτω από μια απάντηση για να μπει εδώ.", "Tap \"☆ Add to card\" under an answer to keep it here."],
+  pin: ["☆ Στην κάρτα", "☆ Add to card"], pinned: ["★ Στην κάρτα", "★ On the card"], unpin: ["Αφαίρεση", "Remove"], pinDone: ["Μπήκε στα αγαπημένα της κάρτας.", "Added to the card's favourites."],
+  partsTitle: ["Ανταλλακτικά & αναλώσιμα", "Parts & consumables"], partsEmpty: ["Γράψε κωδικούς που χρειάζεσαι στο μαγαζί (φίλτρα, μπουζί, τακάκια, μπαταρία, λάστιχα).", "Keep the codes you need at the shop (filters, plugs, pads, battery, tyres)."],
+  partName: ["Ανταλλακτικό", "Part"], partCode: ["Κωδικός", "Code"], partNote: ["Σημείωση", "Note"],
+  partNamePh: ["π.χ. Φίλτρο λαδιού", "e.g. Oil filter"], partCodePh: ["κωδικός (π.χ. 15410-MFJ-D01)", "code (e.g. 15410-MFJ-D01)"], partNotePh: ["σημείωση (μάρκα, τιμή…)", "note (brand, price…)"],
+  partsFromManual: ["Βρέθηκαν στο manual — πάτα για προσθήκη:", "Found in the manual — tap to add:"], fromManualPage: ["από το manual,", "from the manual,"],
+  shareList: ["Κοινοποίηση λίστας", "Share list"], copied: ["Αντιγράφηκε.", "Copied."], saved: ["Αποθηκεύτηκε.", "Saved."],
+  notesTitle: ["Σημειώσεις", "Notes"], notesPh: ["π.χ. λάδι που βάζω, λάστιχα, μετατροπές, ρυθμίσεις ανάρτησης…", "e.g. oil I use, tyres, mods, suspension settings…"],
+  cancel: ["Άκυρο", "Cancel"],
   fbOpen: ["Επικοινωνία με τον δημιουργό", "Contact the developer"], fbTitle: ["Επικοινωνία", "Contact"],
   fbIntro: ["Κάποιο manual δεν διαβάζεται σωστά, βρήκες λάθος τιμή ή έχεις μια ιδέα; Γράψε μας — θα ανοίξει το email σου με όλα έτοιμα.", "A manual isn't read correctly, a value is wrong, or you have an idea? Write to us — your email app opens with everything filled in."],
   fbTManual: ["Δεν διαβάζει σωστά ένα manual", "A manual isn't read correctly"], fbTValue: ["Λάθος τιμή", "Wrong value"], fbTIdea: ["Ιδέα", "Idea"], fbTOther: ["Άλλο", "Other"],
@@ -1013,7 +1129,7 @@ const T = {
   stepsPages: [p => `Τα βήματα είναι στις σελίδες PDF ${p}.`, p => `Steps are on PDF pages ${p}.`],
   procNoSteps: ["Η διαδικασία είναι στη σελίδα παρακάτω (χωρίς αριθμημένα βήματα). Πάτα την εικόνα για μεγέθυνση και τις επόμενες σελίδες.", "The procedure is on the page below (no numbered steps). Tap the image to enlarge and see the next pages."],
   procVerbatim: ["Τα βήματα είναι αυτούσια από το manual. Διάβασε και τις προειδοποιήσεις (NOTICE / WARNING) στη σελίδα.", "Steps are verbatim from the manual. Also read the NOTICE / WARNING boxes on the page."],
-  tabSvc: ["Συντήρηση", "Service book"],
+  tabSvc: ["Σέρβις", "Service"],
   searchOnline: ["Ψάξε online", "Search online"],
   onlineIntro: ["Η εφαρμογή δεν μπορεί να ψάξει και να κατεβάσει μόνη της από άλλα sites (το μπλοκάρει ο browser). Ανοίγει όμως έτοιμη αναζήτηση για τη μηχανή σου:", "The app can't search or download from other sites by itself (the browser blocks it), but it opens a ready-made search for your bike:"],
   onlineOfficial: [b => `Επίσημα sites ${b}`, b => `Official ${b} sites`], onlineGeneral: ["Όλο το internet", "Whole web"],
@@ -1081,6 +1197,152 @@ function toast(msg, bad){
   let el = $("toast"); if (!el){ el = document.createElement("div"); el.id = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
   el.textContent = msg; el.className = bad ? "bad show" : "show"; clearTimeout(toast._t); toast._t = setTimeout(() => el.className = bad ? "bad" : "", bad ? 9000 : 4000);
 }
+/* ================= documents (ΚΤΕΟ, insurance, road tax, licence) and fuel log ================= */
+const DOC_TYPES = {kteo: ["ΚΤΕΟ", "MOT / roadworthiness"], ins: ["Ασφάλεια", "Insurance"], tax: ["Τέλη κυκλοφορίας", "Road tax"], lic: ["Δίπλωμα οδήγησης", "Driving licence"], other: ["Άλλο", "Other"]};
+const docName = d => d.type === "other" && d.note ? d.note : DOC_TYPES[d.type][L() === "en" ? 1 : 0];
+function docStatus(bike){
+  const out = [];
+  for (const d of bike.docs || []){ if (!d.date) continue; const n = daysUntil(d.date);
+    if (n < 0) out.push({bad: true, text: t("docExpired", docName(d), fmtDate(d.date))});
+    else if (n <= 30) out.push({bad: false, text: t("docSoon", docName(d), n, fmtDate(d.date))}); }
+  return out;
+}
+function docsHTML(bike){
+  const ds = (bike.docs || []).slice().sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  return `<section class="card">
+    <div class="eyebrow">${t("docsTitle")}</div>
+    ${ds.length ? `<ul class="docs">${ds.map(d => { const n = d.date ? daysUntil(d.date) : null; const i = bike.docs.indexOf(d);
+      return `<li class="${n !== null && n < 0 ? "bad" : n !== null && n <= 30 ? "soon" : ""}"><div><b>${esc(docName(d))}</b>${d.type === "other" || !d.note ? "" : ` <span class="meta">${esc(d.note)}</span>`}
+        <div class="meta">${t("expires")}: ${fmtDate(d.date)}${n === null ? "" : n < 0 ? ` · <b>${t("expiredAgo", -n)}</b>` : ` · ${t("inDays", n)}`}</div></div>
+        <button type="button" class="iconbtn" data-deldoc="${i}" aria-label="${t("del")}" title="${t("del")}">✕</button></li>`; }).join("")}</ul>` : `<p class="mnote">${t("docsEmpty")}</p>`}
+    <form id="docForm" class="partform">
+      <select id="docType" aria-label="${t("docsTitle")}">${Object.keys(DOC_TYPES).map(k => `<option value="${k}">${DOC_TYPES[k][L() === "en" ? 1 : 0]}</option>`).join("")}</select>
+      <input type="date" id="docDate" required aria-label="${t("expires")}">
+      <input id="docNote" placeholder="${t("docNotePh")}" aria-label="${t("partNote")}">
+      <button class="btn" type="submit">${t("add")}</button>
+    </form>
+    ${ds.length ? `<button type="button" class="btn small" id="docsIcs">📅 ${t("toCalendar")}</button>` : ""}
+  </section>`;
+}
+// consumption from full tank to full tank: litres put in after the previous full fill, over the km driven
+function fuelStats(bike){
+  const f = (bike.fuel || []).slice().sort((a, b) => a.km - b.km || (a.date || "").localeCompare(b.date || ""));
+  const segs = []; let lastFull = null, lit = 0, cost = 0;
+  for (const x of f){
+    if (lastFull){ lit += +x.liters || 0; cost += +x.cost || 0; }
+    if (x.full){ if (lastFull && x.km > lastFull.km) segs.push({km: x.km - lastFull.km, lit, cost, end: x}); lastFull = x; lit = 0; cost = 0; }
+  }
+  const tk = segs.reduce((s, g) => s + g.km, 0), tl = segs.reduce((s, g) => s + g.lit, 0), tc = segs.reduce((s, g) => s + g.cost, 0);
+  const yr = new Date().getFullYear() + "";
+  return {avg: tk ? tl / tk * 100 : null, last: segs.length ? segs[segs.length - 1].lit / segs[segs.length - 1].km * 100 : null, costPer100: tk && tc ? tc / tk * 100 : null,
+    spentYear: f.filter(x => (x.date || "").startsWith(yr)).reduce((s, x) => s + (+x.cost || 0), 0), count: f.length};
+}
+function fuelHTML(bike){
+  const st = fuelStats(bike), f = (bike.fuel || []).slice().sort((a, b) => b.km - a.km || (b.date || "").localeCompare(a.date || ""));
+  const num = (v, d) => v === null ? "—" : v.toLocaleString(L() === "en" ? "en-US" : "el-GR", {minimumFractionDigits: d, maximumFractionDigits: d});
+  return `<section class="card">
+    <div class="eyebrow">${t("fuelTitle")}</div>
+    ${st.count ? `<div class="fstats">
+      <div><span class="meta">${t("fuelAvg")}</span><b>${num(st.avg, 1)}</b><span class="meta">L/100 km</span></div>
+      <div><span class="meta">${t("fuelLast")}</span><b>${num(st.last, 1)}</b><span class="meta">L/100 km</span></div>
+      <div><span class="meta">${t("fuelCost100")}</span><b>${st.costPer100 === null ? "—" : num(st.costPer100, 2) + " €"}</b><span class="meta">/100 km</span></div>
+      <div><span class="meta">${t("fuelYear")}</span><b>${num(st.spentYear, 0)} €</b></div>
+    </div>${st.avg === null ? `<p class="mnote">${t("fuelNeedTwo")}</p>` : ""}` : `<p class="mnote">${t("fuelEmpty")}</p>`}
+    <form id="fuelForm" class="fuelform">
+      <label><span>${t("date")}</span><input type="date" id="fuelDate" value="${todayISO()}" required></label>
+      <label><span>km</span><input type="number" inputmode="numeric" id="fuelKm" value="${bike.odo || ""}" required min="0"></label>
+      <label><span>${t("liters")}</span><input type="number" inputmode="decimal" step="0.01" id="fuelL" required min="0"></label>
+      <label><span>${t("costEur")}</span><input type="number" inputmode="decimal" step="0.01" id="fuelC" min="0"></label>
+      <label class="fbinc"><input type="checkbox" id="fuelFull" checked> <span>${t("fullTank")}</span></label>
+      <button class="btn primary" type="submit">${t("fuelAdd")}</button>
+    </form>
+    ${f.length ? `<details class="others"><summary>${t("fuelHistory", f.length)}</summary><ul class="docs">${f.slice(0, 30).map(x => `<li><div><b>${fmtKm(x.km)}</b> · ${num(+x.liters, 2)} L${x.cost ? ` · ${num(+x.cost, 2)} €` : ""}${x.full ? "" : ` <span class="meta">(${t("partial")})</span>`}<div class="meta">${fmtDate(x.date)}</div></div>
+      <button type="button" class="iconbtn" data-delfuel="${x.id}" aria-label="${t("del")}">✕</button></li>`).join("")}</ul></details>` : ""}
+  </section>`;
+}
+function wireDocsFuel(){
+  const bike = currentBike, box = $("svc"); bike.docs = bike.docs || []; bike.fuel = bike.fuel || [];
+  const df = $("docForm"); if (df) df.onsubmit = async e => { e.preventDefault(); const date = $("docDate").value; if (!date) return;
+    bike.docs.push({type: $("docType").value, date, note: $("docNote").value.trim()}); await putOne("bikes", bike); toast(t("saved")); renderService(); updateBanner(); };
+  const ff = $("fuelForm"); if (ff) ff.onsubmit = async e => { e.preventDefault();
+    const km = parseInt($("fuelKm").value, 10), liters = parseFloat($("fuelL").value); if (!(km >= 0) || !(liters > 0)) return;
+    bike.fuel.push({id: uid(), date: $("fuelDate").value || todayISO(), km, liters, cost: parseFloat($("fuelC").value) || 0, full: $("fuelFull").checked});
+    if (km > (bike.odo || 0)){ bike.odo = km; bike.odoDate = todayISO(); }
+    await putOne("bikes", bike); toast(t("fuelSaved")); renderService(); updateBanner(); };
+  if (!box._dfWired) box._dfWired = true, box.addEventListener("click", async e => {
+    const bike = currentBike; if (!bike) return;
+    const d = e.target.closest("[data-deldoc]"), f = e.target.closest("[data-delfuel]");
+    if (d){ bike.docs.splice(+d.dataset.deldoc, 1); await putOne("bikes", bike); renderService(); updateBanner(); }
+    if (f){ bike.fuel = bike.fuel.filter(x => x.id !== f.dataset.delfuel); await putOne("bikes", bike); renderService(); }
+  });
+  const ic = $("docsIcs"); if (ic) ic.onclick = () => icsDownload(bike.docs.filter(d => d.date).map(d => ({date: d.date, title: `${docName(d)} – ${bike.name}`, desc: t("expires") + ": " + fmtDate(d.date)})), "documents.ics", 14);
+}
+
+/* ---------- voice search (the phone's speech recognition; on most phones it needs internet) ---------- */
+(() => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return;
+  const b = $("micBtn"); b.hidden = false; let rec = null;
+  b.onclick = () => {
+    if (rec){ rec.stop(); return; }
+    rec = new SR(); rec.lang = L() === "en" ? "en-US" : "el-GR"; rec.interimResults = true; rec.maxAlternatives = 1;
+    b.classList.add("on"); $("q").placeholder = t("listening");
+    rec.onresult = e => { const r = e.results[e.results.length - 1]; $("q").value = r[0].transcript; if (r.isFinal){ rec.stop(); $("askForm").requestSubmit(); } };
+    rec.onerror = e => { if (e.error !== "aborted" && e.error !== "no-speech") toast(t("voiceFail"), true); };
+    rec.onend = () => { b.classList.remove("on"); $("q").placeholder = t("qPh"); rec = null; };
+    try{ rec.start(); }catch(_){ b.classList.remove("on"); rec = null; toast(t("voiceFail"), true); }
+  };
+})();
+
+/* ---------- share an answer as one picture: the answer text above, the manual page below ---------- */
+function addShare(out){
+  const ex = out.querySelector(".extra"); if (!ex || ex.querySelector(".sharebtn")) return;
+  let act = ex.querySelector(".actions"); if (!act){ act = document.createElement("div"); act.className = "actions"; ex.prepend(act); }
+  const b = document.createElement("button"); b.type = "button"; b.className = "btn small sharebtn"; b.textContent = "⤴ " + t("share");
+  b.onclick = () => shareAnswer(out); act.appendChild(b);
+}
+async function shareAnswer(out){
+  const W = 1080, pad = 48, cs = getComputedStyle(document.documentElement);
+  const ink = "#151d24", muted = "#5a6670", accent = (cs.getPropertyValue("--accent") || "#fcab01").trim();
+  const lines = [];
+  const ans = out.querySelector(".answer");
+  for (const el of ans.querySelectorAll(".eyebrow, .warn, .srchead, .row, .sline, ol.steps li, .none")){
+    const txt = el.innerText.replace(/\s+/g, " ").trim(); if (!txt) continue;
+    if (el.classList.contains("row") && el.querySelector(".rv .val")){   // a value row: the name small, the figure big
+      const rl = el.querySelector(".rl"); if (rl && rl.innerText.trim()) lines.push({txt: rl.innerText.replace(/\s+/g, " ").trim()});
+      const val = el.querySelector(".rv .val").innerText.trim(), conv = el.querySelector(".rv .conv");
+      lines.push({txt: val + (conv && conv.innerText.trim() ? "   (" + conv.innerText.trim() + ")" : ""), big: true}); continue;
+    }
+    lines.push({txt, warn: el.classList.contains("warn"), head: el.classList.contains("eyebrow")});
+    if (lines.length > 14) break;
+  }
+  const page = out.querySelector(".pageimg canvas");
+  const c = document.createElement("canvas"), x = c.getContext("2d");
+  const font = (sz, w) => `${w || 400} ${sz}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+  const wrap = (txt, sz, w, maxW) => { x.font = font(sz, w); const words = txt.split(" "), out2 = []; let cur = "";
+    for (const wd of words){ const tr = cur ? cur + " " + wd : wd; if (x.measureText(tr).width > maxW && cur){ out2.push(cur); cur = wd; } else cur = tr; } if (cur) out2.push(cur); return out2; };
+  // measure first
+  const q = $("q").value.trim(), bike = currentBike ? currentBike.name : "";
+  const blocks = [{t: bike, sz: 30, w: 600, col: muted}, {t: "«" + q + "»", sz: 40, w: 700, col: ink},
+    ...lines.map(l => ({t: l.txt, sz: l.big ? 36 : l.head ? 26 : 30, w: l.big ? 700 : l.head ? 600 : 400, col: l.warn ? "#9a5b00" : l.head ? muted : ink}))];
+  let h = pad; const laid = [];
+  for (const bl of blocks){ const ls = wrap(bl.t, bl.sz, bl.w, W - pad * 2); laid.push({...bl, ls}); h += ls.length * bl.sz * 1.3 + 14; }
+  const ph = page ? Math.round(page.height * (W - pad * 2) / page.width) : 0;
+  h += (page ? ph + 30 : 0) + 70;
+  c.width = W; c.height = Math.min(h, 6000);
+  x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, c.height);
+  x.fillStyle = accent; x.fillRect(0, 0, W, 12);
+  let y = pad;
+  for (const bl of laid){ x.font = font(bl.sz, bl.w); x.fillStyle = bl.col; for (const l of bl.ls){ y += bl.sz; x.fillText(l, pad, y); y += bl.sz * .3; } y += 14; }
+  if (page){ y += 10; x.drawImage(page, pad, y, W - pad * 2, ph); x.strokeStyle = "#dfe3e7"; x.strokeRect(pad, y, W - pad * 2, ph); y += ph + 20; }
+  const src = out.querySelector(".extra .src"); x.font = font(24, 400); x.fillStyle = muted;
+  x.fillText(("Vida Vida · " + (src ? src.innerText.replace(/\s+/g, " ").trim() : "")).slice(0, 90), pad, Math.min(y + 30, c.height - 20));
+  const blob = await new Promise(r => c.toBlob(r, "image/png"));
+  const file = new File([blob], "vida-vida.png", {type: "image/png"});
+  try{ if (navigator.canShare && navigator.canShare({files: [file]})){ await navigator.share({files: [file], title: "Vida Vida", text: q}); return; } }
+  catch(e){ if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "vida-vida.png"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast(t("shareMade"));
+}
+
 /* ---------- contact: opens the user's email app with the message and the details that help fix a problem ---------- */
 const FB_TO = "vidavida.moto@gmail.com", APP_BUILD = "2026-11-02";
 let fbTopic = "manual";
@@ -1150,7 +1412,7 @@ function renderLib(){
     return `<div class="bike" data-bike="${b.id}">
       <h3>${esc(b.name)}${currentBike && currentBike.id === b.id ? ` <span class="cur">${t("current")}</span>` : ""}<span class="sp"></span><span class="confirm"><button class="btn danger" data-act="delbike">${t("del")}</button></span></h3>
       ${ms.length ? ms.map(m => `<div class="man"><select data-setkind="${m.id}" aria-label="${t("manualType")}">${Object.keys(KIND).map(k => `<option value="${k}"${k === m.kind ? " selected" : ""}>${kindName(k)}</option>`).join("")}</select>
-          <span class="n">${esc(m.title)}<br><span class="meta">${t("pages", m.pages)} · ${(m.size/1048576).toFixed(1)} MB${m.textPages < m.pages * .5 ? t("scanned") : ""}</span>${m.mismatch ? `<br><span class="warnline">${t("mismatchShort")}</span>` : ""}</span>
+          <span class="n">${esc(m.title)}<br><span class="meta">${t("pages", m.pages)} · ${(m.size/1048576).toFixed(1)} MB${m.textPages < m.pages * .5 ? t("scanned") : ""}${m.ocr ? " · OCR" : ""}</span>${m.textPages < m.pages * .5 ? `<br><button type="button" class="btn small" data-act="ocr" data-id="${m.id}">${t("ocrBtn")}</button>` : ""}${m.mismatch ? `<br><span class="warnline">${t("mismatchShort")}</span>` : ""}</span>
           <span class="confirm"><button class="btn danger" data-act="delman" data-id="${m.id}">${t("remove")}</button></span></div>`).join("")
         : `<div class="man"><span class="n meta">${t("noManual")}</span></div>`}
       <div class="upl">
@@ -1211,6 +1473,19 @@ $("bikes").addEventListener("click", async e => {
   else if (act === "online"){ const pnl = btn.closest(".bike").querySelector("[data-online]"); if (!pnl.hidden){ pnl.hidden = true; return; }
     pnl.innerHTML = onlinePanel(bikes.find(x => x.id === bikeId), btn.closest(".bike").querySelector("[data-kind]").value); pnl.hidden = false; }
   else if (act === "pick"){ const inp = btn.closest(".bike").querySelector("[data-file]"); inp.value = ""; inp.click(); }
+  else if (act === "ocr"){
+    const m = manuals.find(x => x.id === btn.dataset.id); if (!m) return;
+    const box = btn.closest(".bike"), st = box.querySelector("[data-status]"), prog = box.querySelector("[data-prog]"), bar = prog.firstElementChild;
+    btn.disabled = true; prog.hidden = false; st.textContent = t("ocrStart");
+    try{
+      const blob = await getOne("files", m.id), data = new Uint8Array(await blob.arrayBuffer());
+      let idx = await getOne("texts", m.id); if (!idx || idx.v !== INDEX_VERSION) idx = await indexPdf(data.slice(), () => {});
+      idx = await ocrIndex(data, idx, (i, n) => { bar.style.width = (100 * i / n) + "%"; st.textContent = t("ocrPage", i, n); });
+      await putOne("texts", idx, m.id); cache.delete(m.id); schedCache.delete(m.id); cardMem.clear();
+      m.textPages = idx.textPages; m.ocr = true; await putOne("manuals", m);
+      toast(t("ocrDone", Object.keys(idx.ocrPages || {}).length)); refresh();
+    }catch(err){ toast(t("ocrFail"), true); btn.disabled = false; prog.hidden = true; st.textContent = ""; }
+  }
 });
 
 $("bikes").addEventListener("change", async e => {
@@ -1225,13 +1500,17 @@ $("bikes").addEventListener("change", async e => {
     try{
       prog.hidden = false; bar.style.width = "0"; st.textContent = t("opening", f.name);
       const buf = new Uint8Array(await f.arrayBuffer());
-      const idx = await indexPdf(buf.slice(), (i, n) => { bar.style.width = (100 * i / n) + "%"; st.textContent = t("reading", i, n); });
+      let idx = await indexPdf(buf.slice(), (i, n) => { bar.style.width = (100 * i / n) + "%"; st.textContent = t("reading", i, n); });
+      if (needsOcr(idx)){
+        try{ st.textContent = t("ocrStart"); idx = await ocrIndex(buf.slice(), idx, (i, n) => { bar.style.width = (100 * i / n) + "%"; st.textContent = t("ocrPage", i, n); }); }
+        catch(err){ toast(t("ocrFail"), true); }
+      }
       const id = uid(); st.textContent = t("saving");
       await putOne("files", new Blob([buf], {type: "application/pdf"}), id);
       await putOne("texts", idx, id);
       const chk = checkPdf(idx, bikes.find(x => x.id === bikeId), kind);
       const finalKind = chk.kind || kind;
-      await putOne("manuals", {id, bikeId, kind: finalKind, title: f.name.replace(/\.pdf$/i, ""), pages: idx.numPages, textPages: idx.textPages, size: f.size, created: Date.now(), mismatch: !chk.match});
+      await putOne("manuals", {id, bikeId, kind: finalKind, title: f.name.replace(/\.pdf$/i, ""), pages: idx.numPages, textPages: idx.textPages, size: f.size, created: Date.now(), mismatch: !chk.match, ocr: !!idx.ocr});
       st.textContent = t("done", f.name);
       if (!chk.match) toast(t("mismatch", f.name), true);
       else if (chk.kind && chk.kind !== kind) toast(t("kindDetected", kindName(chk.kind)));
@@ -1258,14 +1537,15 @@ async function addBike(){
 $("addBike").addEventListener("submit", e => { e.preventDefault(); addBike(); });
 $("bikeSel").addEventListener("change", e => {
   if (e.target.value === "__add"){ e.target.value = currentBike ? currentBike.id : ""; tab("lib"); $("newBike").focus(); $("newBike").scrollIntoView({block: "center"}); return; }
-  ls.set("mg.bike", e.target.value); currentBike = bikes.find(b => b.id === e.target.value); renderLib(); delete $("out").dataset.hasResult; renderEmptyAsk(); updateTransPicker(); updateBanner(); if (!$("pSvc").hidden) renderService(); });
+  ls.set("mg.bike", e.target.value); currentBike = bikes.find(b => b.id === e.target.value); renderLib(); delete $("out").dataset.hasResult; renderEmptyAsk(); updateTransPicker(); updateBanner(); if (!$("pSvc").hidden) renderService(); if (!$("pCard").hidden) renderCard(); });
 
 function tab(which){
-  for (const [k, b, p] of [["ask", "tabAsk", "pAsk"], ["svc", "tabSvc", "pSvc"], ["lib", "tabLib", "pLib"]]){ $(b).setAttribute("aria-selected", which === k); $(p).hidden = which !== k; }
+  for (const [k, b, p] of [["ask", "tabAsk", "pAsk"], ["card", "tabCard", "pCard"], ["svc", "tabSvc", "pSvc"], ["lib", "tabLib", "pLib"]]){ $(b).setAttribute("aria-selected", which === k); $(p).hidden = which !== k; }
   if (which === "svc") renderService();
+  if (which === "card") renderCard();
   if (which === "ask") updateBanner();
 }
-$("tabAsk").onclick = () => tab("ask"); $("tabLib").onclick = () => tab("lib"); $("tabSvc").onclick = () => tab("svc");
+$("tabAsk").onclick = () => tab("ask"); $("tabCard").onclick = () => tab("card"); $("tabLib").onclick = () => tab("lib"); $("tabSvc").onclick = () => tab("svc");
 
 const EXAMPLES = {el: ["ροπή βίδας αποστράγγισης λαδιού", "πίεση ελαστικών", "χωρητικότητα λαδιού κινητήρα", "τζόγος αλυσίδας", "ροπή παξιμάδι άξονα πίσω τροχού", "διάκενο μπουζί", "ροπή βίδας δαγκάνας μπροστά"],
   en: ["engine oil drain bolt torque", "tire pressure", "engine oil capacity", "drive chain slack", "rear wheel axle nut torque", "spark plug gap", "front brake caliper mounting bolt torque"]};
@@ -1354,7 +1634,7 @@ function splitValue(s){
   const tt = s.match(/^(\d+(?:\.\d+)?)\s*\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*\)(.*)$/);
   if (tt) return preferUnit([tt[1] + " N·m", tt[2] + " kgf·m", tt[3] + " lbf·ft"], t("torqueTable"));
   const m = s.match(/^([^()]+)\(([^()]*)\)\s*$/);
-  if (m) return preferUnit([m[1].trim(), ...m[2].split(/,\s*/)].map(x => x.trim().replace(/kgf\/cm\s*2\b/i, "kgf/cm²")).filter(Boolean), "");
+  if (m) return preferUnit([m[1].trim(), ...m[2].split(/,\s+|,(?!\d)/)].map(x => x.trim().replace(/kgf\/cm\s*2\b/i, "kgf/cm²")).filter(Boolean), "");
   return {main: s, conv: ""};
 }
 // put the value in the unit chosen in the menu first; the rest stay as the manual prints them
@@ -1419,7 +1699,7 @@ async function updateTransPicker(){
   sel.value = currentBike.variant || ""; box.hidden = !list.length;
 }
 $("transSel").addEventListener("change", async e => {
-  if (!currentBike) return; currentBike.variant = e.target.value; await putOne("bikes", currentBike); updateBanner(); if (!$("pSvc").hidden) renderService();
+  if (!currentBike) return; currentBike.variant = e.target.value; await putOne("bikes", currentBike); updateBanner(); if (!$("pSvc").hidden) renderService(); if (!$("pCard").hidden) renderCard();
   if ($("q").value.trim() && $("out").dataset.hasResult) $("askForm").requestSubmit();
 });
 const variantTag = v => { const atoms = expandVariant(v); return atoms.length ? atoms.map(friendly).join(" / ") : v; };
@@ -1434,8 +1714,8 @@ function extractMeasure(s){
   const m = s.match(MEASURE_RE);
   if (!m) return {measure: s, text: ""};
   const before = s.slice(0, m.index).trim(), after = s.slice(m.index + m[0].length).trim();
-  if (!/[A-Za-z]{3,}/.test(before + " " + after) || /^(torque|capacity)\s*:?$/i.test(before)) return {measure: s, text: ""};
-  return {measure: m[0], text: after ? s : before.replace(/[:\s]+$/, "")};
+  if (!/[A-Za-zΑ-Ωα-ωΆ-ώ]{3,}/.test(before + " " + after) || /^(torque|capacity)\s*:?$/i.test(before)) return {measure: s, text: ""};
+  return {measure: m[0], text: after && after !== "." ? s : before.replace(/[:\s]+$/, "")};
 }
 function rowHTML(pr, pq, big){
   const em = extractMeasure(pr.vText);
@@ -1600,7 +1880,7 @@ async function answerHowto(q, out){
   try{
     const c = await renderPage(main.m, main.page, holder.clientWidth || 700, {weak: main.p.cells.filter(c => pq.objects.some(o => conceptIn(c.n, o)) && pageHeadings(main.p).includes(c)), strong: [], strongOutline: []});
     c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
-    holder.onclick = () => openViewer(hit, []);
+    holder.onclick = () => openViewer(hit, []); addShare(out);
   }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
   const nb = $("procNext"); if (nb) nb.onclick = () => { openViewer(hit, []); vState.page = main.page + 1; drawViewer(); };
   out.querySelectorAll("[data-proc]").forEach(b => b.onclick = () => { const o = procs[+b.dataset.proc]; openViewer({m: o.m, page: o.page, hitCells: [], pairs: []}, []); });
@@ -1853,30 +2133,155 @@ async function answerSchedule(q, out){
   try{
     const c = await renderPage(main.m, main.page, holder.clientWidth || 700, {weak: [], strong, strongOutline: hits.filter(h => h.s === main).map(h => h.r.cell)});
     c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
-    holder.onclick = () => openViewer({...hitObj, pairs: []}, []);
+    holder.onclick = () => openViewer({...hitObj, pairs: []}, []); addShare(out);
   }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
   return true;
 }
 
-$("askForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const q = $("q").value.trim(); if (!q || !currentBike) return;
-  const out = $("out"); out.dataset.hasResult = "1";
-  out.innerHTML = `<div class="empty">${t("searching")}</div>`; remember(q);
-  if (HOWTO_Q.test(norm(q))){
-    try{ if (await answerHowto(q, out)) return; }catch(err){ console.error(err); }
+/* ================= bike card: key specs from the manuals, pinned questions, parts, notes ================= */
+const CARD_SPECS = [
+  {k: "oil", q: "χωρητικότητα λαδιού κινητήρα", t: ["Λάδι κινητήρα", "Engine oil"]},
+  {k: "tyre", q: "πίεση ελαστικών", t: ["Πίεση ελαστικών", "Tyre pressure"]},
+  {k: "plug", q: "διάκενο μπουζί", t: ["Μπουζί – διάκενο", "Spark plug gap"]},
+  {k: "chain", q: "τζόγος αλυσίδας", t: ["Τζόγος αλυσίδας", "Chain slack"]},
+  {k: "drain", q: "ροπή βίδας αποστράγγισης λαδιού", t: ["Βίδα αποστράγγισης λαδιού", "Oil drain bolt"]},
+  {k: "raxle", q: "ροπή παξιμάδι άξονα πίσω τροχού", t: ["Άξονας πίσω τροχού", "Rear axle nut"]},
+  {k: "faxle", q: "ροπή άξονα μπροστινού τροχού", t: ["Άξονας μπροστινού τροχού", "Front axle"]},
+  {k: "fuel", q: "χωρητικότητα ρεζερβουάρ", t: ["Ρεζερβουάρ", "Fuel tank"]},
+  {k: "cool", q: "χωρητικότητα ψυκτικού", t: ["Ψυκτικό υγρό", "Coolant"]},
+  {k: "batt", q: "μπαταρία", t: ["Μπαταρία", "Battery"], need: /\d\s*Ah\b|\d\s*V\b.*\d/i}];
+const cardMem = new Map();
+const cardSig = bike => manuals.filter(m => m.bikeId === bike.id).map(m => m.id + m.kind + (m.ocr ? "o" : "")).join(",") + "|" + (bike.variant || "") + "|" + INDEX_VERSION;
+// one line per question: the values the normal answer would show, short, with their page; nothing when the manual has no clear value
+async function cardLookup(bike, q, need){
+  const {pq, results} = await search(bike, q, () => {});
+  if (!results.length) return null;
+  const a = rankAnswer(pq, results);
+  if (need){   // only figures of the right kind (a battery is "12 V 10 Ah", not a test temperature)
+    const ok = pr => need.test(pr.vText);
+    const r = results.find(r => r.pairs.some(ok)); if (!r) return null;
+    a.top = r; a.shown = r.pairs.filter(ok).slice(0, 2); a.sc0 = {msg: "", ctxOk: 0}; a.sideWarn = "";
   }
-  if (SCHED_Q.test(norm(q))){
-    try{
-      if (await answerSchedule(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
-        $("terms").innerHTML = t("lookingFor") + " " + [t("schedWord"), ...pq0.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a))).map(c => esc(c.alts.join(" / ")))].map(x => `<b>${x}</b>`).join(" + "); return; }
-    }catch(err){ console.error(err); }
+  if (!a.shown.length || a.sc0.other) return null;      // nothing clear, or the value is for the other side → not an answer
+  const nObj = pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length;   // must name (nearly) everything asked about
+  if (!need && a.cover(a.top) + a.sc0.ctxOk < (nObj >= 3 ? nObj - 1 : nObj)) return null;
+  const items = a.shown.slice(0, 4).map(pr => { const em = extractMeasure(pr.vText), v = splitValue(em.measure);
+    return {variant: pr.variant ? variantTag(pr.variant) : "", label: [pairLabel(pr), em.text].filter(Boolean).join(" — ").slice(0, 90), main: v.main, conv: v.conv}; });
+  return {items, page: a.top.page, label: a.top.label || "", kind: a.top.m.kind, warn: a.sideWarn || ""};
+}
+async function computeCard(bike, force){
+  const sig = cardSig(bike);
+  if (!force && cardMem.has(bike.id) && cardMem.get(bike.id).sig === sig) return cardMem.get(bike.id);
+  if (!force && bike.card && bike.card.sig === sig){ cardMem.set(bike.id, bike.card); return bike.card; }
+  const rows = {};
+  for (const s of CARD_SPECS){ try{ rows[s.k] = await cardLookup(bike, s.q, s.need); }catch(e){ console.error(e); rows[s.k] = null; } }
+  const card = {sig, rows, at: Date.now()};
+  bike.card = card; cardMem.set(bike.id, card); await putOne("bikes", bike);
+  return card;
+}
+function cardRowHTML(title, r, q){
+  const body = !r ? `<span class="cnone">${t("cardNone")}</span>`
+    : r.items.map(i => `<div class="cval">${i.variant ? `<span class="variant">${esc(i.variant)}</span>` : ""}${i.label ? `<span class="clbl">${esc(i.label)}</span>` : ""}<b>${esc(i.main)}</b>${i.conv ? `<span class="conv">${esc(i.conv)}</span>` : ""}</div>`).join("")
+      + `<div class="csrc">${esc(kindName(r.kind))} · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
+  return `<button type="button" class="crow" data-cq="${esc(q)}"><span class="ctitle">${esc(title)}</span><span class="cbody">${body}</span></button>`;
+}
+// spark plug / battery codes printed in the manual ("SILMAR8A9S", "YTZ10S", "12V 10AH"), offered as parts to add
+async function partSuggestions(bike){
+  const out = [];
+  for (const [name, q] of [[L() === "en" ? "Spark plug" : "Μπουζί", "spark plug μπουζί"], [L() === "en" ? "Battery" : "Μπαταρία", "battery μπαταρία"], [L() === "en" ? "Engine oil" : "Λάδι κινητήρα", "recommended engine oil λάδι"]]){
+    const {pq, results} = await search(bike, q, () => {});
+    for (const r of results.slice(0, 4)){
+      const lab = r.p.cells.filter(c => pq.objects.some(o => conceptIn(c.n, o)) && c.s.length < 40);
+      for (const L0 of lab){
+        const row = r.p.cells.filter(c => c !== L0 && Math.abs(c.y - L0.y) < Math.max(2, L0.fh * .6) && c.x0 > L0.x1 && c.x0 - L0.x1 < r.p.w * .55).sort((a, b) => a.x0 - b.x0);
+        for (const c of row){
+          const m = c.s.match(/\b(?:[A-Z]{2,}[A-Z0-9-]*\d[A-Z0-9-]*|\d{1,2}W-\d{2})\b/g);
+          if (m) for (const code of m) if (!CODE_FULL.test(code) && !/^\d+(V|W|A|AH|L)$/i.test(code) && !out.some(o => o.code === code)) out.push({name, code, page: r.page});
+        }
+      }
+      if (out.some(o => o.name === name)) break;
+    }
   }
-  const {pq, results} = await search(currentBike, q, (i, n) => { out.innerHTML = `<div class="empty">${t("indexing", i, n)}</div>`; });
-  $("terms").hidden = !pq.concepts.length;
-  $("terms").innerHTML = t("lookingFor") + " " + pq.concepts.map(c => `<b>${esc(c.alts.join(" / "))}</b>`).join(" + ");
-  if (!results.length){ out.innerHTML = `<div class="empty">${t("notFound")}</div>`; return; }
+  return out.slice(0, 6);
+}
+async function renderCard(){
+  const box = $("card"); if (!box) return;
+  if (!currentBike){ box.innerHTML = `<div class="empty">${t("emptyNoBike")}</div>`; return; }
+  const bike = currentBike, hasMan = manuals.some(m => m.bikeId === bike.id);
+  bike.pins = bike.pins || []; bike.parts = bike.parts || [];
+  box.innerHTML = `
+    <section class="card">
+      <div class="chead"><div class="eyebrow">${t("cardTitle")}${selVariant() ? ` · ${esc(friendly(selVariant()))}` : ""}</div>
+        ${hasMan ? `<button type="button" class="btn small" id="cardRefresh">↻ ${t("cardRefresh")}</button>` : ""}</div>
+      <div id="cardSpecs">${hasMan ? `<div class="loading">${t("cardLoading")}</div>` : `<p class="mnote">${t("cardNoManual")}</p>`}</div>
+      <p class="mnote">${t("cardHint")}</p>
+    </section>
+    <section class="card">
+      <div class="eyebrow">★ ${t("pinsTitle")}</div>
+      <div id="cardPins">${bike.pins.length ? `<div class="loading">${t("cardLoading")}</div>` : `<p class="mnote">${t("pinsEmpty")}</p>`}</div>
+    </section>
+    <section class="card">
+      <div class="eyebrow">${t("partsTitle")}</div>
+      <div id="partsList">${partsListHTML(bike)}</div>
+      <form id="partForm" class="partform">
+        <input id="partName" data-tlabel="partName" placeholder="${t("partNamePh")}" required>
+        <input id="partCode" data-tlabel="partCode" placeholder="${t("partCodePh")}">
+        <input id="partNote" data-tlabel="partNote" placeholder="${t("partNotePh")}">
+        <button class="btn" type="submit">${t("add")}</button>
+      </form>
+      <div id="partSugg"></div>
+      ${bike.parts.length ? `<button type="button" class="btn small" id="partsShare">${t("shareList")}</button>` : ""}
+    </section>
+    <section class="card">
+      <div class="eyebrow">${t("notesTitle")}</div>
+      <textarea id="bikeNotes" rows="5" placeholder="${t("notesPh")}" aria-label="${t("notesTitle")}">${esc(bike.notes || "")}</textarea>
+      <div class="meta" id="notesSaved"></div>
+    </section>`;
+  wireCard();
+  if (!hasMan) return;
+  const card = await computeCard(bike, false);
+  if (currentBike !== bike) return;
+  $("cardSpecs").innerHTML = `<div class="crows">${CARD_SPECS.map(s => cardRowHTML(s.t[L() === "en" ? 1 : 0], card.rows[s.k], s.q)).join("")}</div>`;
+  if (bike.pins.length){
+    const rows = [];
+    for (const q of bike.pins){ let r = null; try{ r = await cardLookup(bike, q); }catch(_){}
+      rows.push(`<div class="pinrow">${cardRowHTML(q, r, q)}<button type="button" class="iconbtn" data-unpin="${esc(q)}" aria-label="${t("unpin")}" title="${t("unpin")}">✕</button></div>`); }
+    if (currentBike === bike) $("cardPins").innerHTML = `<div class="crows">${rows.join("")}</div>`;
+  }
+  const sug = (await partSuggestions(bike)).filter(s => !bike.parts.some(p => p.code === s.code));
+  if (currentBike === bike && sug.length) $("partSugg").innerHTML = `<div class="mlabel">${t("partsFromManual")}</div>` + sug.map((s, i) => `<button type="button" class="chip" data-psug="${i}">+ ${esc(s.name)}: ${esc(s.code)} <span class="conv">${t("pAbbr")} PDF ${s.page}</span></button>`).join("");
+  $("partSugg").onclick = async e => { const b = e.target.closest("[data-psug]"); if (!b) return; const s = sug[+b.dataset.psug];
+    bike.parts.push({name: s.name, code: s.code, note: `${t("fromManualPage")} PDF ${s.page}`}); await putOne("bikes", bike); b.remove(); $("partsList").innerHTML = partsListHTML(bike); };
+}
+function partsListHTML(bike){
+  const ps = bike.parts || [];
+  return ps.length ? `<ul class="parts">${ps.map((p, i) => `<li><div><b>${esc(p.name)}</b>${p.code ? ` <code>${esc(p.code)}</code>` : ""}${p.note ? `<div class="meta">${esc(p.note)}</div>` : ""}</div>
+    <button type="button" class="iconbtn" data-delpart="${i}" aria-label="${t("del")}" title="${t("del")}">✕</button></li>`).join("")}</ul>` : `<p class="mnote">${t("partsEmpty")}</p>`;
+}
+function wireCard(){
+  const bike = currentBike, box = $("card");
+  box.onclick = async e => {
+    const row = e.target.closest("[data-cq]"); const un = e.target.closest("[data-unpin]"); const dp = e.target.closest("[data-delpart]");
+    if (un){ bike.pins = bike.pins.filter(q => q !== un.dataset.unpin); await putOne("bikes", bike); renderCard(); return; }
+    if (dp){ bike.parts.splice(+dp.dataset.delpart, 1); await putOne("bikes", bike); $("partsList").innerHTML = partsListHTML(bike); return; }
+    if (row){ tab("ask"); $("q").value = row.dataset.cq; $("askForm").requestSubmit(); }
+  };
+  const rf = $("cardRefresh"); if (rf) rf.onclick = async () => { rf.disabled = true; $("cardSpecs").innerHTML = `<div class="loading">${t("cardLoading")}</div>`; await computeCard(bike, true); renderCard(); };
+  $("partForm").onsubmit = async e => {
+    e.preventDefault(); const name = $("partName").value.trim(); if (!name) return;
+    bike.parts.push({name, code: $("partCode").value.trim(), note: $("partNote").value.trim()}); await putOne("bikes", bike);
+    $("partForm").reset(); $("partsList").innerHTML = partsListHTML(bike);
+  };
+  const sh = $("partsShare"); if (sh) sh.onclick = () => shareText(`${bike.name} – ${t("partsTitle")}`, bike.parts.map(p => `• ${p.name}${p.code ? ": " + p.code : ""}${p.note ? " (" + p.note + ")" : ""}`).join("\n"));
+  let tmr; $("bikeNotes").oninput = () => { clearTimeout(tmr); tmr = setTimeout(async () => { bike.notes = $("bikeNotes").value; await putOne("bikes", bike); $("notesSaved").textContent = t("saved"); }, 600); };
+}
+async function shareText(title, text){
+  try{ if (navigator.share){ await navigator.share({title, text}); return; } }catch(e){ if (e && e.name === "AbortError") return; }
+  try{ await navigator.clipboard.writeText(text); toast(t("copied")); }catch(_){ toast(text); }
+}
 
+/* pick the answer from the search results: version filter, owner's manual first, cross-check from the other manual */
+function rankAnswer(pq, results){
   // keep only values that fit the chosen version (manual / DCT); pages without a fitting value drop down the list
   for (const r of results){ r.allPairs = r.pairs; const sepII = r.p.cells.some(c => CODE_RE.test(c.s) && expandVariant(c.s).some(a => / II$/.test(a))); r.pairs = r.pairs.filter(p => fitsVariant(p, sepII)); r.hiddenByTrans = r.allPairs.length - r.pairs.length; }
   // owner's manual first, then service manual — among pages that are a real match (at least half as relevant as the best one)
@@ -1908,8 +2313,30 @@ $("askForm").addEventListener("submit", async e => {
       const n2 = num(p), n1s = shown.map(num).filter(x => x > 0);
       return p.objs >= Math.max(...shown.map(x => x.objs || 0)) && (!n1s.length || n1s.some(n1 => n2 / n1 < 2.5 && n1 / n2 < 2.5)); });   // service tables often put the unit in the column header
   if (second && !shown2.length) second = null;
-  const srcHead = r => `<div class="srchead"><b>${esc(kindName(r.m.kind))}</b> · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
   const sc0 = shown.length ? sideCheck(pq, top, shown) : {msg: "", ctxOk: 0}, sideWarn = sc0.msg;
+  return {top, pairs, shown, others, vsel, second, shown2, ownerNote, cover, sc0, sideWarn};
+}
+$("askForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const q = $("q").value.trim(); if (!q || !currentBike) return;
+  const out = $("out"); out.dataset.hasResult = "1";
+  out.innerHTML = `<div class="empty">${t("searching")}</div>`; remember(q);
+  if (HOWTO_Q.test(norm(q))){
+    try{ if (await answerHowto(q, out)) return; }catch(err){ console.error(err); }
+  }
+  if (SCHED_Q.test(norm(q))){
+    try{
+      if (await answerSchedule(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
+        $("terms").innerHTML = t("lookingFor") + " " + [t("schedWord"), ...pq0.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a))).map(c => esc(c.alts.join(" / ")))].map(x => `<b>${x}</b>`).join(" + "); return; }
+    }catch(err){ console.error(err); }
+  }
+  const {pq, results} = await search(currentBike, q, (i, n) => { out.innerHTML = `<div class="empty">${t("indexing", i, n)}</div>`; });
+  $("terms").hidden = !pq.concepts.length;
+  $("terms").innerHTML = t("lookingFor") + " " + pq.concepts.map(c => `<b>${esc(c.alts.join(" / "))}</b>`).join(" + ");
+  if (!results.length){ out.innerHTML = `<div class="empty">${t("notFound")}</div>`; return; }
+
+  const {top, shown, others, vsel, second, shown2, ownerNote, cover, sc0, sideWarn} = rankAnswer(pq, results);
+  const srcHead = r => `<div class="srchead"><b>${esc(kindName(r.m.kind))}</b> · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
 
   const answer = !shown.length
     ? `<div class="answer"><div class="eyebrow">${t("answer")}</div><p class="none">${t("noValue")}</p></div>`
@@ -1931,6 +2358,7 @@ $("askForm").addEventListener("submit", async e => {
        ${variantNote(top.p, shown)}
        ${top.hiddenByTrans ? `<div class="hint">${t("hiddenN", top.hiddenByTrans)}</div>` : ""}
        ${others.length ? `<details class="others"><summary>${t("otherVals", others.length)}</summary>${rowsHTML(others.slice(0, 8), pq, false)}</details>` : ""}
+       <div class="actions">${shown.length ? `<button type="button" class="btn small" id="pinBtn">${(currentBike.pins || []).includes(q) ? t("pinned") : t("pin")}</button>` : ""}</div>
        <div class="hint">${t("verbatim")}</div>
      </div>
    </article>
@@ -1942,10 +2370,14 @@ $("askForm").addEventListener("submit", async e => {
   try{
     const c = await renderPage(top.m, top.page, holder.clientWidth || 700, marksFor(top, shown));
     c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
-    holder.onclick = () => openViewer(top, shown);
+    holder.onclick = () => openViewer(top, shown); addShare(out);
   }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
   out.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { const r = results[+b.dataset.open]; openViewer(r, r.pairs.slice(0, 4)); });
   if (second) $("openSecond").onclick = () => openViewer(second, shown2);
+  const pb = $("pinBtn"); if (pb) pb.onclick = async () => {
+    const b = currentBike; b.pins = b.pins || [];
+    if (b.pins.includes(q)) b.pins = b.pins.filter(x => x !== q); else { b.pins.unshift(q); toast(t("pinDone")); }
+    await putOne("bikes", b); pb.textContent = b.pins.includes(q) ? t("pinned") : t("pin"); };
 });
 // a side word in the question (front / rear, left / right, intake / exhaust) must be in what the value is about;
 // otherwise say so plainly, and name the other side when the text around the value gives it
@@ -1963,7 +2395,7 @@ function sideCheck(pq, top, shown){
     const SW = {rear: "πίσω", front: "μπροστά", left: "αριστερά", right: "δεξιά", intake: "εισαγωγή", exhaust: "εξαγωγή"};
     const word = L() === "en" ? side : SW[side];
     if (!has(own, opp) && has(ctx, side) && !has(ctx, opp)){ ctxOk++; continue; }      // the text around it is about the asked side
-    if (has(own, opp) || (has(ctx, opp) && !has(ctx, side))){ const ow = L() === "en" ? opp : SW[opp]; return {msg: t("qualOther", word, ow), ctxOk}; }
+    if (has(own, opp) || (has(ctx, opp) && !has(ctx, side))){ const ow = L() === "en" ? opp : SW[opp]; return {msg: t("qualOther", word, ow), ctxOk, other: true}; }
     return {msg: t("qualMissing", word), ctxOk};
   }
   return {msg: "", ctxOk};
@@ -2130,8 +2562,10 @@ function renderMenu(){
     </section>
     <section><h3>${t("tabLib")}</h3><button type="button" class="btn" id="menuLib">${t("goLib")} →</button></section>
     <section><h3>${t("backup")}</h3><p class="mnote">${t("backupNote")}</p>
+      <div class="mrow"><button type="button" class="btn primary" id="shareBkBtn">☁ ${t("shareBk")}</button></div>
+      <p class="mnote">${t("shareBkHint")}${settings.lastBackup ? " " + t("lastBk", fmtDate(settings.lastBackup)) : ""}</p>
       <div class="mrow"><button type="button" class="btn" id="expBtn">${t("exportB")}</button><button type="button" class="btn" id="impBtn">${t("importB")}</button>
-      <input type="file" id="impFile" class="vh" accept=".mgbackup,application/json"></div>
+      <input type="file" id="impFile" class="vh" accept=".mgbackup,.txt,application/json,text/plain"></div>
       <p class="mnote" id="bkStatus"></p><p class="mnote" id="storageUse"></p>
     </section>
     <section><h3>${t("help")}</h3><div class="mhelp">${t("helpText")}</div></section>`;
@@ -2157,7 +2591,8 @@ $("drawer").addEventListener("click", async e => {
   if (e.target.id === "clearHist"){ settings.history = []; saveSettings(); renderMenu(); }
   if (e.target.id === "menuLib"){ closeMenu(); tab("lib"); }
   if (e.target.id === "installBtn" && installEvt){ installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; renderMenu(); }); }
-  if (e.target.id === "expBtn") exportBackup();
+  if (e.target.id === "expBtn") exportBackup(false);
+  if (e.target.id === "shareBkBtn") exportBackup(true);
   if (e.target.id === "impBtn"){ $("impFile").value = ""; $("impFile").click(); }
 });
 $("drawer").addEventListener("change", e => {
@@ -2173,7 +2608,7 @@ function remember(q){ settings.history = [q, ...settings.history.filter(x => x !
 
 /* backup: bikes + manuals + PDFs in one JSON file (the search index is rebuilt after import) */
 const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = () => rej(r.error); r.readAsDataURL(b); });
-async function exportBackup(){
+async function exportBackup(viaShare){
   const st = $("bkStatus"); st.textContent = t("exporting");
   try{
     const bk = {app: "manual-garage", v: 1, created: new Date().toISOString(), bikes: await getAll("bikes"), manuals: await getAll("manuals"), files: {}};
@@ -2181,6 +2616,16 @@ async function exportBackup(){
     bk.service = await getAll("service"); bk.attach = {};
     for (const r of bk.service) for (const a of r.attach || []){ const f = await getOne("attach", a.id); if (f) bk.attach[a.id] = {type: a.type, b64: await blobToB64(f)}; }
     const blob = new Blob([JSON.stringify(bk)], {type: "application/json"});
+    settings.lastBackup = todayISO(); saveSettings();
+    if (viaShare){
+      // phones only share known file types: the backup goes as a .txt file (import reads it the same)
+      const file = new File([blob], `vidavida-${todayISO()}.mgbackup.txt`, {type: "text/plain"});
+      if (navigator.canShare && navigator.canShare({files: [file]})){
+        try{ await navigator.share({files: [file], title: "Vida Vida backup"}); st.textContent = t("sharedBk"); return; }
+        catch(e){ if (e && e.name === "AbortError"){ st.textContent = ""; return; } }
+      }
+      st.textContent = t("noShareBk");
+    }
     const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `vidavida-${new Date().toISOString().slice(0, 10)}.mgbackup`;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
     st.textContent = t("exported");
@@ -2331,6 +2776,9 @@ async function renderService(){
          <p class="mnote">${t("planSource", esc(kindName(plan.sc.m.kind)), esc(plan.sc.label || "—"))}${plan.canRepeat ? "" : " " + t("noRepeat")}</p>`}
     </section>
 
+    ${docsHTML(bike)}
+    ${fuelHTML(bike)}
+
     <section class="card">
       <div class="eyebrow">${t("addRecord")}</div>
       <form id="recForm" class="recform">
@@ -2362,7 +2810,7 @@ async function renderService(){
           </div></details>`).join("") : `<p class="mnote">${t("noHistory")}</p>`}
     </section>`;
   box._plan = plan; box._status = st;
-  wireService();
+  wireService(); wireDocsFuel();
 }
 
 let pendingAttach = [];
@@ -2424,32 +2872,38 @@ function wireService(){
 /* calendar file with the date-based reminders (annual check, time-based replacements), alarm a week before */
 function downloadICS(st){
   const ev = [];
+  for (const d of currentBike.docs || []) if (d.date) ev.push({date: d.date, title: `${docName(d)} – ${currentBike.name}`, desc: t("expires") + ": " + fmtDate(d.date)});
   if (st.annual) ev.push({date: st.annual.due, title: `${t("annualCheck")} – ${currentBike.name}`, desc: st.next ? `${t("nextTitle")}: ${fmtKm(st.next.km)}` : ""});
   for (const y of st.yearly) if (y.due) ev.push({date: y.due, title: `${y.row.item} (${y.row.regular}) – ${currentBike.name}`, desc: y.row.ref ? `${t("procPage")} ${y.row.ref}` : ""});
+  icsDownload(ev, "service-reminders.ics", 7);
+}
+function icsDownload(ev, fname, days){
   if (!ev.length) return;
   const escI = s => String(s).replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
   const body = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//VidaVida//EN", "CALSCALE:GREGORIAN",
     ...ev.flatMap(e => { const d = e.date.replace(/-/g, ""); const d2 = new Date(e.date + "T12:00:00"); d2.setDate(d2.getDate() + 1);
       return ["BEGIN:VEVENT", `UID:${uid()}@manual-garage`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${d2.toISOString().slice(0, 10).replace(/-/g, "")}`,
-        `SUMMARY:${escI(e.title)}`, `DESCRIPTION:${escI(e.desc)}`, "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${escI(e.title)}`, "TRIGGER:-P7D", "END:VALARM", "END:VEVENT"]; }),
+        `SUMMARY:${escI(e.title)}`, `DESCRIPTION:${escI(e.desc)}`, "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${escI(e.title)}`, `TRIGGER:-P${days || 7}D`, "END:VALARM", "END:VEVENT"]; }),
     "END:VCALENDAR"].join("\r\n");
-  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([body], {type: "text/calendar"})); a.download = "service-reminders.ics";
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([body], {type: "text/calendar"})); a.download = fname;
   document.body.appendChild(a); a.click(); a.remove(); toast(t("icsDone"));
 }
 
 /* reminder banner shown on the Ask tab whenever something is due */
 async function updateBanner(){
   const b = $("svcBanner"); if (!b) return; b.hidden = true;
-  if (!currentBike || !currentBike.odo) return;
-  let plan = null; try{ plan = await planSchedule(currentBike); }catch(_){ return; }
-  if (!plan) return;
-  const st = computeStatus(currentBike, plan, await getRecords(currentBike));
-  const msgs = [...st.overdue.map(o => o.text), ...st.soon];
+  if (!currentBike) return;
+  const ds = docStatus(currentBike);
+  let st = {overdue: [], soon: []};
+  if (currentBike.odo){ let plan = null; try{ plan = await planSchedule(currentBike); }catch(_){} if (plan) st = computeStatus(currentBike, plan, await getRecords(currentBike)); }
+  const bad = [...ds.filter(d => d.bad).map(d => d.text), ...st.overdue.map(o => o.text)];
+  const msgs = [...bad, ...ds.filter(d => !d.bad).map(d => d.text), ...st.soon];
+  if (!msgs.length && manuals.length && (!settings.lastBackup || daysUntil(settings.lastBackup) < -30) && (await getAll("service")).length) msgs.push(t("bkRemind"));
   if (!msgs.length) return;
-  b.className = "banner" + (st.overdue.length ? " bad" : "");
-  b.innerHTML = `<b>${st.overdue.length ? t("attention") : t("reminder")}</b> ${esc(msgs[0])}${msgs.length > 1 ? ` <span class="meta">(+${msgs.length - 1})</span>` : ""} <span class="go">${t("openService")} →</span>`;
-  b.hidden = false; b.onclick = () => tab("svc");
+  b.className = "banner" + (bad.length ? " bad" : "");
+  b.innerHTML = `<b>${bad.length ? t("attention") : t("reminder")}</b> ${esc(msgs[0])}${msgs.length > 1 ? ` <span class="meta">(+${msgs.length - 1})</span>` : ""} <span class="go">${t("openService")} →</span>`;
+  b.hidden = false; b.onclick = () => msgs[0] === t("bkRemind") ? openMenu() : tab("svc");
 }
 
 /* ================= full-page viewer ================= */

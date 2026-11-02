@@ -32,6 +32,9 @@
 - **«Κάθε πότε…»**: διαβάζει τον πίνακα συντήρησης — π.χ. λάδια στα 1.000 / 10.000 / 20.000 km και κάθε χρόνο.
 - **«Πώς κάνω…»**: βρίσκει τη σελίδα της διαδικασίας και δείχνει τα βήματα αυτούσια.
 - **Βιβλίο σέρβις**: χιλιόμετρα, ιστορικό, τιμολόγια (PDF / φωτογραφίες), επόμενο σέρβις βάσει manual, υπενθυμίσεις στο ημερολόγιο.
+- **Κάρτα μηχανής**: λάδια, πιέσεις, μπουζί, αλυσίδα και βασικές ροπές σε μία οθόνη, αγαπημένες ερωτήσεις, κωδικοί ανταλλακτικών, σημειώσεις.
+- **Έγγραφα & καύσιμα**: υπενθυμίσεις για ΚΤΕΟ, ασφάλεια, τέλη, δίπλωμα· κατανάλωση (L/100 km) και κόστος.
+- **Φωνητική αναζήτηση**, κοινοποίηση απάντησης ως εικόνα, αντίγραφο ασφαλείας στο Google Drive, αναγνώριση κειμένου (OCR) σε σκαναρισμένα PDF.
 - Ελληνικά & αγγλικά, προτάσεις καθώς γράφεις, μονάδες της επιλογής σου (N·m / lbf·ft, psi / kPa, L / qt), σκούρο & φωτεινό θέμα.
 
 <p align="center">
@@ -78,6 +81,9 @@
 - **"How often…"**: reads the maintenance schedule — e.g. engine oil at 1,000 / 10,000 / 20,000 km and every year.
 - **"How to…"**: finds the procedure page and shows the steps verbatim.
 - **Service book**: odometer, history, invoices (PDF / photos), next service from the manual's schedule, calendar reminders.
+- **Bike card**: oil, tyre pressures, spark plug, chain and key torques on one screen, favourite questions, part numbers, notes.
+- **Documents & fuel**: reminders for MOT, insurance, road tax, licence; consumption (L/100 km) and cost.
+- **Voice search**, share an answer as an image, backup to Google Drive, text recognition (OCR) for scanned PDFs.
 - English & Greek, suggestions as you type, your choice of units, dark & light theme.
 
 ### Install on your phone
