@@ -501,11 +501,19 @@ const STOP = new Set(("ποσα ποσο ποση ποσοι ποιο ποια �
 
 /* Greek stem → English manual terms. 3rd field marks what KIND of value the question asks for. */
 const DICT = [
+ ["ρυθμιζ",["adjust","adjusting","adjustment","ρυθμισ","ρυθμιζ"],"act"],["ρυθμιστ",["adjust","adjusting","adjustment","ρυθμισ","ρυθμιζ"],"act"],["ρυθμισ",["adjust","adjusting","adjustment","adjuster","ρυθμισ","ρυθμιζ"],"act"],
+ ["προβολ",["headlight","headlamp","beam"]],["φανο",["headlight","light","lamp"]],["ζελατιν",["windscreen","windshield","screen"]],["παρμπρι",["windscreen","windshield","screen"]],
+ ["σκαλοπατ",["footpeg","footrest","step"]],["ρολο",["clock"]],["ωρα",["clock","time"]],["υψοσ",["height","high","position"]],["υψ",["height","high"]],["χαμηλ",["low","lower","lowering"]],
+ ["προσφυσ",["traction","torque control","hstc","tcs"]],["ολισθ",["traction","slip","torque control"]],["λειτουργ",["mode","operation"]],["προγραμμ",["mode","riding mode"]],
+ ["επιβατ",["passenger"]],["συνεπιβατ",["passenger"]],["αποσκευ",["luggage","load","cargo"]],["φορτι",["load","loading","cargo"]],["βαλιτσ",["pannier","case","luggage"]],
+ ["εκκινησ",["starting","start","starter"]],["ξεκιν",["starting","start","engine start"]],["σβησ",["stop","engine stop"]],["μιζα",["starter","starter motor"]],
+ ["ηχ",["horn","sound"]],["κορν",["horn"]],["κλαξον",["horn"]],["θερμαιν",["heated","grip heater"]],["χουφτ",["grip","grips"]],["γκριπ",["grip","throttle grip"]],
+ ["εξαερωσ",["bleed","bleeding","air"],"act"],["κουρδιζ",["adjust","tune"],"act"],["σφιγγ",["tighten","tightening"],"act"],["χαλαρω",["loosen","slack"],"act"],
  ["ροπ",["torque","tighten"],"torque"],["συσφιξ",["torque","tighten"],"torque"],["σφιξ",["torque","tighten"],"torque"],["νιουτον",["torque"],"torque"],
  ["πιεσ",["pressure"],"pressure"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
  ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["ελευθερ",["freeplay","free play","free"],"length"],["διαδρομ",["freeplay","free play","travel"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
  ["βιδ",["bolt","screw"]],["μπουλον",["bolt"]],["παξιμαδ",["nut"]],["ροδελ",["washer"]],
- ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement"],"act"],["λιπαιν",["lubricate","lubricating","lubrication"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging"],"act"],["γεμιζ",["fill","filling","add"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
+ ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement","αλλαγ","αντικατασ"],"act"],["λιπαιν",["lubricate","lubricating","lubrication","λιπανσ","λιπαν"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing","αφαιρεσ","αφαιρ"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing","τοποθετησ"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging","φορτισ"],"act"],["γεμιζ",["fill","filling","add","συμπληρωσ","πληρωσ"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
  ["αλυσιδ",["chain"]],["γραναζ",["sprocket"]],["τανυσ",["tension","slack"]],
  ["λαστιχ",["tire","tyre"]],["ελαστικ",["tire","tyre"]],["τροχ",["wheel"]],["ροδ",["wheel","rim"]],["ζαντ",["rim","wheel"]],
  ["αξον",["axle","shaft"]],["αξων",["axle","shaft"]],["φρεν",["brake"]],["δαγκαν",["caliper"]],["δισκ",["disc","disk"]],
@@ -514,10 +522,10 @@ const DICT = [
  ["συμπλεκτ",["clutch"]],["ταχυτ",["gear","speed"]],["κιβωτ",["transmission","gearbox"]],["κινητηρ",["engine"]],["μοτερ",["engine"]],
  ["κυλινδρ",["cylinder"]],["κεφαλ",["cylinder head","head"]],["βαλβιδ",["valve"]],["μπεκ",["injector"]],
  ["ρεζερβουαρ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["ντεποζιτ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
- ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork"]],["αναρτ",["suspension"]],["αμορτισ",["shock absorber","shock"]],
+ ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork","front suspension"]],["αναρτ",["suspension","fork","shock absorber"]],["αμορτισ",["shock absorber","shock","rear suspension","rear cushion"]],
  ["ρυθμ",["adjust","adjuster","setting"]],["προφορτ",["preload","pre-load"]],["αποσβεσ",["damping","rebound","compression"]],
  ["σελα",["seat"]],["τιμον",["handlebar"]],["σασι",["frame"]],["μαρσπιε",["footpeg","step"]],["σταντ",["stand"]],
- ["καθρεπτ",["mirror"]],["μιζ",["starter"]],["γεννητρ",["alternator","generator"]],
+ ["καθρεφτ",["mirror","mirrors","rearview"]],["καθρεπτ",["mirror"]],["μιζ",["starter"]],["γεννητρ",["alternator","generator"]],
  ["καλωδ",["wire","harness","cable"]],["ντιζ",["cable"]],["γκαζ",["throttle"]],["αλλαγ",["change","changing","replacement","replace","replacing"],"act"],
  ["αντικατασ",["replace","replacement"]],["σερβισ",["maintenance","service"]],["συντηρ",["maintenance","service"]],["διαστημ",["interval","schedule"]],
  ["χιλιομετρ",["km","mileage"]],["θερμοκρασ",["temperature"]],["θερμοστατ",["thermostat"]],["αντλ",["pump"]],
@@ -525,7 +533,7 @@ const DICT = [
  ["αισθητηρ",["sensor"]],["βαρ",["weight"]],["διαστασ",["dimensions"]],["μπροστ",["front","μπροστ","εμπροσθ","εμπροσ"]],["πισω",["rear","πισω","οπισθ"]],["οπισθ",["rear","πισω","οπισθ"]],
  ["εμπροσθ",["front","μπροστ","εμπροσθ","εμπροσ"]],["αριστερ",["left"]],["δεξ",["right"]],["αποστραγγ",["drain"]],["αδειασ",["drain"]],["ταπα",["plug","cap"]],
  ["στροφ",["rpm","idle"]],["ρελαντι",["idle"]],["κλειδ",["key","ignition"]],["ταμπλο",["meter","display"]],
- ["οργαν",["meter","instrument"]],["σφαλμ",["error","fault","dtc"]],["κωδικ",["code","dtc"]],["ελεγχ",["check","checking","inspection","inspect","inspecting"],"act"],
+ ["οργαν",["meter","instrument"]],["σφαλμ",["error","fault","dtc"]],["κωδικ",["code","dtc"]],["ελεγχ",["check","checking","inspection","inspect","inspecting","ελεγχ"],"act"],
  ["γρασ",["grease"]],["λιπαν",["lubrication","lubricate","grease","lubricant"]],["κοντερ",["odometer","speedometer"]],["φτερ",["fender"]],
  ["προστασ",["guard","protector"]],["ποδιαρικ",["footpeg"]],["μανιβελ",["lever"]],["μανετ",["lever"]],["πεταλ",["pedal"]],
  ["λεβιε",["shift lever","gearshift"]],["τιμονιερ",["steering head","steering"]],["γυαλ",["windscreen","windshield"]],["παρμπριζ",["windscreen","windshield"]],
@@ -551,6 +559,7 @@ function gStem(t){
   let w = t; for (const e of G_END) if (w.length - e.length >= 3 && w.endsWith(e)){ w = w.slice(0, -e.length); break; }
   return w.slice(0, 7);
 }
+const gph = w => w.replace(/ει|οι|υι|η|υ/g, "ι").replace(/ω/g, "ο").replace(/αι/g, "ε").replace(/([β-ω])\1/g, "$1");
 function parseQuery(q){
   const raw = tokens(q).filter(t => !STOP.has(t));
   const concepts = []; const intents = new Set();
@@ -563,6 +572,9 @@ function parseQuery(q){
     }
     let best = null;
     for (const e of DICT){ const k = norm(e[0]); if (t.startsWith(k) && (!best || k.length > norm(best[0]).length)) best = e; }
+    if (!best && /[α-ω]/.test(t)){   // spelling slips (ι/η/υ/ει/οι, ο/ω, ε/αι, double letters): compare how the words sound
+      const g = gph(t); for (const e of DICT){ const k = gph(norm(e[0])); if (k.length >= 3 && g.startsWith(k) && (!best || k.length > gph(norm(best[0])).length)) best = e; }
+    }
     if (!best && t.length >= 4){                       // half-typed word ("δαγκ" → δαγκάνα)
       const part = DICT.filter(e => norm(e[0]).startsWith(t));
       if (part.length && part.length <= 3) best = [t, [...new Set(part.flatMap(e => e[1]))], part.every(e => e[2] === part[0][2]) ? part[0][2] : undefined];
@@ -804,10 +816,10 @@ function altScore(p, alt, df, N, avg){
 }
 
 function isHeading(c){
-  const words = c.s.match(/[A-Za-z]{3,}/g) || [];
+  const words = c.s.match(/[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/g) || [];   // Latin or Greek
   if (words.length < 2) return false;                       // excludes model codes like "AB900X II/S II"
   if (/^(ITEM|STANDARD|SERVICE LIMIT|SPECIFICATIONS?|UNIT|NOTES?|REMARKS)\b/.test(c.s.trim()) && c.s.length < 30) return false;
-  const letters = words.join(""); return letters.replace(/[^A-Z]/g, "").length / letters.length > .85;
+  const letters = words.join(""); return letters.replace(/[^A-ZΑ-ΩΆ-Ώ]/g, "").length / letters.length > .85;
 }
 const hasLetters = c => /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(c.s);   // Latin or Greek words
 /* For each value cell, find ITS label without crossing into a neighbouring column:
@@ -1795,20 +1807,24 @@ function scheduleRefs(p){
 }
 function pageHeadings(p){
   const fhs = p.cells.map(c => c.fh).sort((a, b) => a - b); const med = fhs[Math.floor(fhs.length / 2)] || 8;
-  return p.cells.filter(c => /[A-Za-z]{3,}/.test(c.s) && c.s.length < 70 && (c.fh >= med * 1.2 || isHeading(c) || /^#\s/.test(c.s)) && !/^\d+\./.test(c.s) && !/\su\s/.test(c.s));
+  return p.cells.filter(c => /[A-Za-zΑ-Ωα-ωΆ-ώ]{3,}/.test(c.s) && c.s.length < 70 && (c.fh >= med * 1.2 || isHeading(c) || /^#\s/.test(c.s)) && !/^\d+\./.test(c.s) && !/\su\s/.test(c.s));
 }
 // numbered steps on a page, in reading order (left column first), with their indented continuation lines
+// a numbered step: "3. Remove…", or in Greek manuals "γ) Αφαιρέστε…"
+const STEP_RE = /^(\d{1,2}\.\s*[A-ZΑ-ΩΆ-Ώ]|(?:στ|[α-θ])\)\s*\S)/;
+const GR_STEP = {"α": 1, "β": 2, "γ": 3, "δ": 4, "ε": 5, "στ": 6, "ζ": 7, "η": 8, "θ": 9};
+const stepNo = s => { const m = s.match(/^(\d+)\./); if (m) return +m[1]; const g = s.match(/^(στ|[α-θ])\)/); return g ? GR_STEP[g[1]] : 0; };
 function pageSteps(p){
   const mid = p.w * .48, colOf = c => c.x0 < mid ? 0 : 1;
-  const heads = p.cells.filter(c => /^\d{1,2}\.\s*[A-Z]/.test(c.s)).sort((a, b) => colOf(a) - colOf(b) || b.y - a.y);
+  const heads = p.cells.filter(c => STEP_RE.test(c.s)).sort((a, b) => colOf(a) - colOf(b) || b.y - a.y);
   return heads.map((h, i) => {
     const nxt = heads[i + 1] && colOf(heads[i + 1]) === colOf(h) ? heads[i + 1].y : -Infinity;
     const lines = [h.s];
-    const cont = p.cells.filter(c => c !== h && colOf(c) === colOf(h) && c.y < h.y - .5 && c.y > nxt + .5 && c.x0 > h.x0 + 2 && c.x0 < h.x0 + 40 && !/^\d{1,2}\.\s*[A-Z]/.test(c.s))
+    const cont = p.cells.filter(c => c !== h && colOf(c) === colOf(h) && c.y < h.y - .5 && c.y > nxt + .5 && c.x0 > h.x0 + 2 && c.x0 < h.x0 + 40 && !STEP_RE.test(c.s))
                         .sort((a, b) => b.y - a.y);
     let lastY = h.y;
     for (const c of cont){ if (lastY - c.y > h.fh * 2.2) break; lines.push(c.s.replace(/^u\s+/, "→ ")); lastY = c.y; }
-    return {n: +h.s.match(/^\d+/)[0], text: lines.join(" ").replace(/\s+/g, " "), cells: [h, ...cont.filter(c => c.y >= lastY)]};
+    return {n: stepNo(h.s), text: lines.join(" ").replace(/\s+/g, " "), cells: [h, ...cont.filter(c => c.y >= lastY)]};
   });
 }
 // steps that belong to the heading's section: after it in reading order, before the next section heading
@@ -1828,7 +1844,7 @@ function sectionText(p, hcell){
   const col = c => c.x0 < p.w * .48 ? 0 : 1;
   const heads = pageHeadings(p).filter(h => h !== hcell && col(h) === col(hcell) && h.y < hcell.y);
   const stopY = heads.length ? Math.max(...heads.map(h => h.y)) : -Infinity;
-  const lines = p.cells.filter(c => col(c) === col(hcell) && c.y < hcell.y - .5 && c.y > stopY + .5 && /[A-Za-z]/.test(c.s)).sort((a, b) => b.y - a.y);
+  const lines = p.cells.filter(c => col(c) === col(hcell) && c.y < hcell.y - .5 && c.y > stopY + .5 && /[A-Za-zΑ-Ωα-ω]/.test(c.s)).sort((a, b) => b.y - a.y);
   let out = "", lastY = hcell.y;
   for (const c of lines){ if (lastY - c.y > hcell.fh * 3) break; out += (out ? " " : "") + c.s; lastY = c.y; if (out.length > 700) break; }
   return out;
@@ -1857,9 +1873,11 @@ async function findProcedures(bike, pq){
       for (const p of ix.pages){
         const hs = pageHeadings(p); if (!hs.length) continue;
         const hn = norm(hs.map(h => h.s).join(" | "));
-        const k = objs.filter(o => conceptIn(hn, o)).length; if (k < objs.length) continue;
-        const a = acts.filter(o => conceptIn(hn, o)).length;
-        const steps = /(^|\n)\d{1,2}\.\s/.test(p.cells.map(c => c.s).join("\n")) ? 1 : 0;
+        let k = objs.filter(o => conceptIn(hn, o)).length;
+        // the heading names part of it and the page text the rest ("Front Seat" … "high seat position")
+        if (k < objs.length){ if (!k || objs.some(o => !conceptIn(p.n, o))) continue; k -= .5; }
+        const a = acts.filter(o => conceptIn(hn, o)).length + acts.filter(o => !conceptIn(hn, o) && conceptIn(p.n, o)).length * .5;   // the action said in the text counts a little
+        const steps = p.cells.some(c => STEP_RE.test(c.s)) ? 1 : 0;
         const sc = k * 3 + a * 2 + steps - (/(specification|contents|index|maintenance schedule)/.test(hn) ? 6 : 0);
         const hcell = hs.filter(h => objs.some(o => conceptIn(h.n, o))).sort((x, y) => acts.filter(o => conceptIn(y.n, o)).length - acts.filter(o => conceptIn(x.n, o)).length || y.fh - x.fh)[0];
         if (!hb || sc > hb.sc) hb = {m, page: p.pi + 1, p, via: "heading", sc, label: ix.labels[p.pi], heading: hcell?.s, hcell, actOk: !acts.length || acts.some(o => conceptIn(norm(hs.map(h => h.s).join(" ")), o))};
@@ -1890,7 +1908,7 @@ async function answerHowto(q, out){
     <div class="answer"><div class="eyebrow">${t("procTitle")}</div>
       ${srcHead(main)}
       ${head ? `<div class="row big"><div class="rl"><span class="lbl">${markText(head, pq)}${trHTML(head)}</span></div></div>` : ""}
-      ${steps.length ? `<ol class="steps">${steps.slice(0, 30).map(s => `<li value="${s.n}">${markText(s.text.replace(/^\d+\.\s*/, ""), pq)}</li>`).join("")}</ol>
+      ${steps.length ? `<ol class="steps">${steps.slice(0, 30).map(s => `<li value="${s.n}">${markText(s.text.replace(/^(\d+\.|στ\)|[α-θ]\))\s*/, ""), pq)}</li>`).join("")}</ol>
         ${pagesUsed.length > 1 ? `<p class="mnote">${t("stepsPages", pagesUsed.join(", "))}</p>` : ""}`
         : main.actOk && sectionText(main.p, main.hcell) ? `<blockquote class="sect">${markText(sectionText(main.p, main.hcell), pq)}</blockquote>`
         : `<p class="mnote">${main.actOk ? t("procNoSteps") : t("procNearest")}</p>`}
@@ -2452,7 +2470,8 @@ $("askForm").addEventListener("submit", async e => {
   const q = $("q").value.trim(); if (!q || !currentBike) return;
   const out = $("out"); out.dataset.hasResult = "1";
   out.innerHTML = `<div class="empty">${t("searching")}</div>`; remember(q);
-  if (HOWTO_Q.test(norm(q))){
+  const pq0 = parseQuery(q);
+  if (HOWTO_Q.test(norm(q)) || (!pq0.intents.size && pq0.concepts.some(c => c.act) && pq0.objects.length && !SCHED_Q.test(norm(q)))){
     try{ if (await answerHowto(q, out)) return; }catch(err){ console.error(err); }
   }
   if (SCHED_Q.test(norm(q))){
@@ -2572,7 +2591,8 @@ $("sugg").addEventListener("mousedown", e => { const li = e.target.closest("li")
 $("newBike").addEventListener("blur", () => setTimeout(() => $("sugg").hidden = true, 150));
 
 /* ================= question suggestions: common questions + the real items listed in this bike's manuals ================= */
-const QUESTIONS = ["πώς αλλάζω λάδια και φίλτρο","πώς ρυθμίζω την αλυσίδα","πώς λιπαίνω την αλυσίδα","πώς ελέγχω τα τακάκια","πώς ελέγχω το υγρό φρένων",
+const QUESTIONS = ["πώς ρυθμίζω την μπροστινή ανάρτηση","πώς ρυθμίζω την πίσω ανάρτηση","πώς ρυθμίζω την προφόρτιση","πώς ρυθμίζω τον προβολέα","πώς ρυθμίζω τη μανέτα φρένου",
+ "πώς ρυθμίζω τη μανέτα συμπλέκτη","πώς ρυθμίζω το ύψος της σέλας","πώς ρυθμίζω τη ζελατίνα","πώς αλλάζω λάμπα","πώς εξαερώνω τα φρένα","πώς ρυθμίζω το γκάζι","πώς αλλάζω λάδια και φίλτρο","πώς ρυθμίζω την αλυσίδα","πώς λιπαίνω την αλυσίδα","πώς ελέγχω τα τακάκια","πώς ελέγχω το υγρό φρένων",
  "πώς βγάζω τη σέλα","πώς φορτίζω την μπαταρία","πώς ελέγχω το ψυκτικό","πώς αλλάζω φίλτρο αέρα","πώς αλλάζω ασφάλεια","κάθε πότε κάνω σέρβις","κάθε πότε αλλάζω λάδια","κάθε πότε αλλάζω φίλτρο λαδιού","κάθε πότε αλλάζω φίλτρο αέρα","κάθε πότε αλλάζω μπουζί",
  "κάθε πότε αλλάζω υγρό φρένων","κάθε πότε αλλάζω ψυκτικό","κάθε πότε ελέγχω διάκενο βαλβίδων","κάθε πότε λιπαίνω την αλυσίδα","κάθε πότε ελέγχω τα τακάκια","ροπή βίδας αποστράγγισης λαδιού","ροπή φίλτρου λαδιού","ροπή παξιμαδιού άξονα πίσω τροχού","ροπή παξιμαδιού άξονα μπροστινού τροχού",
  "ροπή βίδας σφιγκτήρα μπροστινού άξονα","ροπή βίδας δαγκάνας μπροστά","ροπή βίδας δαγκάνας πίσω","ροπή μπουζί","ροπή κόντρα παξιμαδιού αλυσίδας","ροπή βίδας ποδιάς κινητήρα",
@@ -2582,7 +2602,8 @@ const QUESTIONS = ["πώς αλλάζω λάδια και φίλτρο","πώς 
  "αλυσίδα κρίκοι","γρανάζια δόντια","βάρος μηχανής","διαστάσεις μηχανής"];
 const INTENT_GR = {torque: "ροπή", capacity: "χωρητικότητα", pressure: "πίεση", length: "διάκενο"};
 const INTENT_EN = {torque: "torque", capacity: "capacity", pressure: "pressure", length: "clearance"};
-const QUESTIONS_EN = ["how to change engine oil","how to adjust drive chain slack","how to lubricate drive chain","how to check brake pads","how to check brake fluid",
+const QUESTIONS_EN = ["how to adjust front suspension","how to adjust rear suspension","how to adjust spring preload","how to adjust headlight aim","how to adjust brake lever",
+ "how to adjust clutch lever","how to adjust seat height","how to adjust windscreen","how to replace a bulb","how to bleed the brakes","how to change engine oil","how to adjust drive chain slack","how to lubricate drive chain","how to check brake pads","how to check brake fluid",
  "how to remove the seat","how to charge the battery","how to check coolant","how to replace air cleaner","how to replace a fuse","how often service","engine oil change interval","oil filter change interval","air cleaner interval","spark plug interval",
  "brake fluid change interval","coolant change interval","valve clearance interval","drive chain lubrication interval","engine oil drain bolt torque","oil filter torque","rear wheel axle nut torque","front wheel axle nut torque","front axle pinch bolt torque",
  "front brake caliper mounting bolt torque","rear brake caliper mounting bolt torque","spark plug torque","drive chain adjusting lock nut torque","brake disc bolt torque",
