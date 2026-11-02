@@ -220,8 +220,14 @@ nav button{white-space:nowrap}
 .parts{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
 .parts li{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 .parts code{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:14px}
-#partSugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-#partSugg .mlabel{flex-basis:100%}
+#partSugg{margin-top:8px}
+.pcat summary{cursor:pointer;font-weight:600;padding:6px 0}
+.parts li{flex-wrap:wrap}
+.parts li>div:first-child{flex:1 1 180px;min-width:0}
+.pfound{font-size:14px;overflow-wrap:anywhere}
+.pbtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pbtns a.btn{text-decoration:none}
+.pcode{margin-top:6px;width:100%;box-sizing:border-box;font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
 #bikeNotes{width:100%;box-sizing:border-box;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px;resize:vertical}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
 @media (max-width:420px){.crow{grid-template-columns:1fr}}
@@ -1036,6 +1042,11 @@ const T = {
   scanned: [" · ⚠ σχεδόν χωρίς κείμενο (σκαναρισμένο;) — δεν θα βρίσκει πολλά", " · ⚠ almost no text (scanned?) — search will find little"],
   remove: ["Αφαίρεση", "Remove"], noManual: ["Δεν υπάρχει ακόμα manual για αυτή τη μηχανή.", "No manual for this bike yet."],
   kindOther: ["Άλλο", "Other"],
+  partsCat: ["Λίστα ανταλλακτικών — διάλεξε και πρόσθεσε", "Parts list — pick and add"],
+  partsCatHint: ["Ό,τι γράφει το manual για κάθε ανταλλακτικό φαίνεται από κάτω (αυτούσιο, με σελίδα). Οι κωδικοί ανταλλακτικών (π.χ. φίλτρων, τακακιών) συνήθως δεν υπάρχουν στο manual — πάτα «Βρες online» και γράψε τον κωδικό που βρήκες.",
+    "What the manual prints for each part is shown below (verbatim, with page). Part numbers (filters, pads…) are usually not in the manual — tap \"Find online\" and type in the number you find."],
+  partsNotInManual: ["δεν αναφέρεται στο manual", "not listed in the manual"], partsWeb: ["Βρες online", "Find online"],
+  partsAddCode: ["Μπήκε στη λίστα — γράψε τον κωδικό όταν τον βρεις.", "Added — type in the number when you find it."],
   ocrStart: ["Το PDF είναι σκαναρισμένο — ξεκινάω αναγνώριση κειμένου (OCR)…", "The PDF is scanned — starting text recognition (OCR)…"],
   ocrPage: [(i, n) => `Αναγνώριση κειμένου σελ. ${i}/${n} — μπορεί να πάρει λίγα λεπτά…`, (i, n) => `Recognising text, page ${i}/${n} — this can take a few minutes…`],
   ocrFail: ["Η αναγνώριση κειμένου θέλει internet την πρώτη φορά. Δοκίμασε ξανά από «Μηχανές» με το κουμπί OCR.", "Text recognition needs internet the first time. Try again from Bikes with the OCR button."],
@@ -2149,7 +2160,7 @@ const CARD_SPECS = [
   {k: "faxle", q: "ροπή άξονα μπροστινού τροχού", t: ["Άξονας μπροστινού τροχού", "Front axle"]},
   {k: "fuel", q: "χωρητικότητα ρεζερβουάρ", t: ["Ρεζερβουάρ", "Fuel tank"]},
   {k: "cool", q: "χωρητικότητα ψυκτικού", t: ["Ψυκτικό υγρό", "Coolant"]},
-  {k: "batt", q: "μπαταρία", t: ["Μπαταρία", "Battery"], need: /\d\s*Ah\b|\d\s*V\b.*\d/i}];
+  {k: "batt", q: "μπαταρία", t: ["Μπαταρία", "Battery"], need: /\d\s*Ah\b/i}];   // a battery is given as "12 V … Ah"; anything else is a test step, not the battery
 const cardMem = new Map();
 const cardSig = bike => manuals.filter(m => m.bikeId === bike.id).map(m => m.id + m.kind + (m.ocr ? "o" : "")).join(",") + "|" + (bike.variant || "") + "|" + INDEX_VERSION;
 // one line per question: the values the normal answer would show, short, with their page; nothing when the manual has no clear value
@@ -2186,24 +2197,110 @@ function cardRowHTML(title, r, q){
   return `<button type="button" class="crow" data-cq="${esc(q)}"><span class="ctitle">${esc(title)}</span><span class="cbody">${body}</span></button>`;
 }
 // spark plug / battery codes printed in the manual ("AB12-3X", "XT9S", "12V 8AH"), offered as parts to add
-async function partSuggestions(bike){
-  const out = [];
-  for (const [name, q] of [[L() === "en" ? "Spark plug" : "Μπουζί", "spark plug μπουζί"], [L() === "en" ? "Battery" : "Μπαταρία", "battery μπαταρία"], [L() === "en" ? "Engine oil" : "Λάδι κινητήρα", "recommended engine oil λάδι"]]){
-    const {pq, results} = await search(bike, q, () => {});
-    for (const r of results.slice(0, 4)){
-      const lab = r.p.cells.filter(c => pq.objects.some(o => conceptIn(c.n, o)) && c.s.length < 40);
-      for (const L0 of lab){
-        const row = r.p.cells.filter(c => c !== L0 && Math.abs(c.y - L0.y) < Math.max(2, L0.fh * .6) && c.x0 > L0.x1 && c.x0 - L0.x1 < r.p.w * .55).sort((a, b) => a.x0 - b.x0);
-        for (const c of row){
-          const m = c.s.match(/\b(?:[A-Z]{2,}[A-Z0-9-]*\d[A-Z0-9-]*|\d{1,2}W-\d{2})\b/g);
-          if (m) for (const code of m) if (!CODE_FULL.test(code) && !/^\d+(V|W|A|AH|L)$/i.test(code) && !out.some(o => o.code === code)) out.push({name, code, page: r.page});
-        }
-      }
-      if (out.some(o => o.name === name)) break;
-    }
+/* parts catalogue: the usual parts of a bike; for each, what the manual prints on its row (code, size, grade) and a web search for the part number */
+const PART_CAT = [
+  {k: "oilf", n: ["Φίλτρο λαδιού", "Oil filter"], q: ["oil filter", "φίλτρο λαδιού", "φίλτρο λιπαντικού"], web: "oil filter part number", want: /\b\d{5}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b|\b[A-Z]{2,}-?\d{2,}[A-Z0-9-]*\b/},
+  {k: "airf", n: ["Φίλτρο αέρα", "Air filter"], q: ["air cleaner", "air filter", "φίλτρο αέρα"], web: "air filter part number", want: /\b\d{5}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b|\b[A-Z]{2,}-?\d{2,}[A-Z0-9-]*\b/},
+  {k: "plug", n: ["Μπουζί", "Spark plug"], q: ["spark plug", "μπουζί"], web: "spark plug", want: /\b[A-Z]{2,}[A-Z0-9-]*\d[A-Z0-9-]*\b/},
+  {k: "batt", n: ["Μπαταρία", "Battery"], q: ["battery", "μπαταρία"], web: "battery", want: /\d\s*V\b|\bAh\b|\b[A-Z]{2,}\d{1,3}[A-Z]{0,3}\b/i},
+  {k: "oil", n: ["Λάδι κινητήρα", "Engine oil"], q: ["recommended engine oil", "engine oil", "λάδι κινητήρα", "τύπος λαδιού", "λαδιού"], web: "engine oil specification", want: /\d{1,2}W-?\d{2}|\bSAE\b|\bAPI\b|\bJASO\b/},
+  {k: "bfl", n: ["Υγρό φρένων", "Brake fluid"], q: ["brake fluid", "υγρά φρένων"], web: "brake fluid", want: /\bDOT\s*\d/i},
+  {k: "cool", n: ["Ψυκτικό υγρό", "Coolant"], q: ["recommended coolant", "coolant", "ψυκτικό υγρό"], web: "coolant", want: /^(?!.*\d+(?:[.,]\d+)?\s*(?:L|LIT|lit|lt|liters?|litres?|cc)\b).*[A-Za-zΑ-Ωα-ω]{3,}/i},
+  {k: "chain", n: ["Αλυσίδα", "Drive chain"], q: ["drive chain", "chain", "αλυσίδα"], web: "chain size links", want: /\b[45][0-3]\d\s*[A-Z]{0,4}\w*|\blinks\b|κρίκ/i},
+  {k: "fspr", n: ["Γρανάζι μπροστά", "Front sprocket"], q: ["drive sprocket", "front sprocket", "γρανάζι εξόδου"], web: "front sprocket part number", want: /\b\d{2}\s*T\b|\bδόντια/i},
+  {k: "rspr", n: ["Γρανάζι πίσω (κορώνα)", "Rear sprocket"], q: ["driven sprocket", "rear sprocket", "κορώνα"], web: "rear sprocket part number", want: /\b\d{2}\s*T\b|\bδόντια/i},
+  {k: "ftyre", n: ["Ελαστικό μπροστά", "Front tyre"], q: ["front tire", "front tyre", "ελαστικά εμπρός"], web: "front tyre size", want: /\d{2,3}\/\d{2}[-\sRB]?\d{0,2}/},
+  {k: "rtyre", n: ["Ελαστικό πίσω", "Rear tyre"], q: ["rear tire", "rear tyre", "ελαστικά πίσω"], web: "rear tyre size", want: /\d{2,3}\/\d{2}[-\sRB]?\d{0,2}/},
+  {k: "fpad", n: ["Τακάκια μπροστά", "Front brake pads"], q: ["front brake pad", "τακάκια εμπρός"], web: "front brake pads part number", want: /\b\d{5}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b|\b[A-Z]{2,}\d{2,}[A-Z0-9-]*\b/},
+  {k: "rpad", n: ["Τακάκια πίσω", "Rear brake pads"], q: ["rear brake pad", "τακάκια πίσω"], web: "rear brake pads part number", want: /\b\d{5}-[A-Z0-9]{2,4}-[A-Z0-9]{2,4}\b|\b[A-Z]{2,}\d{2,}[A-Z0-9-]*\b/},
+  {k: "fuse", n: ["Ασφάλειες", "Fuses"], q: ["main fuse", "fuse", "ασφάλειες"], web: "fuses", want: /\b\d{1,2}\s*A\b/},
+  {k: "bulb", n: ["Λάμπες", "Bulbs"], q: ["headlight", "bulb", "λάμπες", "προβολέας"], web: "bulbs", want: /\b\d+(?:[.,]\d+)?\s*W\b|\bLED\b|\bH\d\b/i}];
+// a page printed in two columns of "name  value" pairs: where the second column starts (null for one column)
+function gutterOf(p, rows){
+  if (p._gut !== undefined) return p._gut;
+  const xs = [];
+  for (const r of rows){
+    const cs = r.cells;
+    for (let i = 1; i < cs.length; i++)
+      if (/^[A-ZΑ-Ω][a-zα-ω]{2,}/.test(cs[i].s) && cs[i].x0 > p.w * .35 && cs[i].x0 < p.w * .75 && cs[i].x0 - cs[i - 1].x1 > 6 && i + 1 < cs.length){ xs.push(cs[i].x0); break; }   // a name with its own value after it
   }
-  return out.slice(0, 6);
+  if (xs.length < 4){ p._gut = null; return null; }
+  xs.sort((a, b) => a - b); const med = xs[Math.floor(xs.length / 2)];
+  p._gut = xs.filter(x => Math.abs(x - med) < 12).length >= 4 ? med : null;   // the second column lines up
+  return p._gut;
 }
+// on the page, the row that names the part: everything printed to its right on the same line (e.g. a code, a size, a grade)
+function partRow(p, pq, want){
+  const objs = pq.objects; if (!objs.length) return null;
+  const rows = [];
+  for (const c of p.cells){ let r = rows.find(r => Math.abs(r.y - c.y) < Math.max(2, c.fh * .6)); if (!r){ r = {y: c.y, cells: []}; rows.push(r); } r.cells.push(c); }
+  let best = null;
+  for (const r of rows){
+    r.cells.sort((a, b) => a.x0 - b.x0);
+    const hitAt = r.cells.map(c => objs.filter(o => conceptIn(c.n, o)).length);
+    const k = Math.max(...hitAt); if (!k) continue;
+    const i = hitAt.lastIndexOf(k), L0 = r.cells[i];
+    if (L0.s.length > 45) continue;                                         // a sentence, not a table row
+    // the rest of the name may sit in the column to the left (a group name over several rows)
+    const left = p.cells.filter(c => c.x1 < r.cells[0].x0 && Math.abs(c.y - r.y) < c.fh * 3 && c.s.length < 40).map(c => c.n).join(" ");
+    // the name's other lines: the line below if it goes on in lower case ("Recommended" / "brake fluid"), and the line above if this one does
+    const blockCells = [L0];
+    const below = p.cells.find(c => Math.abs(c.x0 - L0.x0) < 4 && c.y < L0.y - .5 && L0.y - c.y < L0.fh * 1.8 && /^[a-zα-ω]/.test(c.s));
+    const above = /^[a-zα-ω]/.test(L0.s) && p.cells.find(c => Math.abs(c.x0 - L0.x0) < 4 && c.y > L0.y + .5 && c.y - L0.y < L0.fh * 1.8);
+    if (below) blockCells.push(below); if (above) blockCells.push(above);
+    const block = blockCells.map(c => c.n).join(" ");
+    // a row about a measurement of the part (its pressure, capacity, level…) is not the part itself
+    const MEAS = /(pressure|capacity|clearance|temperature|torque|speed|level|interval|πιεσ|χωρητικ|σταθμ|ροπ|διακεν|θερμοκρ)/;
+    const qn = pq.concepts.map(c => c.alts.join(" ")).join(" ");
+    if (MEAS.test(norm(L0.s) + " " + block) && !MEAS.test(qn)) continue;
+    const all = objs.filter(o => conceptIn(norm(r.cells.slice(0, i + 1).map(c => c.s).join(" ")) + " " + left + " " + block, o)).length;
+    if (all < objs.length) continue;
+    // a line that has a name of its own in the name column belongs to another row
+
+    const ownRow = c => p.cells.some(o => o !== c && !blockCells.includes(o) && o.x1 <= c.x0 + 1 && o.x0 >= L0.x0 - 3 && o.x0 <= L0.x1 && Math.abs(o.y - c.y) < Math.max(2, o.fh * .6) && /[A-Za-zΑ-Ωα-ω]{3,}/.test(o.s));
+    const gut = gutterOf(p, rows);
+    const sameHalf = c => !(gut && L0.x0 < gut - 5 && c.x0 >= gut - 5);   // a two-column page: stay on this side of the gutter
+    let vc = r.cells.slice(i + 1).filter(c => c.x0 - L0.x1 < p.w * .6 && sameHalf(c));
+    { const k = vc.findIndex((c, j) => j > 0 && /^[A-ZΑ-Ω][a-zα-ω]/.test(c.s) && c.x0 - vc[j - 1].x1 > 15); if (k > 0) vc = vc.slice(0, k); }   // a name after a wide gap starts another entry
+    // a name centred on a value printed over two lines ("Battery" beside "XB12" / "12 V – 8 Ah")
+    let centred = false;
+    if (!vc.length || (want && !want.test(vc.map(c => c.s).join(" "))))
+      centred = true, vc = p.cells.filter(c => c.x0 > L0.x1 && c.x0 - L0.x1 < p.w * .45 && Math.abs(c.y - L0.y) < L0.fh * 1.7 && !ownRow(c) && sameHalf(c)).sort((a, b) => b.y - a.y || a.x0 - b.x0);
+    if (vc.length && centred){ const near = vc.slice().sort((a, b) => a.x0 - b.x0 || Math.abs(a.y - L0.y) - Math.abs(b.y - L0.y))[0];   // the column right next to the name
+      vc = vc.filter(c => Math.abs(c.x0 - near.x0) < 4); }   // one column of value lines, the one closest to the name
+    // a value written as a short paragraph in its column ("Honda 4-stroke oil" / "API SG or higher" …)
+    if (vc.length && blockCells.length > 1){ const v0 = vc[0]; const ys = blockCells.map(c => c.y), lo = Math.min(...ys) - L0.fh * 1.3, hi = Math.max(...ys) + L0.fh * 1.3;
+      for (const c of p.cells) if (!vc.includes(c) && Math.abs(c.x0 - v0.x0) < 4 && c.y > lo && c.y < hi && c.y !== v0.y && !ownRow(c) && sameHalf(c)
+        && !(/\d\s*(kPa|psi|N·m|mm|rpm|min-1|°C)\b/i.test(c.s) && !(want && want.test(c.s)))) vc.push(c);   // (a figure of another kind is the next row's)
+      vc = vc.filter(c => c.x0 < v0.x1 + p.w * .25);   // stay in the value's column
+      vc = [...new Set(vc)].sort((a, b) => b.y - a.y || a.x0 - b.x0); }
+    let val = vc.map(c => c.s.trim()).join(" ").replace(/\s+/g, " ").trim();
+    if (val.length > 140) val = val.slice(0, 137).replace(/\s+\S*$/, "") + "…";
+    if (/tool|wrench|εργαλ|κλειδ/i.test(r.cells.map(c => c.s).join(" "))) continue;   // a special tool's number is not the part's
+    if (!val || (/[.!?]$/.test(val) && val.split(/\s+/).length >= 5)) continue;   // a sentence of the text, not a table entry
+    if (/^[\d\s.,()\[\]–-]+$/.test(val) || /^\d{1,2}\.\s/.test(val) || (want && !want.test(val.replace(new RegExp(CODE_RE.source, "g"), " ")))) continue;   // only what looks like that part's code, size or grade
+    const sc = all * 10 - i - (val.length > 60 ? 2 : 0) - ((val.match(/\b\d+(?:\.\d+)?\b/g) || []).length > 4 ? 4 : 0);   // short, clean rows first
+    if (!best || sc > best.sc) best = {sc, text: val, label: r.cells.slice(0, i + 1).map(c => c.s).join(" ")};
+  }
+  return best;
+}
+async function partInfo(bike, qs, want){
+  let best = null;
+  for (const q of qs){   // the words each manual uses (English, Greek, other names)
+  const pq = parseQuery(q); if (!pq.objects.length) continue;
+  // every page that mentions all the words (spec tables are often not the "best" search hit)
+  const results = [];
+  for (const m of manuals.filter(m => m.bikeId === bike.id)){ const ix = await loadIndex(m);
+    for (const pg of ix.pages) if (pq.objects.every(o => o.alts.some(a => pg.n.includes(a)))) results.push({m, p: pg, page: pg.pi + 1, label: ix.labels[pg.pi]}); }
+  for (const r of results){
+    const hit = partRow(r.p, pq, want); if (!hit) continue;
+    const sc = hit.sc + (/specification|τεχνικα χαρακτηριστικ|προδιαγραφ/.test(r.p.n) ? 5 : 0) + (r.m.kind === "owner" ? 1 : 0);   // spec pages first
+    if (!best || sc > best.sc) best = {...hit, sc, page: r.page, label: r.label, kind: r.m.kind};
+  }
+  }
+  return best;
+}
+const partWebUrl = (bike, part) => "https://www.google.com/search?q=" + encodeURIComponent(`${bike.name.replace(/\([^)]*\)/g, "")} ${part.web}`);
 async function renderCard(){
   const box = $("card"); if (!box) return;
   if (!currentBike){ box.innerHTML = `<div class="empty">${t("emptyNoBike")}</div>`; return; }
@@ -2248,14 +2345,28 @@ async function renderCard(){
       rows.push(`<div class="pinrow">${cardRowHTML(q, r, q)}<button type="button" class="iconbtn" data-unpin="${esc(q)}" aria-label="${t("unpin")}" title="${t("unpin")}">✕</button></div>`); }
     if (currentBike === bike) $("cardPins").innerHTML = `<div class="crows">${rows.join("")}</div>`;
   }
-  const sug = (await partSuggestions(bike)).filter(s => !bike.parts.some(p => p.code === s.code));
-  if (currentBike === bike && sug.length) $("partSugg").innerHTML = `<div class="mlabel">${t("partsFromManual")}</div>` + sug.map((s, i) => `<button type="button" class="chip" data-psug="${i}">+ ${esc(s.name)}: ${esc(s.code)} <span class="conv">${t("pAbbr")} PDF ${s.page}</span></button>`).join("");
-  $("partSugg").onclick = async e => { const b = e.target.closest("[data-psug]"); if (!b) return; const s = sug[+b.dataset.psug];
-    bike.parts.push({name: s.name, code: s.code, note: `${t("fromManualPage")} PDF ${s.page}`}); await putOne("bikes", bike); b.remove(); $("partsList").innerHTML = partsListHTML(bike); };
+  // the parts catalogue, filled from the manual where it prints something for the part
+  const found = {};
+  for (const pc of PART_CAT){ try{ found[pc.k] = await partInfo(bike, pc.q, pc.want); }catch(_){ found[pc.k] = null; } }
+  if (currentBike !== bike) return;
+  const nm = pc => pc.n[L() === "en" ? 1 : 0];
+  $("partSugg").innerHTML = `<details class="pcat"${bike.parts.length ? "" : " open"}><summary>${t("partsCat")}</summary><p class="mnote">${t("partsCatHint")}</p>
+    <ul class="parts">${PART_CAT.map(pc => { const f = found[pc.k], have = bike.parts.some(p => p.name === nm(pc));
+      return `<li><div><b>${esc(nm(pc))}</b>${f ? `<div class="pfound">${esc(f.text)} <span class="meta">· ${esc(kindName(f.kind))} ${t("pAbbr")} ${esc(f.label || "—")} (PDF ${f.page})</span></div>` : `<div class="meta">${t("partsNotInManual")}</div>`}</div>
+        <div class="pbtns"><a class="btn small" href="${esc(partWebUrl(bike, pc))}" target="_blank" rel="noopener">🔎 ${t("partsWeb")}</a>
+        <button type="button" class="btn small${have ? "" : " primary"}" data-pcat="${pc.k}"${have ? " disabled" : ""}>${have ? "✓" : "+ " + t("add")}</button></div></li>`; }).join("")}</ul></details>`;
+  $("partSugg").onclick = async e => {
+    const b = e.target.closest("[data-pcat]"); if (!b) return;
+    const pc = PART_CAT.find(x => x.k === b.dataset.pcat), f = found[pc.k];
+    bike.parts.push({name: nm(pc), code: f ? f.text : "", note: f ? `${t("fromManualPage")} PDF ${f.page}` : ""}); await putOne("bikes", bike);
+    b.textContent = "✓"; b.disabled = true; b.classList.remove("primary"); $("partsList").innerHTML = partsListHTML(bike);
+    if (!f) toast(t("partsAddCode"));
+  };
 }
 function partsListHTML(bike){
   const ps = bike.parts || [];
-  return ps.length ? `<ul class="parts">${ps.map((p, i) => `<li><div><b>${esc(p.name)}</b>${p.code ? ` <code>${esc(p.code)}</code>` : ""}${p.note ? `<div class="meta">${esc(p.note)}</div>` : ""}</div>
+  return ps.length ? `<ul class="parts">${ps.map((p, i) => `<li><div><b>${esc(p.name)}</b>${p.note ? `<div class="meta">${esc(p.note)}</div>` : ""}
+    <input class="pcode" data-pedit="${i}" value="${esc(p.code || "")}" placeholder="${t("partCodePh")}" aria-label="${t("partCode")}"></div>
     <button type="button" class="iconbtn" data-delpart="${i}" aria-label="${t("del")}" title="${t("del")}">✕</button></li>`).join("")}</ul>` : `<p class="mnote">${t("partsEmpty")}</p>`;
 }
 function wireCard(){
@@ -2267,6 +2378,8 @@ function wireCard(){
     if (row){ tab("ask"); $("q").value = row.dataset.cq; $("askForm").requestSubmit(); }
   };
   const rf = $("cardRefresh"); if (rf) rf.onclick = async () => { rf.disabled = true; $("cardSpecs").innerHTML = `<div class="loading">${t("cardLoading")}</div>`; await computeCard(bike, true); renderCard(); };
+  box.onchange = async e => { const inp = e.target.closest("[data-pedit]"); if (!inp) return;
+    bike.parts[+inp.dataset.pedit].code = inp.value.trim(); await putOne("bikes", bike); $("partsList").innerHTML = partsListHTML(bike); toast(t("saved")); };
   $("partForm").onsubmit = async e => {
     e.preventDefault(); const name = $("partName").value.trim(); if (!name) return;
     bike.parts.push({name, code: $("partCode").value.trim(), note: $("partNote").value.trim()}); await putOne("bikes", bike);
