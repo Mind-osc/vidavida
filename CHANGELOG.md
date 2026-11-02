@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (29)
+- **Νέο λογότυπο:** μηχανή μέσα σε γρανάζι. Είναι πλέον το εικονίδιο της εφαρμογής στην αρχική οθόνη του κινητού (και στο iPhone), στην καρτέλα του browser και δίπλα στο «VIDA VIDA» μέσα στην εφαρμογή. Η οθόνη εκκίνησης της εφαρμογής έχει μαύρο φόντο.
+- *New logo (a bike inside a gear) as the home-screen icon, iPhone icon, browser tab icon and in-app logo; black splash background.*
+
 ## 2 Νοεμβρίου 2026 (28)
 - Λογότυπο «VIDA VIDA» με τη γραμματοσειρά Rubik Distressed («φθαρμένα» γράμματα). Είναι ελεύθερη (SIL Open Font License), επιτρέπεται και σε εφαρμογή στο store, και ενσωματώνονται μόνο τα γράμματα του ονόματος.
 - *Logo lettering: Rubik Distressed (SIL OFL, fine for app stores); only the letters of the name are embedded.*
