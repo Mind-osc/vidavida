@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (24)
+- Νέο λογότυπο κειμένου: «VIDA VIDA» με κεφαλαία, στη γραμματοσειρά Saira Stencil One («κομμένα» γράμματα), με κλίση προς τα εμπρός. Η γραμματοσειρά είναι ελεύθερη (SIL Open Font License) και είναι ενσωματωμένη, άρα δουλεύει και χωρίς internet.
+- *New logo lettering: "VIDA VIDA" in uppercase Saira Stencil One, slanted; free font (SIL OFL), embedded so it works offline.*
+
 ## 2 Νοεμβρίου 2026 (23)
 - Προεπιλεγμένο χρώμα κουμπιών στο Γυαλί: κεχριμπαρί κίτρινο (ίδιο σε φωτεινό και σκούρο)· μπήκε και πρώτο στις γρήγορες επιλογές ως «Κεχριμπάρι».
 - *Default Glass button colour is now amber, in light and dark; added as the first quick pick.*
