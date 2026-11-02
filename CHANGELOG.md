@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (37)
+- Οθόνη εκκίνησης (Android): δείχνει πλέον μόνο το στρογγυλό λογότυπο πάνω στο μαύρο, χωρίς το λευκό τετράγωνο πλαίσιο. Το εικονίδιο της αρχικής οθόνης δεν αλλάζει.
+- *Android splash shows just the round logo on black, no white square frame; the home-screen icon is unchanged.*
+
 ## 2 Νοεμβρίου 2026 (36)
 - Έφυγε η γραμμή «Ψάχνω για: …» κάτω από τα παραδείγματα (έδειχνε τις ρίζες λέξεων της αναζήτησης· χρήσιμη στις δοκιμές, όχι στον χρήστη).
 - *Removed the "Looking for: …" word-root line under the search.*
