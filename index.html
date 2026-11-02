@@ -570,6 +570,11 @@ header{padding-block:10px 12px;gap:8px 14px}
 #menuBody{padding-bottom:16px}
 [data-pal="glass"] .drawer:not(#_){border-radius:26px}
 @media (prefers-reduced-motion:reduce){.drawer.sizing{transition:none}}
+/* answer card: the manual and page sit right under the value they belong to */
+.answer .srchead{padding-top:0;margin-top:-6px}
+.answer .row{padding-top:6px;padding-bottom:8px}
+.second{margin-top:4px;padding-top:8px}
+.second #openSecond{margin-top:4px;justify-self:start}
 </style>
 </head>
 <body>
@@ -1476,8 +1481,8 @@ const T = {
   cardNoManual: ["Ανέβασε πρώτα το manual της μηχανής (καρτέλα «Μηχανές») — η κάρτα γεμίζει μόνη της από αυτό.", "Upload the bike's manual first (Bikes tab) — the card fills itself from it."],
   cardHint: ["Οι τιμές είναι αυτούσιες από το manual. Πάτα μια γραμμή για να δεις την απάντηση και τη σελίδα.", "Values are verbatim from the manual. Tap a line to see the full answer and the page."],
   cardNone: ["δεν βρέθηκε καθαρή τιμή στο manual", "no clear value in the manual"],
-  pinsTitle: ["Αγαπημένα", "Favourites"], pinsEmpty: ["Πάτα «☆ Στην κάρτα» κάτω από μια απάντηση για να μπει εδώ.", "Tap \"☆ Add to card\" under an answer to keep it here."],
-  pin: ["☆ Στην κάρτα", "☆ Add to card"], pinned: ["★ Στην κάρτα", "★ On the card"], unpin: ["Αφαίρεση", "Remove"], pinDone: ["Μπήκε στα αγαπημένα της κάρτας.", "Added to the card's favourites."],
+  pinsTitle: ["Αγαπημένα", "Favourites"], pinsEmpty: ["Πάτα «☆ Στα αγαπημένα» κάτω από μια απάντηση για να μπει εδώ.", "Tap \"☆ Favourite\" under an answer to keep it here."],
+  pin: ["☆ Στα αγαπημένα", "☆ Favourite"], pinned: ["★ Στα αγαπημένα", "★ Favourite"], unpin: ["Αφαίρεση", "Remove"], pinDone: ["Μπήκε στα Αγαπημένα (καρτέλα Στοιχεία).", "Added to Favourites (Details tab)."],
   partsTitle: ["Ανταλλακτικά & αναλώσιμα", "Parts & consumables"], partsEmpty: ["Γράψε κωδικούς που χρειάζεσαι στο μαγαζί (φίλτρα, μπουζί, τακάκια, μπαταρία, λάστιχα).", "Keep the codes you need at the shop (filters, plugs, pads, battery, tyres)."],
   partName: ["Ανταλλακτικό", "Part"], partCode: ["Κωδικός", "Code"], partNote: ["Σημείωση", "Note"],
   partNamePh: ["π.χ. Φίλτρο λαδιού", "e.g. Oil filter"], partCodePh: ["κωδικός (π.χ. XY-12345)", "code (e.g. XY-12345)"], partNotePh: ["σημείωση (μάρκα, τιμή…)", "note (brand, price…)"],
@@ -3178,14 +3183,14 @@ $("askForm").addEventListener("submit", async e => {
   const srcHead = r => `<div class="srchead"><b>${esc(kindName(r.m.kind))}</b> · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
 
   const answer = !shown.length
-    ? `<div class="answer"><div class="eyebrow">${t("answer")}</div><p class="none">${t("noValue")}</p></div>`
-    : `<div class="answer"><div class="eyebrow">${t("answer")}${vsel ? ` · ${esc(friendly(vsel))}` : ""}</div>
+    ? `<div class="answer"><p class="none">${t("noValue")}</p></div>`
+    : `<div class="answer">
         ${second && valuesDiffer(shown, shown2) ? `<div class="warn">${t("differ")}</div>` : ""}
         ${sideWarn ? `<div class="warn">${sideWarn}</div>` : pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length > 1 && cover(top) + sc0.ctxOk < pq.objects.filter(o => o.alts.some(x => /[a-z]/.test(x))).length ? `<div class="warn">${t("partialMatch")}</div>` : ""}
         ${shown.length > 1 ? `<p class="multi">${t("multi", shown.length)}</p>` : ""}
-        ${second ? srcHead(top) : ""}
         ${rowsHTML(shown, pq, shown.length === 1 && !second)}
-        ${second ? `<div class="second">${srcHead(second)}${rowsHTML(shown2, pq, false)}
+        ${second ? srcHead(top) : ""}
+        ${second ? `<div class="second">${rowsHTML(shown2, pq, false)}${srcHead(second)}
           <button type="button" class="btn small" id="openSecond">${t("showPage")}</button></div>` : ""}
       </div>`;
   out.innerHTML = `<article class="result">

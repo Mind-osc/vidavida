@@ -1,5 +1,10 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (35)
+- Απάντηση: έφυγε η γραμμή «ΑΠΑΝΤΗΣΗ · έκδοση» (η έκδοση φαίνεται ήδη πάνω). Όταν η τιμή βρίσκεται και στα δύο manual, το «Owner's / Service manual · σελ.» μπαίνει ακριβώς κάτω από το αποτέλεσμά του, με μικρότερο κενό.
+- Το κουμπί κάτω από την απάντηση λέει πλέον «☆ Στα αγαπημένα» (μπαίνει στα Αγαπημένα της καρτέλας Στοιχεία).
+- *Answer card: no "Answer" heading; manual/page shown right under each result with tighter spacing; "☆ Favourite" button wording.*
+
 ## 2 Νοεμβρίου 2026 (34)
 - Το μενού (και το πάνελ επικοινωνίας) είναι πλέον κάρτα που έχει το ύψος που χρειάζεται για όσα δείχνει: μικρό στη λίστα, μεγαλύτερο σε μια σελίδα με πολλές επιλογές. Όταν αλλάζεις σελίδα, μεγαλώνει ή μικραίνει ομαλά προς τα κάτω· αν δεν χωράει, φτάνει ως το ύψος της οθόνης και κυλάει.
 - *Menu and feedback panels are floating cards sized to their content; their height eases when switching pages and caps at the screen height (then scrolls).*
