@@ -907,6 +907,8 @@ function ctxHeads(p, L, useful){
   }
   return out;
 }
+// "Oil capacity" in a spec list means the engine oil unless another oil is named (fork, gearbox, final drive, brake…)
+const impliedObj = (n, o) => o.alts.includes("engine") && /\boil\b|λαδ|λιπαντ/.test(n) && !/(fork|gear|transmission|differential|final drive|brake|clutch|shaft|bevel|shock|πιρουν|γραναζ|κιβωτ|φρεν|διαφορ|συμπλεκ|αμορτισ)/.test(n);
 function pairsOnPage(p, pq){
   const pairs = [];
   // a line level with a value of its own is a table row, not the continuation of a multi-line name
@@ -914,7 +916,7 @@ function pairsOnPage(p, pq){
   const levelVal = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && o.x0 - c.x1 < p.w * .4 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
   // the row name for a centred layout: the label column closest to the value, then the line closest to the centre
   const nearestCol = (cs, ay) => { if (!cs.length) return null; const mx = Math.max(...cs.map(c => c.x1)); return cs.filter(c => c.x1 > mx - 15).sort((a, b) => Math.abs(a.y - ay) - Math.abs(b.y - ay))[0]; };
-  const objHit = cs => pq.objects.filter(o => cs.some(c => conceptIn(c.n, o))).length;
+  const objHit = cs => { const n = cs.map(c => c.n).join(" "); return pq.objects.filter(o => cs.some(c => conceptIn(c.n, o)) || impliedObj(n, o)).length; };
   for (const v of p.cells){
     if (!v.isVal) continue;
     if (p.cells.some(o => o !== v && o.isVal && /,\s*$/.test(o.s) && Math.abs(o.x0 - v.x0) < 3 && o.y > v.y + .5 && o.y - v.y < v.fh * 1.8)) continue;
@@ -1990,18 +1992,22 @@ async function findProcedures(bike, pq){
       for (const p of ix.pages){
         const hs = pageHeadings(p); if (!hs.length) continue;
         const hn = norm(hs.map(h => h.s).join(" | "));
-        let k = objs.filter(o => conceptIn(hn, o)).length;
+        // side words ("front", "rear") weigh half: some manuals have one section for both sides
+        const sideW = o => o.alts.some(x => /^(front|rear|left|right)$/.test(x)), w = o => sideW(o) ? .5 : 1;
+        const inH = objs.filter(o => conceptIn(hn, o));
+        if (!inH.some(o => !sideW(o)) && objs.some(o => !sideW(o))) continue;
         // the heading names part of it and the page text the rest ("Front Seat" … "high seat position")
-        // a side word ("front", "rear") missing from a page about the part is tolerated: some manuals have one section for both
-        const sideW = o => o.alts.some(x => /^(front|rear|left|right)$/.test(x));
-        if (k < objs.length){ if (!k || objs.some(o => !sideW(o) && !conceptIn(p.n, o))) continue; k -= objs.some(o => !conceptIn(p.n, o)) ? 1 : .5; }
+        if (objs.some(o => !sideW(o) && !conceptIn(hn, o) && !conceptIn(p.n, o))) continue;
+        const k = inH.reduce((t, o) => t + w(o), 0) + objs.filter(o => !conceptIn(hn, o) && conceptIn(p.n, o)).reduce((t, o) => t + w(o) * .5, 0);
         const a = acts.filter(o => conceptIn(hn, o)).length + acts.filter(o => !conceptIn(hn, o) && conceptIn(p.n, o)).length * .5;   // the action said in the text counts a little
         const steps = p.cells.some(c => STEP_RE.test(c.s)) ? 1 : 0;
-        const sc = k * 3 + a * 2 + steps - (/(specification|contents|index|maintenance schedule)/.test(hn) ? 6 : 0);
-        const hcell = hs.filter(h => objs.some(o => conceptIn(h.n, o))).sort((x, y) => acts.filter(o => conceptIn(y.n, o)).length - acts.filter(o => conceptIn(x.n, o)).length || y.fh - x.fh)[0];
+        // a heading about checking ("ΕΛΕΓΧΟΣ…", "Inspecting…") is not the adjustment that was asked for
+        const otherAct = acts.length && /(ελεγχ|inspect|check)/.test(hn) && !acts.some(o => o.alts.some(x => /ελεγχ|inspect|check/.test(x))) ? 2 : 0;
+        const sc = k * 3 + a * 3 + steps - otherAct - (/(specification|contents|index|maintenance schedule)/.test(hn) ? 6 : 0);
+        const hcell = hs.filter(h => objs.some(o => conceptIn(h.n, o))).sort((x, y) => objs.filter(o => conceptIn(y.n, o)).length - objs.filter(o => conceptIn(x.n, o)).length || acts.filter(o => conceptIn(y.n, o)).length - acts.filter(o => conceptIn(x.n, o)).length || y.fh - x.fh)[0];
         if (!hb || sc > hb.sc) hb = {m, page: p.pi + 1, p, via: "heading", sc, label: ix.labels[p.pi], heading: hcell?.s, hcell, actOk: !acts.length || acts.some(o => conceptIn(norm(hs.map(h => h.s).join(" ")), o))};
       }
-      if (hb && (!best || (acts.length && hb.sc >= objs.length * 3 + acts.length * 2))) best = hb;
+      if (hb && (!best || (acts.length && hb.sc >= objs.reduce((t, o) => t + (o.alts.some(x => /^(front|rear|left|right)$/.test(x)) ? .5 : 1), 0) * 3 + acts.length * 2))) best = hb;
     }
     if (best) found.push(best);
   }
@@ -2793,7 +2799,7 @@ function rankAnswer(pq, results){
   const KRANK = {owner: 0, service: 1, other: 2};
   const best = Math.max(...results.map(r => r.pairs.length ? r.score : 0), 0) || Math.max(...results.map(r => r.score));
   // how many of the asked-about parts a page's values name (brake lever ≠ clutch lever)
-  const cover = r => r._cov ?? (r._cov = Math.max(0, ...r.pairs.map(p => { const n = norm(pairLabel(p) + " " + p.vText.replace(/[\d.,]+\s*\S*/g, " ") + " " + (p.head || "") + " " + (r._hd ?? (r._hd = pageHeadings(r.p).map(h => h.s).join(" ")))); return Math.max(p.objs || 0, pq.objects.filter(o => conceptIn(n, o)).length); })));
+  const cover = r => r._cov ?? (r._cov = Math.max(0, ...r.pairs.map(p => { const n = norm(pairLabel(p) + " " + p.vText.replace(/[\d.,]+\s*\S*/g, " ") + " " + (p.head || "") + " " + (r._hd ?? (r._hd = pageHeadings(r.p).map(h => h.s).join(" ")))); return Math.max(p.objs || 0, pq.objects.filter(o => conceptIn(n, o) || impliedObj(n, o)).length); })));
   const bestCover = Math.max(0, ...results.map(cover));
   const rank = r => (r.pairs.length || !best ? 0 : 1) * 100 + (r.pairs.length ? (bestCover - cover(r)) * 10 : 0) + (r.score >= best * (r.m.kind === "owner" && r.pairs.length && cover(r) >= bestCover ? .3 : .5) ? (KRANK[r.m.kind] ?? 2) : 5);
   results.sort((a, b) => rank(a) - rank(b) || b.score - a.score);
