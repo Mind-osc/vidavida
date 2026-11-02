@@ -753,7 +753,7 @@ async function loadIndex(m, onProgress){
   }
   const pages = t.pages.map((p, pi) => {
     const cells = p.c.map(([s, x0, y, x1, fh], i) => ({i, s, x0, y, x1, fh, n: norm(s)}));
-    cells.forEach(c => { c.isVal = VALUE_ANY.test(c.s.replace(/(?<![\d.,])(\d{2,})L\b/g, (m, n) => +n >= 50 ? n + " links" : m));   // "122L" on a chain = links, not litres
+    cells.forEach(c => { c.isVal = VALUE_ANY.test(c.s.replace(/(?<![\d.,])(\d{2,})L\b/g, (m, n) => +n >= 50 ? n + " links" : m));   // "120L" on a chain = links, not litres
     c.intents = intentsOf(c.s); });
     const txt = cells.map(c => c.s).join("\n"); const n = norm(txt);
     const toks = n.match(tokRe) || []; const tf = new Map();
@@ -797,7 +797,7 @@ function altScore(p, alt, df, N, avg){
 
 function isHeading(c){
   const words = c.s.match(/[A-Za-z]{3,}/g) || [];
-  if (words.length < 2) return false;                       // excludes model codes like "CRF1000A II/D II"
+  if (words.length < 2) return false;                       // excludes model codes like "AB900X II/S II"
   if (/^(ITEM|STANDARD|SERVICE LIMIT|SPECIFICATIONS?|UNIT|NOTES?|REMARKS)\b/.test(c.s.trim()) && c.s.length < 30) return false;
   const letters = words.join(""); return letters.replace(/[^A-Z]/g, "").length / letters.length > .85;
 }
@@ -827,12 +827,12 @@ function pairsOnPage(p, pq){
       const gap = lastX - c.x1;
       if (c.isVal) break;                                     // another value = another column
       if (gotText){ if (hasLetters(c) && gap < p.w * .12 && !(label[0].x0 > p.w * .48 && c.x1 < p.w * .52)) { label.unshift(c); lastX = c.x0; continue; } break; }
-      // spec lists print the name far left and the value mid-page ("ΧΩΡΗΤΙΚΟΤΗΣ ΨΥΚΤΙΚΟΥ ΥΓΡΟΥ ........ 1,75 LIT")
+      // spec lists print the name far left and the value mid-page ("ΧΩΡΗΤΙΚΟΤΗΤΑ ΡΕΖΕΡΒΟΥΑΡ ........ 20 LIT")
       if (gap > p.w * .33 && !(gap < p.w * .55 && c.s.length < 60 && !/[.!?:]$/.test(c.s.trim()) && hasLetters(c))) break;
       label.unshift(c); lastX = c.x0; if (hasLetters(c)) gotText = true;
     }
     if (!gotText) label = [];
-    // values stacked under their version code ("CRF1000A/D" / "200 kPa", "CRF1000A II/D II" / "225 kPa"):
+    // values stacked under their version code ("XY900A" / "210 kPa", "XY900A II" / "230 kPa"):
     // the row name ("Front") is centred on the code+value pair, not level with the value
     let anchored = null, leftVar = "";
     const stk = p.cells.find(c => c !== v && CODE_FULL.test(c.s) && Math.abs(c.x0 - v.x0) < 3 && c.y > v.y + .5 && c.y - v.y < v.fh * 1.8);
@@ -842,7 +842,7 @@ function pairsOnPage(p, pq){
                          ; const sub = nearestCol(subs, ay);
       if (sub){ label = [sub]; anchored = sub; }
     }
-    // version code printed left of the value, maybe over two lines ("CRF1000A" / "II/D II"); the row name ("Front") is centred on it
+    // version code printed left of the value, maybe over two lines ("XY900A" / "II/S II"); the row name ("Front") is centred on it
     if (!stk && label.length && CODE_FULL.test(label[label.length - 1].s)){
       const code = label[label.length - 1];
       const cont = p.cells.find(c => c !== code && Math.abs(c.x0 - code.x0) < 3 && c.y < code.y - .5 && code.y - c.y < code.fh * 1.8 && /^(I{1,3}\b|\/)/.test(c.s));
@@ -855,14 +855,14 @@ function pairsOnPage(p, pq){
     // prose from a neighbouring text column (sentences, long lines) is not a table label
     if (label.length && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .06 && label.some(c => /[a-zα-ωά-ώ]/.test(c.s) && (/[.!?](\s+[a-zα-ωά-ώ]|$)/.test(c.s.trim()) || c.s.length > 45 || c.s.trim().split(/\s+/).length >= 7))) label = [];
     else if (label.length === 1){
-      // grouped tables: the group name ("Cold tire pressure") sits in the column to the left, on this row or a row above
+      // grouped tables: the group name ("Tire pressure") sits in the column to the left, on this row or a row above
       const gc = p.cells.filter(c => c !== v && !c.isVal && hasLetters(c) && c.x1 <= label[0].x0 - 2 && label[0].x0 - c.x1 < p.w * .12 && !(label[0].x0 > p.w * .5 && c.x0 < p.w * .45));   // not across the page's middle gutter
-      // same row or just above; otherwise a group name centred lower down in the same table (e.g. "Engine oil capacity")
+      // same row or just above; otherwise a group name centred lower down in the same table (e.g. "Oil capacity")
       const g = (anchored && gc.slice().sort((a, b) => Math.abs(a.y - anchored.y) - Math.abs(b.y - anchored.y))[0]) || gc.filter(c => c.y - v.y > -rowTol && c.y - v.y < v.fh * 4).sort((a, b) => a.y - b.y)[0]
              || gc.filter(c => v.y - c.y > 0 && v.y - c.y < v.fh * 12).sort((a, b) => b.y - a.y)[0]
              || gc.filter(c => c.y - v.y > 0 && c.y - v.y < v.fh * 12).sort((a, b) => a.y - b.y)[0];
       if (g){
-        // a group name printed over several lines ("Tyre air" / "pressure" / "(Driver only)"): take the whole block
+        // a group name printed over several lines ("Air" / "pressure" / "(rider only)"): take the whole block
         const blk = [g];
         for (const dir of [1, -1]) for (let cur = g;;){
           const nx = p.cells.filter(c => c !== v && !blk.includes(c) && /[A-Za-zΑ-Ωα-ω]{2}/.test(c.s) && (!c.isVal || /^[A-Za-z(]/.test(c.s)) && c.x1 <= label[0].x0 - 2 && Math.abs(c.x0 - cur.x0) < 3 && !levelVal(c) && !(levelRow(c) && !p.cells.some(o => o !== c && o.x0 > c.x1 && o.x1 <= label[0].x0 + 2 && Math.abs(o.y - c.y) < 3)) && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.8).sort((a, b) => Math.abs(a.y - cur.y) - Math.abs(b.y - cur.y))[0];
@@ -871,7 +871,7 @@ function pairsOnPage(p, pq){
         label.unshift(...blk.sort((a, b) => b.y - a.y));
       }
     }
-    // the name in the left column is printed over several lines ("Tyre air" / "pressure" / "(Driver and" / "passenger)"): take them all
+    // the name in the left column is printed over several lines ("Air" / "pressure" / "(rider and" / "passenger)"): take them all
     if (label.length >= 2 && label[1].x0 - label[0].x1 > 8 && /^[A-Za-z(]{3,}/.test(label[1].s) && !/\d/.test(label[1].s)){   // group name + row name ("Front"), not name + qty/size columns
       const L0 = label[0], blk = [L0];
       for (const dir of [1, -1]) for (let cur = L0;;){
@@ -888,10 +888,10 @@ function pairsOnPage(p, pq){
     }
     let how = "row";
     const prefix = v.s.split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit)\b/gi, "");
-    const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Drive chain adjusting lock nut 27 N·m"
+    const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Lever pivot nut 10 N·m"
     if (selfLabeled){
       label = []; how = "self";
-      // a figure inside a sentence: the start of the sentence on the line(s) above names the part ("…τη βίδα / αποστράγγισης … με / ροπή 30 Nm")
+      // a figure inside a sentence: the start of the sentence on the line(s) above names the part ("…σφίξτε τη / βίδα … με / ροπή 12 Nm")
       if (objHit([v]) < pq.objects.length){
         let cur = v;
         for (let k = 0; k < 2; k++){
@@ -929,20 +929,20 @@ function pairsOnPage(p, pq){
         && vals.every(o => o === v || Math.abs(o.y - c.y) >= Math.abs(v.y - c.y))).sort((a, b) => b.y - a.y);
       label.push(...between);
     }
-    // (a) value text that wraps onto the next line: "4.0 L (4.2 US qt, 3.5" + "Imp qt)"
+    // (a) value text that wraps onto the next line: "2.0 L (2.1 US qt, 1.8" + "Imp qt)"
     let vText = v.s;
     if ((vText.match(/\(/g) || []).length > (vText.match(/\)/g) || []).length || /,\s*$/.test(vText)){
       const nx = p.cells.find(c => c !== v && Math.abs(c.x0 - v.x0) < 4 && c.y < v.y - .5 && v.y - c.y < v.fh * 2.2);
       if (nx) vText += " " + nx.s;
     }
     label = [...new Set(label)].sort((a, b) => (a.x0 - b.x0 > 3 ? 1 : b.x0 - a.x0 > 3 ? -1 : b.y - a.y));
-    // the row above names the part and has no figure of its own ("ΜΠΟΥΖΙ NGK  LMAR8J-9E" over "ΔΙΑΚΕΝΟ  0.8-0.9mm")
-    // short row names in a list ("Οπίσθιος τροχός:", "ΔΙΑΚΕΝΟ") take the list's heading line above them ("Πίεση ελαστικών", "ΜΠΟΥΖΙ NGK")
+    // the row above names the part and has no figure of its own ("ΜΠΟΥΖΙ  ΑΒ12-3" over "ΔΙΑΚΕΝΟ  0.7mm")
+    // short row names in a list ("Πίσω:", "ΔΙΑΚΕΝΟ") take the list's heading line above them ("Πίεση", "ΜΠΟΥΖΙ")
     if (label.length && label.map(c => c.s).join(" ").length < 22 && objHit([...label, v]) < pq.objects.length){
       const L = label[0];
       const col = p.cells.filter(c => c !== L && hasLetters(c) && !c.isVal && Math.abs(c.x0 - L.x0) < 8 && c.y > L.y + .5 && c.y - L.y < L.fh * 7).sort((a, b) => a.y - b.y);
       const level = (c, f) => p.cells.some(o => o !== c && f(o) && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
-      // (a) the row right above, if what it gives is not a figure ("ΜΠΟΥΖΙ NGK  LMAR8J-9E"); (b) otherwise a heading line alone on its row
+      // (a) the row right above, if what it gives is not a figure ("ΜΠΟΥΖΙ  ΑΒ12-3"); (b) otherwise a heading line alone on its row
       const up = col.find(c => c.y - L.y < L.fh * 2.4 && !level(c, o => o.isVal) && Math.abs(c.x0 - L.x0) < 3) || col.find(c => !level(c, o => true));
       if (up && up.s.length < 40 && !/[.!?]$/.test(up.s.trim()) && objHit([up, ...label, v]) > objHit([...label, v])) label.unshift(up);
     }
@@ -955,7 +955,7 @@ function pairsOnPage(p, pq){
     if (how === "row") s += .5;
     if (s <= 0) continue;
     const head = p.cells.filter(c => c.y > v.y + .5 && !c.isVal && isHeading(c) && !label.includes(c) && c.x0 <= v.x1 && (c.x1 >= v.x0 - p.w * .5)).sort((a, b) => a.y - b.y)[0];
-    // model variant heading in the table above this value (e.g. "CRF1000D/D II"), only if it is a heading row of its own
+    // model variant heading in the table above this value (e.g. "XY900S/S II"), only if it is a heading row of its own
     const lx0 = Math.min(v.x0, ...label.map(c => c.x0));
     const varCell = p.cells.filter(c => CODE_FULL.test(c.s) && c.y > v.y + .5 && c.y - v.y < v.fh * 14 && c.x1 > lx0 - 2 && c.x0 < v.x1
         && !p.cells.some(o => o !== c && o.fh > c.fh * .8 && o.x0 > c.x1 && o.x0 < v.x1 + 5 && Math.abs(o.y - c.y) < c.fh * .9)   // (superscripts like "²" don't count)
@@ -1082,14 +1082,14 @@ const T = {
   qualMissing: [q => `Δεν βρήκα τιμή που να γράφει «${q}». Η τιμή παρακάτω δεν λέει σε ποιο σημείο αφορά — έλεγξε τη σελίδα.`, q => `No value found that says "${q}". The value below doesn't say which side it is for — check the page.`],
   partialMatch: ["Δεν βρέθηκε τιμή που να ταιριάζει σε όλα όσα ρώτησες· αυτή είναι η πιο κοντινή. Έλεγξε τη σελίδα.", "No value matches everything you asked; this is the closest one. Check the page."],
   ownerNone: ["Στο Owner's manual δεν βρέθηκε τιμή γι' αυτό· η απάντηση είναι από το service manual.", "No value for this in the owner's manual; the answer is from the service manual."],
-  ownerMissing: ["Δεν έχεις ανεβάσει Owner's manual γι' αυτή τη μηχανή (ή είναι καταχωρημένο ως άλλο είδος — δες «Μηχανές & manuals»).", "No owner's manual uploaded for this bike (or it is filed as another type — see \"Bikes & manuals\")."], addPdf: ["Πρόσθεσε PDF", "Add PDF"], pickPdf: ["Επιλογή PDF", "Choose PDF"],
+  ownerMissing: ["Δεν έχεις ανεβάσει Owner's manual γι' αυτή τη μηχανή (ή είναι καταχωρημένο ως άλλο είδος — δες «Μηχανές»).", "No owner's manual uploaded for this bike (or it is filed as another type — see \"Bikes\")."], addPdf: ["Πρόσθεσε PDF", "Add PDF"], pickPdf: ["Επιλογή PDF", "Choose PDF"],
   noBikes: ["Δεν υπάρχει καμία μηχανή. Πρόσθεσε μία παρακάτω.", "No bikes yet. Add one below."], sure: ["Σίγουρα;", "Sure?"], yes: ["Ναι", "Yes"], no: ["Όχι", "No"],
   delBikeQ: ["Διαγραφή μηχανής και των manual της;", "Delete this bike and its manuals?"],
   opening: [f => `Άνοιγμα ${f}…`, f => `Opening ${f}…`], reading: [(i, n) => `Διαβάζω σελίδα ${i}/${n}`, (i, n) => `Reading page ${i}/${n}`],
   saving: ["Αποθήκευση…", "Saving…"], done: [f => `Έτοιμο: ${f}`, f => `Done: ${f}`], readFail: [(f, e) => `Δεν μπόρεσα να διαβάσω το ${f}: ${e}`, (f, e) => `Couldn't read ${f}: ${e}`],
-  emptyNoBike: ["Πρόσθεσε πρώτα μια μηχανή στην καρτέλα <strong>Μηχανές & manuals</strong>.", "First add a bike in the <strong>Bikes & manuals</strong> tab."],
-  emptyNoManual: [n => `<strong>${n}</strong>: δεν υπάρχει ακόμα manual.<br>Πήγαινε στο <strong>Μηχανές & manuals</strong> και ανέβασε το service και το owner's manual σε PDF. Γίνεται μία φορά· μετά δουλεύει χωρίς internet.`,
-                  n => `<strong>${n}</strong>: no manual yet.<br>Go to <strong>Bikes & manuals</strong> and add the service and owner's manual PDFs. You do it once; after that it works offline.`],
+  emptyNoBike: ["Πρόσθεσε πρώτα μια μηχανή στην καρτέλα <strong>Μηχανές</strong>.", "First add a bike in the <strong>Bikes</strong> tab."],
+  emptyNoManual: [n => `<strong>${n}</strong>: δεν υπάρχει ακόμα manual.<br>Πήγαινε στο <strong>Μηχανές</strong> και ανέβασε το service και το owner's manual σε PDF. Γίνεται μία φορά· μετά δουλεύει χωρίς internet.`,
+                  n => `<strong>${n}</strong>: no manual yet.<br>Go to <strong>Bikes</strong> and add the service and owner's manual PDFs. You do it once; after that it works offline.`],
   emptyReady: [n => `Ρώτα για <strong>${n}</strong>: ροπές, χωρητικότητες, πιέσεις, διάκενα, διαδικασίες. Γράψε ελληνικά ή αγγλικά.`, n => `Ask about <strong>${n}</strong>: torques, capacities, pressures, clearances, procedures. Greek or English both work.`],
   torqueTable: ["πίνακας ροπών", "torque table"], manualGear: ["χειροκίνητο", "manual gearbox"],
   warnVariants: ["Η σελίδα έχει τιμές για διαφορετικές εκδόσεις. Δες στη σελίδα ποια ισχύει για τη δική σου, ή διάλεξε την έκδοσή σου πάνω.", "This page lists values for different versions. Check which applies to yours on the page, or pick your version at the top."],
@@ -1118,7 +1118,7 @@ const T = {
   help: ["Βοήθεια", "Help"],
   helpText: ["<p>Γράψε την ερώτηση στα ελληνικά ή στα αγγλικά. Η εφαρμογή ψάχνει μέσα στα PDF σου και δείχνει την τιμή αυτούσια, μαζί με τη σελίδα του manual, χωρίς internet και χωρίς AI.</p><p>Διάλεξε την <b>έκδοση</b> της μηχανής σου πάνω, ώστε να κρύβονται οι τιμές άλλων εκδόσεων.</p><p>Πάντα έλεγξε την τιμή στη σελίδα (πορτοκαλί πλαίσιο) πριν σφίξεις κάτι.</p>",
              "<p>Ask in English or Greek. The app searches inside your PDFs and shows the value verbatim with the manual page — offline, no AI.</p><p>Pick your bike's <b>version</b> at the top so values for other versions are hidden.</p><p>Always check the value on the page (orange frame) before tightening anything.</p>"],
-  goLib: ["Μηχανές & manuals", "Bikes & manuals"],
+  goLib: ["Μηχανές", "Bikes"],
   showPage: ["Δείξε τη σελίδα", "Show the page"],
   installTitle: ["Εγκατάσταση", "Install"], installBtn: ["Εγκατάσταση στο κινητό", "Install on this device"],
   installNote: ["Βάζει το Vida Vida στην αρχική οθόνη σαν κανονική εφαρμογή, που δουλεύει και χωρίς internet.", "Adds Vida Vida to your home screen as a regular app that also works offline."],
@@ -1452,7 +1452,7 @@ function checkPdf(idx, bike, chosen){
   const nh = norm(head);
   const name = bike.name.replace(/\([^)]*\)/g, " ");
   const toks = (name.match(/[A-Za-z0-9-]+/g) || []).filter(w => w.length >= 3 && !/^(adventure|sports?|honda|yamaha|kawasaki|suzuki|bmw|ktm|ducati|triumph|aprilia|dct|abs|world|raid|super|rally)$/i.test(w));
-  const codes = toks.filter(w => /\d/.test(w)).map(w => norm(w).replace(/l\d?$/, ""));   // CRF1000L2 → crf1000
+  const codes = toks.filter(w => /\d/.test(w)).map(w => norm(w).replace(/l\d?$/, ""));   // XY900L2 → xy900
   const words = toks.filter(w => !/\d/.test(w)).map(norm);
   const match = !toks.length || codes.some(c => c.length >= 3 && nh.includes(c)) || (words.length && words.every(w => nh.includes(w)));
   const first = norm(idx.pages.slice(0, 6).map(p => p.c.map(c => c[0]).join(" ")).join(" "));
@@ -1648,7 +1648,7 @@ function preferUnit(parts, note){
 }
 
 /* ================= model variants found in the manual itself ================= */
-// a model code like CRF1000A, CRF1000D II, or a combined heading like "CRF1000A/A II", "CRF1000/A", "CRF1000A II/D II"
+// a model code like XY900A, XY900S II, or a combined heading like "XY900A/A II", "XY900/A", "XY900A II/S II"
 const CODE_RE = /[A-Z]{2,5}\d{3,4}[A-Z]?(?: II)?(?:\/[A-Z]?(?: II)?)*/;
 const CODE_FULL = new RegExp("^\\s*" + CODE_RE.source + "\\s*$");
 function expandVariant(v){
@@ -1707,7 +1707,7 @@ const variantTag = v => { const atoms = expandVariant(v); return atoms.length ? 
 /* ================= result rendering ================= */
 const pairLabel = pr => pr.label.map(c => c.s).join(" ");
 const trHTML = s => { if (L() === "en") return ""; const g = translate(s); return g ? ` <span class="tr">(${esc(g)})</span>` : ""; };
-// a value written inside a sentence ("DRIVE CHAIN SLACK: 35 – 45 mm (1.4 – 1.8 in)", "Excessive chain slack, 60 mm (2.4 in) or more")
+// a value written inside a sentence ("SLACK: 20 – 30 mm (0.8 – 1.2 in)", "Replace when 50 mm (2.0 in) or more")
 // → the measurement becomes the value, the sentence stays (verbatim) as its label
 const MEASURE_RE = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|in|°C|kgm|kg|bar|rpm)(?![A-Za-z])(?:\s*\([^()]*\))?/;
 function extractMeasure(s){
@@ -1890,7 +1890,7 @@ async function answerHowto(q, out){
 }
 
 /* ================= maintenance schedule ("how often…") =================
-   Reads Honda-style schedule tables: a header "x 1,000 km  1 12 24 36 48", then one row per item with code letters
+   Reads schedule tables with a header "x 1,000 km  1 12 24 36 48", then one row per item with code letters
    (I, R, C, A, L) placed under the mileage columns, plus Annual check / Regular replace / Refer-to-page columns.
    Every code is taken from its position on the page; nothing is inferred. Tables drawn with icons (no text) are skipped. */
 const SCHED_Q = /(καθε ποτε|ποσο συχνα|ανα ποσα|\bποτε\b|διαστημ|προγραμμα (συντηρ|σερβισ)|\bσερβισ|συντηρησ|how often|\binterval|\bschedule|\bmaintenance\b|\bwhen\b)/;
@@ -1898,7 +1898,7 @@ const SCHED_IGNORE = new Set(["maintenance","service","interval","schedule","cha
 const CODE_MEAN = {
   I: ["Έλεγχος (καθάρισμα, ρύθμιση, λίπανση ή αντικατάσταση αν χρειάζεται)", "Inspect (clean, adjust, lubricate or replace if necessary)"],
   C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"]};
-// Greek code letters (Voge and other Greek manuals); combined codes like "Ε/Ρ" read as "Έλεγχος / Ρύθμιση"
+// Greek code letters (manuals written in Greek); combined codes like "Ε/Ρ" read as "Έλεγχος / Ρύθμιση"
 Object.assign(CODE_MEAN, {"Ε": ["Έλεγχος (καθάρισμα, λίπανση, ρύθμιση, συμπλήρωση ή αντικατάσταση αν χρειάζεται)", "Check (clean, lubricate, adjust, top up or replace if needed)"],
   "Α": ["Αντικατάσταση", "Replace"], "Κ": ["Καθάρισμα", "Clean"], "Ρ": ["Ρύθμιση", "Adjust"], "Λ": ["Λίπανση", "Lubricate"], "Σ": ["Σφίξιμο", "Tighten"], "ΔΕ": ["Διαγνωστικός έλεγχος", "Diagnostic check"]});
 const codeMean = c => CODE_MEAN[c] ? CODE_MEAN[c][L() === "en" ? 1 : 0]
@@ -1956,9 +1956,9 @@ function parseSchedule(p){
   if (rows.length < 3) return null;                  // icons-only tables give no usable rows
   return {cols: cols.map(c => c.n), rows, legend: legend ? legend.s : "", hdr};
 }
-/* Schedule tables of other makes (e.g. Voge, in Greek): a header row "km | 1000 | ΚΑΘΕ 6000 | ΚΑΘΕ 12000", a "ΜΗΝΕΣ" row,
+/* Schedule tables of other makes (e.g. in Greek): a header row "km | 1000 | ΚΑΘΕ 5000 | ΚΑΘΕ 10000", a "ΜΗΝΕΣ" row,
    numbered item rows with Greek code letters (Α, Ε, Κ, Ρ, Λ, Σ, ΔΕ, combined as "Ε/Ρ") or a sentence across the columns
-   ("(Α) κάθε 24 μήνες ή 18.000χλμ"). Codes are taken from their place on the page; the sentence is kept verbatim. */
+   ("(Α) κάθε 12 μήνες ή 10.000χλμ"). Codes are taken from their place on the page; the sentence is kept verbatim. */
 const GCODE_RE = /^(?:ΔΕ|[ΑΕΚΡΛΣAEKP])(?:\s*[\/-]\s*(?:ΔΕ|[ΑΕΚΡΛΣAEKP]))*$/;
 const toGreekCode = s => s.replace(/\s+/g, "").replace(/A/g, "Α").replace(/E/g, "Ε").replace(/K/g, "Κ").replace(/P/g, "Ρ");
 const SCHED_HDR = p => p.cells.find(c => /^(km|χλμ)$/i.test(c.s.trim()) && p.cells.some(o => o !== c && Math.abs(o.y - c.y) < Math.max(2, c.fh * .6) && o.x0 > c.x1 && /^((ΚΑΘΕ|EVERY)\s*)?\d[\d.,]{2,}$/i.test(o.s.trim())));
@@ -2007,7 +2007,7 @@ function parseScheduleGeneric(p){
         if (Math.abs(best.x - cx) < spacing * .3 && (dist[best.n] === undefined || d < dist[best.n])){ codes[best.n] = toGreekCode(st); dist[best.n] = d; used.push(c); }
         continue;
       }
-      if (c.x0 < zoneR && c.x1 > zoneL && /[α-ωΑ-Ωa-z]{3,}/.test(st) && /\d/.test(st)){   // "(Α) κάθε 24 μήνες ή 18.000χλμ …"
+      if (c.x0 < zoneR && c.x1 > zoneL && /[α-ωΑ-Ωa-z]{3,}/.test(st) && /\d/.test(st)){   // "(Α) κάθε 12 μήνες ή 10.000χλμ …"
         every = every ? every + " " + st : st; used.push(c);
         const mk = st.match(/(\d{1,3}(?:[.,]\d{3})+|\d+)\s*(?:χλμ|km)/i); if (mk) everyKmV = parseInt(mk[1].replace(/[.,]/g, ""), 10);
         const ns = norm(st), mm = ns.match(/(\d+)\s*(?:μην|months?)/); if (mm) years = +mm[1] / 12;
@@ -2092,7 +2092,7 @@ async function answerSchedule(q, out){
   if (objs.length){
     for (const s of scheds) for (const r of s.rows){ const n = norm(r.item); const k = objs.filter(o => conceptIn(n, o)).length; if (k) hits.push({s, r, k}); }
     const best = Math.max(0, ...hits.map(h => h.k)); hits = hits.filter(h => h.k === best && best === objs.length).sort((a, b) => {
-      const st = h => objs.some(o => o.alts.some(x => norm(h.r.item).startsWith(x))) ? 0 : 1;   // "ΛΙΠΑΝΤΙΚΟ ΚΙΝΗΤΗΡΑ" before "ΦΙΛΤΡΟ ΛΙΠΑΝΤΙΚΟΥ"
+      const st = h => objs.some(o => o.alts.some(x => norm(h.r.item).startsWith(x))) ? 0 : 1;   // "ΛΑΔΙ ΚΙΝΗΤΗΡΑ" before "ΦΙΛΤΡΟ ΛΑΔΙΟΥ"
       return st(a) - st(b) || a.r.item.length - b.r.item.length; }).slice(0, 6);
     if (!hits.length) return false;                   // the item isn't in the schedule → normal search
   }
@@ -2102,7 +2102,7 @@ async function answerSchedule(q, out){
       h.r.noteText = (await scheduleNote(h.s, new RegExp("^\\s*(NOTE\\s*)?" + n + "\\s*[:.]\\s+[A-Za-z]", "i"))).replace(/^\s*(NOTE\s*)?\d+\s*[:.]\s*/i, ""); }
     if (h.r.stars) h.r.starText = await scheduleNote(h.s, new RegExp("^\\s*\\*{" + h.r.stars + "}\\s+[A-Z][a-z]"));
   }
-  // a row whose note says "CRF1000D only" is hidden when another version is selected
+  // a row whose note says "XY900S only" is hidden when another version is selected
   let hiddenSched = 0;
   if (selVariant()) hits = hits.filter(h => { const codes = expandVariant(h.r.noteText || ""); if (!codes.length) return true;
     const ok = fitsVariant({variant: (h.r.noteText.match(CODE_RE) || [""])[0]}, false); if (!ok) hiddenSched++; return ok; });
@@ -2185,7 +2185,7 @@ function cardRowHTML(title, r, q){
       + `<div class="csrc">${esc(kindName(r.kind))} · ${t("pAbbr")} ${esc(r.label || "—")} (PDF ${r.page})</div>`;
   return `<button type="button" class="crow" data-cq="${esc(q)}"><span class="ctitle">${esc(title)}</span><span class="cbody">${body}</span></button>`;
 }
-// spark plug / battery codes printed in the manual ("SILMAR8A9S", "YTZ10S", "12V 10AH"), offered as parts to add
+// spark plug / battery codes printed in the manual ("AB12-3X", "XT9S", "12V 8AH"), offered as parts to add
 async function partSuggestions(bike){
   const out = [];
   for (const [name, q] of [[L() === "en" ? "Spark plug" : "Μπουζί", "spark plug μπουζί"], [L() === "en" ? "Battery" : "Μπαταρία", "battery μπαταρία"], [L() === "en" ? "Engine oil" : "Λάδι κινητήρα", "recommended engine oil λάδι"]]){
@@ -2685,7 +2685,7 @@ async function planSchedule(bike){
 // which code (R, I, …) the manual gives an item at a milestone (in ×1,000 km); past the table only if the manual says to repeat it
 function codeAt(plan, row, M){
   if (row.codes[M]) return row.codes[M];
-  // "(Α) κάθε 18.000χλμ": due at every multiple of that distance
+  // "(Α) κάθε 10.000χλμ": due at every multiple of that distance
   if (row.everyCode && row.everyKm >= 1000 && M * 1000 >= row.everyKm && (M * 1000) % row.everyKm === 0) return row.everyCode;
   const last = plan.cols[plan.cols.length - 1];
   if (M > last && plan.canRepeat){ const eq = ((M - plan.regular[0]) % plan.period + plan.period) % plan.period + plan.regular[0]; return row.codes[eq] || ""; }
@@ -2945,7 +2945,7 @@ if (!settings.firstRun){ settings.firstRun = new Date().toISOString(); saveSetti
 applyStatic(); applyLook();
 (async () => {
   try{ idb = await openDB(); }catch(err){ $("out").innerHTML = `<div class="empty">${t("noStorage")}</div>`; return; }
-  if (!(await getAll("bikes")).length) await putOne("bikes", {id: uid(), name: "Honda CRF1000L Africa Twin Adventure Sports", created: Date.now()});
+
   await refresh();
   try{ navigator.storage?.persist?.(); }catch(_){}
 })();
