@@ -583,6 +583,11 @@ header{padding-block:10px 12px;gap:8px 14px}
 #vLabel .vsub{display:block;opacity:.75}
 #vLabel{flex:0 1 auto;white-space:nowrap;min-width:0;text-align:center;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:420px){.vbar{gap:4px}#viewer .vbar .vbtn:not(#_){width:40px;height:40px}#vLabel{font-size:12px}}
+/* service: what the manual lists for the next service folds open under its title */
+.svcitems > summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;font-size:13px;color:var(--muted);padding:6px 0;-webkit-tap-highlight-color:transparent}
+.svcitems > summary::-webkit-details-marker{display:none}
+.svcitems[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
+.svcitems[open] > summary{margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -3726,7 +3731,7 @@ async function renderService(){
          ${!recs.filter(r => !r.quick).length ? `<div class="alert"><b>${t("noRecordsTitle")}</b> ${t("noRecordsText")}</div>` : ""}
          ${st.next ? `<div class="bigdue"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div>
             ${st.annual ? `<div class="meta">${t("orByDate", fmtDate(st.annual.due))}</div>` : ""}
-            <div class="mlabel">${t("atThatService")}</div>${groupedItems(st.next.items)}`
+            <details class="svcitems"><summary>${t("atThatService").replace(/:\s*$/, "")} <span class="fchev" aria-hidden="true"></span></summary>${groupedItems(st.next.items)}</details>`
           : `<p class="mnote">${t("beyondTable")}</p>`}
          ${st.every.length ? `<div class="mlabel">${t("everyTitle")}</div><ul class="due-items">${st.every.map((e, i) => `<li><span>${esc(e.row.item)}${trHTML(e.row.item)}</span> <span class="cm">${esc(e.row.every)}${e.dueKm ? ` · ${t("nextAt", fmtKm(e.dueKm))}` : ""}</span> <button type="button" class="btn small" data-quick="${i}">${t("doneNow")}</button></li>`).join("")}</ul>` : ""}
          ${st.yearly.length ? `<div class="mlabel">${t("yearlyTitle")}</div><ul class="due-items">${st.yearly.map(y => `<li><span>${esc(y.row.item)}${trHTML(y.row.item)}</span> <span class="cm">${esc(y.row.regular)} · ${y.due ? t("nextBy", fmtDate(y.due)) : t("notLogged")}</span></li>`).join("")}</ul>` : ""}
