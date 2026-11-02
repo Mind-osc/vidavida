@@ -479,6 +479,32 @@ select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url
 .dbody h3{margin:14px 0 0;font:600 12px var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .drawer .fbtopics{display:flex;flex-wrap:wrap;gap:6px}
 .mbtn{justify-self:start;display:inline-flex;align-items:center;gap:8px}
+
+/* ---- menu: entries that open their own page ---- */
+.mlist{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.mitem{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:12px 12px;border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);cursor:pointer;font:inherit}
+.mico{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink)}
+.mtxt{flex:1;min-width:0;display:grid}
+.mtxt b{font:600 15px var(--f-display);letter-spacing:.02em}
+.mtxt small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mchev{flex:none;font-size:24px;line-height:1;color:var(--muted)}
+.mback{justify-self:start;margin:10px 0 0;background:none;border:0;color:var(--accent);font:600 15px var(--f-display);cursor:pointer;padding:6px 2px}
+[data-pal="glass"] .mback{color:var(--ink)}
+#menuBody section.mpage{border-bottom:0;padding-top:6px}
+[data-pal="glass"] .mitem{border-radius:20px;background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi)}
+[data-pal="glass"] .mico{border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+/* ---- library: the manual's file name on one line, its kind and "remove" under it ---- */
+.man{display:grid;gap:8px;align-items:stretch}
+.man .n{line-height:1.4}
+.mact{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mact select{flex:0 1 auto;max-width:65%}
+select{padding-right:36px!important;background-position:right 13px center!important}
+/* ---- bike / version pickers at the top: slimmer, fitted to the text ---- */
+header{padding-block:10px 12px;gap:8px 14px}
+.bikepick select{padding-top:6px;padding-bottom:6px;padding-left:14px;font-size:15px;line-height:1.35;min-height:0}
+/* glass: text printed in the page colour on a dark/ink chip must use the solid page colour (the glass one is see-through) */
+[data-pal="glass"] :is(#toast,.sline .code,.grpline .code,.due-items .code){color:var(--bar)}
+[data-pal="glass"] #toast{border-radius:18px;box-shadow:0 10px 30px var(--glass-sh)}
 </style>
 </head>
 <body>
@@ -547,11 +573,6 @@ select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url
   <p class="hint" id="fbPdfHint" data-t="fbPdf"></p>
   <div class="fbactions"><button type="button" class="btn" id="fbCancel" data-t="cancel"></button><button type="button" class="btn primary" id="fbSend" data-t="fbSend"></button></div>
   </div>
-</aside>
-<aside class="drawer" id="helpDrawer" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
-  <div class="dhead"><span class="brandslot"></span><span class="sp"></span><button type="button" class="x" id="helpClose" data-tlabel="close">×</button></div>
-  <div class="dbody"><h3 id="helpTitle" data-t="help"></h3><div class="mhelp" id="helpBody"></div>
-  <button type="button" class="btn mbtn" id="helpMenu">← <span data-t="menu"></span></button></div>
 </aside>
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" hidden aria-labelledby="drawerTitle">
@@ -1700,11 +1721,7 @@ function openFeedback(){
 function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hidden = true; setTimeout(() => { $("fbSheet").hidden = true; }, 200); }
 // the side panels (help, feedback) carry the same header as the menu: the app's name and logo
 document.querySelectorAll(".brandslot").forEach(sl => { const b = $("drawerTitle").cloneNode(true); b.removeAttribute("id"); sl.replaceWith(b); });
-function openHelp(){ $("helpBody").innerHTML = t("helpText"); $("helpDrawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => $("helpDrawer").classList.add("open")); $("helpClose").focus(); }
-function closeHelp(){ $("helpDrawer").classList.remove("open"); $("scrim").hidden = true; setTimeout(() => { $("helpDrawer").hidden = true; }, 200); }
-$("helpClose").onclick = closeHelp;
-$("helpMenu").onclick = () => { $("helpDrawer").classList.remove("open"); $("helpDrawer").hidden = true; openMenu(); };
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("helpDrawer").hidden) closeHelp(); });
+
 $("fbBtn").onclick = openFeedback; $("fbClose").onclick = closeFeedback; $("fbCancel").onclick = closeFeedback; $("fbScrim").onclick = closeFeedback;
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("fbSheet").hidden) closeFeedback(); });
 $("fbInc").onchange = () => { $("fbInfo").hidden = !$("fbInc").checked; };
@@ -1779,9 +1796,10 @@ function renderLib(){
     const ms = manuals.filter(m => m.bikeId === b.id).sort((x, y) => ({owner: 0, service: 1}[x.kind] ?? 2) - ({owner: 0, service: 1}[y.kind] ?? 2));
     return `<div class="bike" data-bike="${b.id}">
       <h3>${esc(b.name)}${currentBike && currentBike.id === b.id ? ` <span class="cur">${t("current")}</span>` : ""}<span class="sp"></span><span class="confirm"><button class="btn danger" data-act="delbike">${t("del")}</button></span></h3>
-      ${ms.length ? ms.map(m => `<div class="man"><select data-setkind="${m.id}" aria-label="${t("manualType")}">${Object.keys(KIND).map(k => `<option value="${k}"${k === m.kind ? " selected" : ""}>${kindName(k)}</option>`).join("")}</select>
+      ${ms.length ? ms.map(m => `<div class="man">
           <span class="n">${esc(m.title)}<br><span class="meta">${t("pages", m.pages)} · ${(m.size/1048576).toFixed(1)} MB${m.textPages < m.pages * .5 ? t("scanned") : ""}${m.ocr ? " · OCR" : ""}</span>${m.textPages < m.pages * .5 ? `<br><button type="button" class="btn small" data-act="ocr" data-id="${m.id}">${t("ocrBtn")}</button>` : ""}${m.mismatch ? `<br><span class="warnline">${t("mismatchShort")}</span>` : ""}</span>
-          <span class="confirm"><button class="btn danger" data-act="delman" data-id="${m.id}">${t("remove")}</button></span></div>`).join("")
+          <div class="mact"><select data-setkind="${m.id}" aria-label="${t("manualType")}">${Object.keys(KIND).map(k => `<option value="${k}"${k === m.kind ? " selected" : ""}>${kindName(k)}</option>`).join("")}</select>
+          <span class="confirm"><button class="btn danger" data-act="delman" data-id="${m.id}">${t("remove")}</button></span></div></div>`).join("")
         : `<div class="man"><span class="n meta">${t("noManual")}</span></div>`}
       <div class="upl">
         <select aria-label="${t("manualType")}" data-kind><option value="owner">Owner's manual</option><option value="service">Service / workshop manual</option><option value="other">${t("kindOther")}</option></select>
@@ -3314,13 +3332,14 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") hideHist(); 
 function seg(name, opts, cur){
   return `<div class="seg" role="radiogroup" data-seg="${name}">${opts.map(([v, l]) => `<button type="button" role="radio" aria-checked="${v === cur}" data-v="${esc(v)}">${l}</button>`).join("")}</div>`;
 }
+const MENU_ICO = {lang: "<circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18'/>", look: "<path d='M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-1.9-.5-1.2.3-2.6 1.7-2.6H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5z'/><circle cx='7.5' cy='11' r='1.2'/><circle cx='11' cy='7' r='1.2'/><circle cx='15.5' cy='8' r='1.2'/>", units: "<rect x='3' y='8' width='18' height='8' rx='1.5'/><path d='M7 8v3M11 8v4M15 8v3M19 8v2'/>", bikes: "<circle cx='5.5' cy='16' r='3.5'/><circle cx='18.5' cy='16' r='3.5'/><path d='M5.5 16l4.5-7h3.5l5 7M9 12h7'/><path d='M14 6h3'/>", backup: "<path d='M7 18a5 5 0 0 1-.6-10A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z'/><path d='M12 11v6M9.5 13.5L12 11l2.5 2.5'/>", help: "<circle cx='12' cy='12' r='9'/><path d='M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.8'/><circle cx='12' cy='17' r='.6'/>"};
+let menuPage = null;   // null = the list of entries; otherwise the entry being shown
 function renderMenu(){
   const u = settings.units;
-  $("menuBody").innerHTML = `
-    ${installEvt && !isStandalone() ? `<section><h3>${t("installTitle")}</h3><p class="mnote">${t("installNote")}</p><button type="button" class="btn primary" id="installBtn">${t("installBtn")}</button></section>` : ""}
-    <section><h3>${t("language")}</h3>${seg("lang", [["el", "Ελληνικά"], ["en", "English"]], L())}</section>
-    <section><h3>${t("appearance")}</h3>
-      <div class="mlabel">${t("theme")}</div>${seg("theme", [["auto", t("thAuto")], ["light", t("thLight")], ["dark", t("thDark")]], settings.theme)}
+  const ico = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${MENU_ICO[k]}</svg>`;
+  const PAGES = {
+    lang: [t("language"), () => `${seg("lang", [["el", "Ελληνικά"], ["en", "English"]], L())}`, () => L() === "en" ? "English" : "Ελληνικά"],
+    look: [t("appearance"), () => `<div class="mlabel">${t("theme")}</div>${seg("theme", [["auto", t("thAuto")], ["light", t("thLight")], ["dark", t("thDark")]], settings.theme)}
       <div class="mlabel">${t("palette")}</div>
       <div class="pals" role="radiogroup">${Object.entries(PALETTES).map(([k, p]) => `<button type="button" class="pal" role="radio" aria-checked="${k === (settings.palette || "classic")}" data-pal="${k}"><span class="sw">${p.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>${esc(p.n[L() === "en" ? 1 : 0])}</button>`).join("")}</div>
       ${settings.palette === "glass" ? `<div class="mlabel">${t("btnColour")}</div>
@@ -3333,27 +3352,32 @@ function renderMenu(){
             <div class="cprow"><span class="btn primary">${t("search")}</span><span class="accname" id="cpHex">${hx.toUpperCase()}</span></div>
             <div class="accs" role="radiogroup">${Object.entries(GLASS_ACC).map(([k, a]) => `<button type="button" class="acc" role="radio" aria-checked="${k === settings.glassAcc}" data-acc="${k}" title="${esc(a.n[L() === "en" ? 1 : 0])}" aria-label="${esc(a.n[L() === "en" ? 1 : 0])}" style="background:linear-gradient(135deg,${a.c[1]},${a.c[0]})"></button>`).join("")}</div>
           </div>`; })() : ""}` : ""}
-      <label class="toggle"><input type="checkbox" id="bigToggle"${settings.big ? " checked" : ""}><span>${t("bigText")}</span></label>
-    </section>
-    <section><h3>${t("units")}</h3>
-      <div class="mlabel">${t("uTorque")}</div>${seg("torque", [["N·m", "N·m"], ["kgf·m", "kgf·m"], ["lbf·ft", "lbf·ft"]], u.torque)}
+      <label class="toggle"><input type="checkbox" id="bigToggle"${settings.big ? " checked" : ""}><span>${t("bigText")}</span></label>`, () => `${(PALETTES[settings.palette || "classic"] || PALETTES.classic).n[L() === "en" ? 1 : 0]} · ${t({auto: "thAuto", light: "thLight", dark: "thDark"}[settings.theme] || "thAuto")}`],
+    units: [t("units"), () => `<div class="mlabel">${t("uTorque")}</div>${seg("torque", [["N·m", "N·m"], ["kgf·m", "kgf·m"], ["lbf·ft", "lbf·ft"]], u.torque)}
       <div class="mlabel">${t("uPressure")}</div>${seg("pressure", [["psi", "psi"], ["kPa", "kPa"], ["kgf/cm²", "kgf/cm²"]], u.pressure)}
       <div class="mlabel">${t("uVolume")}</div>${seg("volume", [["L", "L"], ["US qt", "US qt"], ["Imp qt", "Imp qt"]], u.volume)}
-      <p class="mnote">${t("unitsNote")}</p>
-    </section>
-    <section><h3>${t("tabLib")}</h3><button type="button" class="btn" id="menuLib">${t("goLib")} →</button></section>
-    <section><h3>${t("backup")}</h3><p class="mnote">${t("backupNote")}</p>
+      <p class="mnote">${t("unitsNote")}</p>`, () => `${u.torque} · ${u.pressure} · ${u.volume}`],
+    bikes: [t("tabLib"), null, () => currentBike ? currentBike.name : t("goLib")],
+    backup: [t("backup"), () => `<p class="mnote">${t("backupNote")}</p>
       <div class="mrow"><button type="button" class="btn primary" id="shareBkBtn">☁ ${t("shareBk")}</button></div>
       <p class="mnote">${t("shareBkHint")}${settings.lastBackup ? " " + t("lastBk", fmtDate(settings.lastBackup)) : ""}</p>
       <div class="mrow"><button type="button" class="btn" id="expBtn">${t("exportB")}</button><button type="button" class="btn" id="impBtn">${t("importB")}</button>
       <input type="file" id="impFile" class="vh" accept=".mgbackup,.txt,application/json,text/plain"></div>
-      <p class="mnote" id="bkStatus"></p><p class="mnote" id="storageUse"></p>
-    </section>
-    <section><h3>${t("help")}</h3><button type="button" class="btn mbtn" id="helpBtn">? ${t("help")}</button></section>`;
-  try{ navigator.storage?.estimate?.().then(e => { if (e && e.quota) $("storageUse").textContent = t("storageUse", fmtBytes(e.usage), fmtBytes(e.quota)); }); }catch(_){}
+      <p class="mnote" id="bkStatus"></p><p class="mnote" id="storageUse"></p>`, () => settings.lastBackup ? t("lastBk", fmtDate(settings.lastBackup)) : t("shareBk")],
+    help: [t("help"), () => `<div class="mhelp">${t("helpText")}</div>`, () => ""],
+  };
+  if (menuPage && PAGES[menuPage]){
+    const [title, html] = PAGES[menuPage];
+    $("menuBody").innerHTML = `<button type="button" class="mback" id="mBack">‹ ${t("menu")}</button><section class="mpage"><h3>${title}</h3>${html()}</section>`;
+  } else {
+    $("menuBody").innerHTML = `
+    ${installEvt && !isStandalone() ? `<section><h3>${t("installTitle")}</h3><p class="mnote">${t("installNote")}</p><button type="button" class="btn primary" id="installBtn">${t("installBtn")}</button></section>` : ""}
+    <ul class="mlist">${Object.entries(PAGES).map(([k, [title, , sub]]) => `<li><button type="button" class="mitem" data-mpage="${k}"><span class="mico">${ico(k)}</span><span class="mtxt"><b>${title}</b>${sub() ? `<small>${esc(sub())}</small>` : ""}</span><span class="mchev">›</span></button></li>`).join("")}</ul>`;
+  }
+  try{ if ($("storageUse")) navigator.storage?.estimate?.().then(e => { if (e && e.quota && $("storageUse")) $("storageUse").textContent = t("storageUse", fmtBytes(e.usage), fmtBytes(e.quota)); }); }catch(_){}
 }
 const fmtBytes = b => b > 1e9 ? (b / 1e9).toFixed(1) + " GB" : (b / 1e6).toFixed(0) + " MB";
-function openMenu(){ renderMenu(); $("drawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => $("drawer").classList.add("open")); $("menuBtn").setAttribute("aria-expanded", "true"); $("menuClose").focus(); }
+function openMenu(){ menuPage = null; renderMenu(); $("drawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => $("drawer").classList.add("open")); $("menuBtn").setAttribute("aria-expanded", "true"); $("menuClose").focus(); }
 function closeMenu(){ $("drawer").classList.remove("open"); $("scrim").hidden = true; $("menuBtn").setAttribute("aria-expanded", "false"); setTimeout(() => { $("drawer").hidden = true; }, 200); }
 $("drawer").addEventListener("pointerdown", e => {
   const area = e.target.closest("#cpSV, #cpHue"); if (!area) return;
@@ -3377,7 +3401,7 @@ $("drawer").addEventListener("pointerdown", e => {
 });
 // "automatic" theme: follow the phone when it switches between light and dark
 try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => applyLook()); }catch(_){}
-$("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu; $("scrim").onclick = () => { if (!$("helpDrawer").hidden) closeHelp(); else closeMenu(); };
+$("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu; $("scrim").onclick = closeMenu;
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("drawer").hidden) closeMenu(); });
 
 $("drawer").addEventListener("click", async e => {
@@ -3394,7 +3418,9 @@ $("drawer").addEventListener("click", async e => {
   const ab = e.target.closest(".acc[data-acc]");
   if (ab){ settings.glassAcc = ab.dataset.acc; saveSettings(); applyLook(); renderMenu(); return; }
   if (e.target.closest("#accBall")){ accOpen = !accOpen; renderMenu(); if (accOpen) $("cpick")?.scrollIntoView({block: "nearest", behavior: "smooth"}); return; }
-  if (e.target.closest("#helpBtn")){ closeMenu(); setTimeout(openHelp, 120); return; }
+  const mp = e.target.closest("[data-mpage]");
+  if (mp){ if (mp.dataset.mpage === "bikes"){ closeMenu(); tab("lib"); return; } menuPage = mp.dataset.mpage; accOpen = false; renderMenu(); $("menuBody").scrollTop = 0; return; }
+  if (e.target.closest("#mBack")){ menuPage = null; renderMenu(); $("menuBody").scrollTop = 0; return; }
   if (e.target.id === "menuLib"){ closeMenu(); tab("lib"); }
   if (e.target.id === "installBtn" && installEvt){ installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; renderMenu(); }); }
   if (e.target.id === "expBtn") exportBackup(false);
