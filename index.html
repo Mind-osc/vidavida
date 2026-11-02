@@ -518,10 +518,10 @@ const DICT = [
  ["λαστιχ",["tire","tyre"]],["ελαστικ",["tire","tyre"]],["τροχ",["wheel"]],["ροδ",["wheel","rim"]],["ζαντ",["rim","wheel"]],
  ["αξον",["axle","shaft"]],["αξων",["axle","shaft"]],["φρεν",["brake"]],["δαγκαν",["caliper"]],["δισκ",["disc","disk"]],
  ["τακακ",["pad"]],["υγρ",["fluid"]],["ψυκτ",["coolant"]],["αντιψυκτ",["coolant","antifreeze"]],["ψυγει",["radiator"]],
- ["μπαταρ",["battery"]],["ασφαλει",["fuse"]],["λαμπ",["bulb"]],["φαναρ",["headlight","light"]],["φλασ",["turn signal"]],
+ ["μπαταρ",["battery"]],["καταναλ",["consumption","fuel consumption"]],["βαρ",["weight"]],["διαφορικ",["differential","final drive","bevel gear","angular gear","rear axle"]],["γραναζωτ",["bevel gear","final drive"]],["καρδαν",["shaft","universal shaft","drive shaft","cardan"]],["ασφαλει",["fuse"]],["λαμπ",["bulb"]],["φαναρ",["headlight","light"]],["φλασ",["turn signal"]],
  ["συμπλεκτ",["clutch"]],["ταχυτ",["gear","speed"]],["κιβωτ",["transmission","gearbox"]],["κινητηρ",["engine"]],["μοτερ",["engine"]],
  ["κυλινδρ",["cylinder"]],["κεφαλ",["cylinder head","head"]],["βαλβιδ",["valve"]],["μπεκ",["injector"]],
- ["ρεζερβουαρ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["ντεποζιτ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
+ ["ρεζερβουαρ",["fuel tank","tank","fuel quantity","usable fuel","ρεζερβ","ντεποζ","τεποζ"]],["ντεποζιτ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
  ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork","front suspension"]],["αναρτ",["suspension","fork","shock absorber"]],["αμορτισ",["shock absorber","shock","rear suspension","rear cushion"]],
  ["ρυθμ",["adjust","adjuster","setting"]],["προφορτ",["preload","pre-load"]],["αποσβεσ",["damping","rebound","compression"]],
  ["σελα",["seat"]],["τιμον",["handlebar"]],["σασι",["frame"]],["μαρσπιε",["footpeg","step"]],["σταντ",["stand"]],
@@ -543,13 +543,13 @@ const EN_INTENT = {torque:"torque", pressure:"pressure", capacity:"capacity", cl
 
 /* value patterns found in Honda manuals */
 const RX = {
-  torque: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm)\b|kgf[·.]?m|lbf[·.]?ft/i,
+  torque: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm)\b|kgf[·.]?m|lbf[·.]?ft|\d\s*lbs?[\/·.-]ft\b|\d\s*ft[·.-]lbs?\b/i,
   torqueTable: /(?:^|[\s│])\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*\)/,   // workshop tables: 30 (3.1, 22)
-  pressure: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:kpa|psi|bar)\b|kgf\/cm/i,
-  capacity: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|us qt|us oz)\b/i,
-  length: /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:mm|in)\b|\d\.\d+\s*\(\d/i
+  pressure: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:kpa|psi|bar)\b|kgf\/cm/i,
+  capacity: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|us qt|us oz|gal|qt|quarts?)\b/i,
+  length: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:mm|in)\b|\d\.\d+\s*\(\d/i
 };
-const VALUE_ANY = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm|kgf|lbf|kpa|bar|psi|l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|mm|v|a|w|°c|kg|rpm|min)\b|\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*(?:,\s*\d+(?:\.\d+)?\s*)?\)/i;
+const VALUE_ANY = /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm|kgf|lbf|lbs?\/ft|kpa|bar|psi|l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|gal|qt|quarts?|mm|v|ah|a|w|°c|kg|rpm|min)\b|\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*(?:,\s*\d+(?:\.\d+)?\s*)?\)/i;
 function intentsOf(t){ const s = new Set(); for (const k of ["torque","pressure","capacity","length"]) if (RX[k].test(t)) s.add(k); if (RX.torqueTable.test(t)) s.add("torque"); return s; }
 
 // Greek stem for searching Greek manuals: drop the ending, keep the root ("λαδιού" → "λαδ", "ελαστικών" → "ελαστικ")
@@ -582,6 +582,12 @@ function parseQuery(q){
     const gs = gStem(t);
     if (best){ concepts.push({src:t, alts:[...new Set([...best[1].map(norm), gs])], intent:best[2], act: best[2] === "act"}); if (best[2] && best[2] !== "act") intents.add(best[2]); }
     else if (t.length >= 3) concepts.push({src:t, alts:[gs]});
+  }
+  const fillQ = concepts.filter(c => !c.intent && /^(παιρν|παιρ|χωρα|μπαιν|takes?|holds?)/.test(c.src));
+  if (fillQ.length){
+    for (const c of fillQ) concepts.splice(concepts.indexOf(c), 1);
+    if (!intents.size){ const air = concepts.some(c => c.alts.some(a => /^(tire|tyre|ελαστικ|λαστιχ|αερ)/.test(a))); intents.add(air ? "pressure" : "capacity");
+      if (air) for (const c of concepts.filter(c => /^αερ/.test(c.src))) concepts.splice(concepts.indexOf(c), 1); }
   }
   const seen = new Set(), out = [];
   for (const c of concepts){ const k = c.alts.join("|"); if (!seen.has(k)){ seen.add(k); out.push(c); } }
@@ -826,6 +832,39 @@ const hasLetters = c => /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(c.s);   // Latin
    - tables/spec lists: the text cell directly to its left (skipping only numeric columns such as qty / thread size);
    - label wrapped over two lines: the nearest text line just above-left (plus its continuation just below);
    - step-by-step text: the line(s) directly above the value in the same column. */
+function how0Prose(p, L){
+  const blk = [L];
+  for (const dir of [1, -1]) for (let cur = L;;){
+    const nx = p.cells.find(c => !blk.includes(c) && !c.isVal && Math.abs(c.x0 - L.x0) < 3 && dir * (c.y - cur.y) > .5 && dir * (c.y - cur.y) < cur.fh * 1.6);
+    if (!nx) break; blk.push(nx); cur = nx;
+  }
+  return blk.length >= 4 && blk.some(c => /[a-zα-ώ]-$|[.;:]$|\.\s+[A-ZΑ-Ω]/.test(c.s.trim())) && blk.filter(c => /^[a-zα-ώ]/.test(c.s)).length >= 2;
+}
+const THREAD = /^M\s?\d+(\s*[x×]\s*[\d.]+)?\b/;
+function threadRow(p, v){
+  const lv = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
+  let sz = p.cells.find(c => THREAD.test(c.s) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .3 && Math.abs(c.y - v.y) < Math.max(1.5, v.fh * .45));
+  if (!sz){   // the value printed under a note in its own column ("Tightening sequence: …" / "9 lb/ft (12 Nm)"): its row starts where the thread size is
+    let cur = v;
+    for (let k = 0; k < 8 && !sz; k++){
+      const up = p.cells.find(c => c !== cur && !c.isVal && Math.abs(c.x0 - v.x0) < 3 && c.y > cur.y + .5 && c.y - cur.y < cur.fh * 1.6);
+      if (!up) break; cur = up;
+      sz = p.cells.find(c => THREAD.test(c.s) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .3 && Math.abs(c.y - up.y) < Math.max(1.5, up.fh * .45));
+    }
+  }
+  if (!sz) return [];
+  const blk = [sz];
+  for (let cur = sz;;){
+    const up = p.cells.find(c => !blk.includes(c) && !c.isVal && hasLetters(c) && Math.abs(c.x0 - sz.x0) < 3 && c.y > cur.y + .5 && c.y - cur.y < cur.fh * 1.6 && !lv(c) && !THREAD.test(c.s)
+      && !p.cells.some(o => o !== c && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4)));   // a header row ("Front wheel  Value  Valid") ends the name
+    if (!up) break; blk.unshift(up); cur = up;
+  }
+  if (blk.length < 2) return [];
+  // the table's section header above ("Front wheel   Value   Valid") says which part the rows belong to
+  const hd = p.cells.filter(c => Math.abs(c.x0 - sz.x0) < 3 && c.y > blk[0].y + .5 && c.y - blk[0].y < p.h * .6 && hasLetters(c) && !THREAD.test(c.s)
+    && p.cells.some(o => o !== c && o.x0 > c.x1 && hasLetters(o) && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4)) && !lv(c)).sort((a, b) => a.y - b.y)[0];
+  return hd ? [hd, ...blk] : blk;
+}
 function pairsOnPage(p, pq){
   const pairs = [];
   // a line level with a value of its own is a table row, not the continuation of a multi-line name
@@ -873,6 +912,7 @@ function pairsOnPage(p, pq){
       if (sub){ label = [sub]; anchored = sub; } else label = label.slice(0, -1);
     }
     // prose from a neighbouring text column (sentences, long lines) is not a table label
+    if (label.length && how0Prose(p, label[0])) label = [];
     if (label.length && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .06 && label.some(c => /[a-zα-ωά-ώ]/.test(c.s) && (/[.!?](\s+[a-zα-ωά-ώ]|$)/.test(c.s.trim()) || c.s.length > 45 || c.s.trim().split(/\s+/).length >= 7))) label = [];
     else if (label.length === 1){
       // grouped tables: the group name ("Tire pressure") sits in the column to the left, on this row or a row above
@@ -907,7 +947,7 @@ function pairsOnPage(p, pq){
       if (!up) break; label.unshift(up);
     }
     let how = "row";
-    const prefix = v.s.split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit)\b/gi, "");
+    const prefix = v.s.split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit|max(imum)?|min(imum)?|approx(imately)?|appr|ca|about|up to|at least|not more than|μεγ(ιστο)?|ελαχ(ιστο)?|περιπου|περ|εως|εωσ)\b\.?/gi, "").replace(/(μέγιστο|ελάχιστο|περίπου|έως|μεγ\.|ελάχ\.|περ\.)/gi, "");
     const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Lever pivot nut 10 N·m"
     if (selfLabeled){
       label = []; how = "self";
@@ -922,6 +962,7 @@ function pairsOnPage(p, pq){
         if (objHit([...label, v]) <= objHit([v])) label = [];
       }
     }
+    else if (!label.length && (label = threadRow(p, v)).length) how = "row";
     else if (!label.length){
       const near = c => c !== v && c.y > v.y + .5 && c.y - v.y < v.fh * 3.2 && !c.isVal;
       let above = p.cells.filter(c => near(c) && c.x0 < v.x1 && c.x1 > v.x0).sort((a, b) => a.y - b.y).slice(0, 2);
@@ -932,6 +973,7 @@ function pairsOnPage(p, pq){
         const between = head ? col.filter(c => c.y < head.y) : [];
         above = head && between.every(c => c.isVal || CODE_FULL.test(c.s)) ? [head] : [];
       }
+      if (above.length > 1 && !/^[a-zα-ώ(]/.test(above[0].s)) above = above.slice(0, 1);   // the next line up is another row's name, unless this one is a wrapped continuation
       if (above.length){ how = "col"; label = above.reverse(); }
       else {
         const al = p.cells.filter(c => near(c) && hasLetters(c) && c.x1 <= v.x0 + 1 && v.x0 - c.x1 < p.w * .2).sort((a, b) => a.y - b.y || b.x1 - a.x1)[0];
@@ -942,6 +984,12 @@ function pairsOnPage(p, pq){
         }
       }
     }
+    // a row name wrapped onto the next line ("with adaptive vehicle height" / "control Comfort OE")
+    if (how === "row" && label.length){
+      const Lz = label[label.length - 1];
+      const dn = p.cells.find(c => c !== v && !c.isVal && !label.includes(c) && Math.abs(c.x0 - Lz.x0) < 3 && Lz.y - c.y > .5 && Lz.y - c.y < Lz.fh * 1.6);
+      if (dn && /^[a-zα-ώ]/.test(dn.s) && !/^with\b/.test(dn.s) && !/[.:;]$/.test(Lz.s.trim()) && !levelVal(dn) && !how0Prose(p, Lz)) label.push(dn);
+    }
     if (how === "row" && label.length){
       const lx = Math.max(...label.map(c => c.x1));
       const vals = p.cells.filter(c => c.isVal && c.x0 < v.x1 && c.x1 > v.x0);
@@ -951,9 +999,12 @@ function pairsOnPage(p, pq){
     }
     // (a) value text that wraps onto the next line: "2.0 L (2.1 US qt, 1.8" + "Imp qt)"
     let vText = v.s;
-    if ((vText.match(/\(/g) || []).length > (vText.match(/\)/g) || []).length || /,\s*$/.test(vText)){
-      const nx = p.cells.find(c => c !== v && Math.abs(c.x0 - v.x0) < 4 && c.y < v.y - .5 && v.y - c.y < v.fh * 2.2);
-      if (nx) vText += " " + nx.s;
+    for (let k = 0, cur = v; k < 3; k++){
+      const open = (vText.match(/\(/g) || []).length > (vText.match(/\)/g) || []).length || /,\s*$/.test(vText);
+      if (!open && !/(,\s*[A-Za-zΑ-ώ][^,().]*|[a-zα-ώ]-)$/.test(vText)) break;
+      const nx = p.cells.find(c => c !== cur && Math.abs(c.x0 - v.x0) < 4 && c.y < cur.y - .5 && cur.y - c.y < cur.fh * (k ? 1.6 : 2.2));
+      if (!nx || (!open && nx.isVal) || (k && levelRow(nx))) break;
+      vText = /[a-zα-ώ]-$/.test(vText) ? vText.slice(0, -1) + nx.s : vText + " " + nx.s; cur = nx;
     }
     label = [...new Set(label)].sort((a, b) => (a.x0 - b.x0 > 3 ? 1 : b.x0 - a.x0 > 3 ? -1 : b.y - a.y));
     // the row above names the part and has no figure of its own ("ΜΠΟΥΖΙ  ΑΒ12-3" over "ΔΙΑΚΕΝΟ  0.7mm")
@@ -969,10 +1020,12 @@ function pairsOnPage(p, pq){
     const objs = objHit([...label, v]);
     if (!objs && (pq.objects.length || !pq.intents.size)) continue;
     if (pq.intents.size && v.intents.size && ![...pq.intents].some(i => v.intents.has(i))) continue;
-    let s = objs * 2;
+    // generic words ("bolt", "screw", "nut") count less than the part they hold ("caliper", "axle")
+    let s = pq.objects.reduce((t, o) => t + ([...label, v].some(c => conceptIn(c.n, o)) ? (o.alts.some(a => /^(bolt|screw|nut)s?$/.test(a)) ? 1 : 2) : 0), 0);
     for (const it of pq.intents){ if (v.intents.has(it)) s += 3; else s -= 4; }
     if (pq.objects.length && objs === pq.objects.length) s += 2;
     if (how === "row") s += .5;
+    if (how === "col" && label.some(c => /[:.]$/.test(c.s.trim())) && label.map(c => c.s).join(" ").split(/\s+/).length >= 5) s -= 1.5;   // "…should have the following value:" is an example in the text, not the spec table
     if (s <= 0) continue;
     const head = p.cells.filter(c => c.y > v.y + .5 && !c.isVal && isHeading(c) && !label.includes(c) && c.x0 <= v.x1 && (c.x1 >= v.x0 - p.w * .5)).sort((a, b) => a.y - b.y)[0];
     // model variant heading in the table above this value (e.g. "XY900S/S II"), only if it is a heading row of its own
@@ -1196,7 +1249,8 @@ const T = {
   svcSoonKm: [(k, at) => `Επόμενο σέρβις σε ${k} (στα ${at}).`, (k, at) => `Next service in ${k} (at ${at}).`],
   svcSoonDays: [(n, d) => `Ετήσιος έλεγχος σε ${n} μέρες (${d}).`, (n, d) => `Annual check in ${n} days (${d}).`],
   hiddenSched: [n => `${n === 1 ? "Κρύφτηκε 1 εργασία" : `Κρύφτηκαν ${n} εργασίες`} που κατά το manual αφορούν άλλη έκδοση.`, n => `${n} item${n === 1 ? "" : "s"} that the manual lists for another version ${n === 1 ? "is" : "are"} hidden.`],
-  schedTitle: ["Πρόγραμμα συντήρησης", "Maintenance schedule"], schedWord: ["πρόγραμμα συντήρησης", "maintenance schedule"],
+  schedTitle: ["Πρόγραμμα συντήρησης", "Maintenance schedule"], schedPicItem: ["Βρες τον αριθμό αυτό στην αριστερή στήλη του πίνακα: τα σημάδια δείχνουν σε ποια χιλιόμετρα/μήνες γίνεται (τα γράμματα a, b… παραπέμπουν στα διαστήματα).", "Find this number in the table's left column: the marks show at which distance/months it is due (letters a, b… refer to the intervals)."],
+  schedPicNote: ["Το κείμενο είναι αυτούσιο από το manual· ο πίνακας διαβάζεται μόνο από την εικόνα της σελίδας.", "The text is verbatim from the manual; the table itself can only be read from the page image."], schedPicture: ["Ο πίνακας σε αυτό το manual είναι εικόνα· δες τη σελίδα από κάτω. Τα διαστήματα όπως τα γράφει:", "The table in this manual is a picture; see the page below. The intervals as printed:"], schedWord: ["πρόγραμμα συντήρησης", "maintenance schedule"],
   serviceAt: ["Σέρβις στα", "Service at"], plusAnnual: ["και ετήσιος έλεγχος", "plus an annual check"],
   annualCheck: ["Ετήσιος έλεγχος", "Annual check"], regularReplace: ["Τακτική αντικατάσταση", "Regular replace"],
   procPage: ["Διαδικασία: σελ.", "Procedure: p."], item: ["Εργασία", "Item"], annualShort: ["Ετήσια", "Annual"], regularShort: ["Αντικ.", "Replace"],
@@ -1666,7 +1720,7 @@ function splitValue(s){
   return {main: s, conv: ""};
 }
 // put the value in the unit chosen in the menu first; the rest stay as the manual prints them
-const UNIT_RX = {"N·m": /n[·.]?m\b/i, "kgf·m": /kgf[·.]?m\b/i, "lbf·ft": /lbf[·.]?ft/i, "psi": /psi\b/i, "kPa": /kpa\b/i, "kgf/cm²": /kgf\/cm/i, "L": /\d\s*(l|liters?|litres?)\b/i, "US qt": /us qt/i, "Imp qt": /imp qt/i};
+const UNIT_RX = {"N·m": /n[·.]?m\b/i, "kgf·m": /kgf[·.]?m\b/i, "lbf·ft": /lbf[·.]?ft|lbs?\/ft/i, "psi": /psi\b/i, "kPa": /kpa\b/i, "kgf/cm²": /kgf\/cm/i, "L": /\d\s*(l|liters?|litres?)\b/i, "US qt": /us qt/i, "Imp qt": /imp qt/i};
 function preferUnit(parts, note){
   const prefs = [settings.units.torque, settings.units.pressure, settings.units.volume];
   let k = 0;
@@ -1749,13 +1803,15 @@ const pairLabel = pr => pr.label.map(c => c.s).join(" ");
 const trHTML = s => { if (L() === "en") return ""; const g = translate(s); return g ? ` <span class="tr">(${esc(g)})</span>` : ""; };
 // a value written inside a sentence ("SLACK: 20 – 30 mm (0.8 – 1.2 in)", "Replace when 50 mm (2.0 in) or more")
 // → the measurement becomes the value, the sentence stays (verbatim) as its label
-const MEASURE_RE = /(?<![A-Za-z\d.])\d+(?:[.,]\d+)?(?:\s*[–-]\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|in|°C|kgm|kg|bar|rpm)(?![A-Za-z])(?:\s*\([^()]*\))?/;
+const MEASURE_RE = /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?(?:\s*(?:[–-]|\.\.\.)\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|lbs?\/ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|gal|qt|quarts?|in|°C|kgm|kg|bar|rpm|Ah|V)(?![A-Za-z])(?:\s*\([^()]*\))?/;
 function extractMeasure(s){
   const m = s.match(MEASURE_RE);
   if (!m) return {measure: s, text: ""};
-  const before = s.slice(0, m.index).trim(), after = s.slice(m.index + m[0].length).trim();
+  let before = s.slice(0, m.index).trim(), after = s.slice(m.index + m[0].length).trim(), meas = m[0];
+  const q = before.match(/(?:^|\s)(max\.|min\.|approx\.|ca\.|μέγ\.|ελάχ\.|περίπου|περ\.)$/i);
+  if (q){ meas = q[1] + " " + meas; before = before.slice(0, before.length - q[1].length).trim(); if (!before && !/[A-Za-zΑ-Ωα-ωΆ-ώ]{3,}/.test(after)) return {measure: meas + (after && after !== "." ? " " + after : ""), text: ""}; }
   if (!/[A-Za-zΑ-Ωα-ωΆ-ώ]{3,}/.test(before + " " + after) || /^(torque|capacity)\s*:?$/i.test(before)) return {measure: s, text: ""};
-  return {measure: m[0], text: after && after !== "." ? s : before.replace(/[:\s]+$/, "")};
+  return {measure: meas, text: after && after !== "." ? s : before.replace(/[:\s]+$/, "")};
 }
 function rowHTML(pr, pq, big){
   const em = extractMeasure(pr.vText);
@@ -2184,6 +2240,85 @@ async function answerSchedule(q, out){
   return true;
 }
 
+/* a schedule printed as a picture (only its legend is text): show that page, the interval lines and the matching item */
+function markedBlocks(p, mrx){
+  const mk = c => mrx.test(c.s.trim());
+  const marks = p.cells.filter(d => mk(d) && p.cells.some(e => e !== d && hasLetters(e) && e.x0 >= d.x1 && e.x0 - d.x1 < 20 && Math.abs(e.y - d.y) < e.fh));
+  // "10 Change brake fluid in the": number and text in one run, lined up with the other numbers
+  const inl = p.cells.filter(c => !marks.includes(c) && /^\d{1,2}\s+[A-Za-zΑ-ώ]/.test(c.s) && mrx.test(c.s.split(/\s/)[0]) && marks.some(m => Math.abs(m.x0 - c.x0) < 3 || +m.s.trim() === +c.s.split(/\s/)[0] - 1));
+  marks.push(...inl);
+  return marks.sort((a, b) => b.y - a.y || a.x0 - b.x0).map(m => {
+    const first = inl.includes(m) ? m : p.cells.filter(e => e !== m && e.x0 >= m.x1 && e.x0 - m.x1 < 20 && Math.abs(e.y - m.y) < e.fh).sort((a, b) => a.x0 - b.x0)[0];
+    if (inl.includes(m)){ const cells = [m]; const x = m.x0 + (m.s.indexOf(m.s.split(/\s+/)[1]) / m.s.length) * (m.x1 - m.x0);
+      for (let cur = m;;){ const nx = p.cells.find(d => !cells.includes(d) && Math.abs(d.x0 - x) < 6 && cur.y - d.y > .5 && cur.y - d.y < cur.fh * 1.6 && !p.cells.some(e => /^([a-zα-ω]|\d{1,2})$/.test(e.s.trim()) && Math.abs(e.y - d.y) < d.fh && e.x1 <= d.x0 + 1 && d.x0 - e.x1 < 20));
+        if (!nx) break; cells.push(nx); cur = nx; }
+      return {mark: m.s.split(/\s/)[0], cells, text: cells.map(d => d.s).join(" ").replace(/^\d{1,2}\s+/, "").replace(/([a-zα-ώ])- ([a-zα-ώ])/g, "$1$2")}; }
+    const cells = [first];
+    for (let cur = first;;){ const nx = p.cells.find(d => !cells.includes(d) && Math.abs(d.x0 - first.x0) < 3 && cur.y - d.y > .5 && cur.y - d.y < cur.fh * 1.6 && !p.cells.some(e => /^([a-zα-ω]|\d{1,2})$/.test(e.s.trim()) && Math.abs(e.y - d.y) < d.fh && e.x1 <= d.x0 + 1 && d.x0 - e.x1 < 20));
+      if (!nx) break; cells.push(nx); cur = nx; }
+    return {mark: m.s.trim(), cells, text: cells.map(d => d.s).join(" ").replace(/([a-zα-ώ])- ([a-zα-ώ])/g, "$1$2")};
+  });
+}
+const SCHED_HEAD = /(maintenance|service|inspection) (schedule|chart|intervals?)|periodic maintenance|προγραμμα (περιοδικ|συντηρ|σερβισ)|πινακασ συντηρ|wartungsplan/;
+const INTERVAL_LINE = /\b(every|annually|once a year|each year)\b|καθε \d|καθε (χρονο|ετο|δυο)|ετησι/;
+async function answerSchedulePage(q, out){
+  const pq = parseQuery(q), objs = pq.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a)));
+  let best = null;
+  for (const m of manuals.filter(m => m.bikeId === currentBike.id)){
+    const ix = await loadIndex(m);
+    for (const p of ix.pages){
+      const head = p.cells.find(c => c.s.length < 45 && SCHED_HEAD.test(c.n) && c.y - p.oy > p.h * .6);
+      if (!head) continue;
+      const iv = p.cells.filter(c => INTERVAL_LINE.test(c.n));
+      if (!iv.length) continue;
+      // numbered items of the legend ("3  Engine oil change with / filter"), whole, that name what was asked
+      const items = objs.length ? markedBlocks(p, /^\d{1,2}$/).filter(b => objs.every(o => conceptIn(norm(b.text), o))) : [];
+      const sc = iv.length + items.length * 3 + (m.kind === "owner" ? 2 : 0);
+      if (!best || sc > best.sc) best = {m, p, ix, iv, items, sc, page: p.pi + 1, label: ix.labels[p.pi]};
+    }
+  }
+  if (!best) return false;
+  const {p} = best;
+  // each interval line plus its wrapped continuation ("annually or every 6000 mi" / "(10000 km) (whichever" / "comes first)")
+  const used = new Set(), lines = [];
+  // footnote-style legend ("a annually or every…", "b every two years…"): one block per marker letter
+  const marks = p.cells.filter(d => /^[a-zα-ω]$/.test(d.s.trim()) && p.cells.some(e => e !== d && e.x0 >= d.x1 && e.x0 - d.x1 < 20 && Math.abs(e.y - d.y) < e.fh));
+  if (marks.length >= 2){
+    for (const mk of marks.sort((a, b) => b.y - a.y)){
+      const first = p.cells.filter(e => e !== mk && e.x0 >= mk.x1 && e.x0 - mk.x1 < 20 && Math.abs(e.y - mk.y) < e.fh).sort((a, b) => a.x0 - b.x0)[0];
+      const blk = [first];
+      for (let cur = first;;){ const nx = p.cells.find(d => !blk.includes(d) && Math.abs(d.x0 - first.x0) < 3 && cur.y - d.y > .5 && cur.y - d.y < cur.fh * 1.6 && !p.cells.some(e => /^([a-zα-ω]|\d{1,2})$/.test(e.s.trim()) && Math.abs(e.y - d.y) < d.fh && e.x1 <= d.x0 + 1 && d.x0 - e.x1 < 20));
+        if (!nx) break; blk.push(nx); cur = nx; }
+      const text = blk.map(d => d.s).join(" ").replace(/([a-zα-ώ])- /g, "$1");
+      if (INTERVAL_LINE.test(norm(text)) || /\byears?\b|χρον|ετ(ο|η)/.test(norm(text))){ lines.push({text: mk.s.trim() + ") " + text, cells: blk}); blk.forEach(d => used.add(d)); }
+    }
+  }
+  for (const c of best.iv.sort((a, b) => b.y - a.y || a.x0 - b.x0)){
+    if (used.has(c)) continue; const blk = [c]; used.add(c);
+    for (let cur = c;;){ const nx = p.cells.find(d => !used.has(d) && Math.abs(d.x0 - c.x0) < 3 && cur.y - d.y > .5 && cur.y - d.y < cur.fh * 1.6 && !/^[a-zα-ω]$/.test(d.s.trim()) && !p.cells.some(e => /^[a-zα-ω\d]$/.test(e.s.trim()) && e.x1 <= c.x0 + 1 && c.x0 - e.x1 < 20 && Math.abs(e.y - d.y) < d.fh));
+      if (!nx) break; blk.push(nx); used.add(nx); cur = nx; }
+    const mark = p.cells.find(d => /^[a-zα-ω\d]$/.test(d.s.trim()) && d.x1 <= c.x0 + 1 && c.x0 - d.x1 < 20 && Math.abs(d.y - c.y) < c.fh);
+    lines.push({text: (mark ? mark.s.trim() + ") " : "") + blk.map(d => d.s).join(" ").replace(/([a-zα-ώ])- /g, "$1"), cells: blk});
+  }
+  const srcHead = `<div class="srchead"><b>${esc(kindName(best.m.kind))}</b> · ${t("pAbbr")} ${esc(best.label || "—")} (PDF ${best.page})</div>`;
+  out.innerHTML = `<article class="result">
+    <div class="answer"><div class="eyebrow">${t("schedTitle")}</div>
+      ${srcHead}
+      <p class="mnote">${t("schedPicture")}</p>
+      ${best.items.length ? `<div class="rows">${best.items.slice(0, 3).map(b => `<div class="row"><div class="rl"><span class="lbl"><b>${esc(b.mark)}</b> ${markText(b.text, pq)}${trHTML(b.text)}</span></div></div>`).join("")}</div><p class="mnote">${t("schedPicItem")}</p>` : ""}
+      <div class="rows">${lines.slice(0, 6).map(l => `<div class="row"><div class="rl"><span class="lbl">${markText(l.text, pq)}${trHTML(l.text)}</span></div></div>`).join("")}</div>
+    </div>
+    <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", best.page)}</div></div>
+    <div class="extra">${srcLine({m: best.m, page: best.page, label: best.label})}<div class="hint">${t("schedPicNote")}</div></div></article>`;
+  const holder = out.querySelector(".pageimg");
+  try{
+    const c = await renderPage(best.m, best.page, holder.clientWidth || 700, {weak: lines.flatMap(l => l.cells), strong: best.items.flatMap(b => b.cells)});
+    c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
+    holder.onclick = () => openViewer({m: best.m, page: best.page, hitCells: [], pairs: []}, []); addShare(out);
+  }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
+  return true;
+}
+
 /* ================= bike card: key specs from the manuals, pinned questions, parts, notes ================= */
 const CARD_SPECS = [
   {k: "oil", q: "χωρητικότητα λαδιού κινητήρα", t: ["Λάδι κινητήρα", "Engine oil"]},
@@ -2197,7 +2332,7 @@ const CARD_SPECS = [
   {k: "cool", q: "χωρητικότητα ψυκτικού", t: ["Ψυκτικό υγρό", "Coolant"]},
   {k: "batt", q: "μπαταρία", t: ["Μπαταρία", "Battery"], need: /\d\s*Ah\b/i}];   // a battery is given as "12 V … Ah"; anything else is a test step, not the battery
 const cardMem = new Map();
-const cardSig = bike => manuals.filter(m => m.bikeId === bike.id).map(m => m.id + m.kind + (m.ocr ? "o" : "")).join(",") + "|" + (bike.variant || "") + "|" + INDEX_VERSION;
+const cardSig = bike => manuals.filter(m => m.bikeId === bike.id).map(m => m.id + m.kind + (m.ocr ? "o" : "")).join(",") + "|" + (bike.variant || "") + "|" + INDEX_VERSION + "|c2";
 // one line per question: the values the normal answer would show, short, with their page; nothing when the manual has no clear value
 async function cardLookup(bike, q, need){
   const {pq, results} = await search(bike, q, () => {});
@@ -2476,7 +2611,7 @@ $("askForm").addEventListener("submit", async e => {
   }
   if (SCHED_Q.test(norm(q))){
     try{
-      if (await answerSchedule(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
+      if (await answerSchedule(q, out) || await answerSchedulePage(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
         $("terms").innerHTML = t("lookingFor") + " " + [t("schedWord"), ...pq0.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a))).map(c => esc(c.alts.join(" / ")))].map(x => `<b>${x}</b>`).join(" + "); return; }
     }catch(err){ console.error(err); }
   }
