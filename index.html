@@ -1986,7 +1986,8 @@ $("examples").addEventListener("click", e => { const c = e.target.closest(".chip
 function renderEmptyAsk(){
   if ($("out").dataset.hasResult) return;
   const n = currentBike ? manuals.filter(m => m.bikeId === currentBike.id).length : 0;
-  $("out").innerHTML = `<div class="empty">${!currentBike ? t("emptyNoBike") : !n ? t("emptyNoManual", esc(currentBike.name)) : t("emptyReady", esc(currentBike.name))}</div>`;
+  // ready to ask: nothing to say (the field and the examples say it); only a missing bike or PDF gets a hint
+  $("out").innerHTML = !currentBike ? `<div class="empty">${t("emptyNoBike")}</div>` : !n ? `<div class="empty">${t("emptyNoManual", esc(currentBike.name))}</div>` : "";
 }
 
 function markText(s, pq){
