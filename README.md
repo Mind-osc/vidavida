@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icon-192.png" width="96" alt="Vida Vida">
+  <img src="icon-192-v2.png" width="96" alt="Vida Vida">
 </p>
 
 <h1 align="center">Vida Vida</h1>

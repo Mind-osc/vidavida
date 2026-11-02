@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (38)
+- Εικονίδια με νέα ονόματα αρχείων και το manifest έρχεται πάντα φρέσκο, ώστε το κινητό να πάρει σίγουρα το νέο στρογγυλό εικονίδιο (χωρίς λευκό πλαίσιο στην εκκίνηση) και να μη μείνει σε παλιό αντίγραφο.
+- *Icon files renamed and the manifest fetched network-first so phones pick up the new round icon instead of a cached one.*
+
 ## 2 Νοεμβρίου 2026 (37)
 - Οθόνη εκκίνησης (Android): δείχνει πλέον μόνο το στρογγυλό λογότυπο πάνω στο μαύρο, χωρίς το λευκό τετράγωνο πλαίσιο. Το εικονίδιο της αρχικής οθόνης δεν αλλάζει.
 - *Android splash shows just the round logo on black, no white square frame; the home-screen icon is unchanged.*
