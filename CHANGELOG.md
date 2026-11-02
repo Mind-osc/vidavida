@@ -1,7 +1,7 @@
 # Τι νέο / What's new
 
 ## 2 Νοεμβρίου 2026 (25)
-- Το λογότυπο «VIDA VIDA» γράφεται με τη γραματοσειρά Super Sliced Italic του Darrell Flood (κεφαλαία). Ενσωματώνονται μόνο τα γράμματα του ονόματος, οπότε δουλεύει και χωρίς internet.
+- Το λογότυπο «VIDA VIDA» γράφεται με τη γραμματοσειρά Super Sliced Italic του Darrell Flood (κεφαλαία). Ενσωματώνονται μόνο τα γράμματα του ονόματος, οπότε δουλεύει και χωρίς internet.
 - *Logo lettering now uses Super Sliced Italic by Darrell Flood (uppercase); only the letters of the name are embedded.*
 
 ## 2 Νοεμβρίου 2026 (24)
