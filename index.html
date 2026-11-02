@@ -547,6 +547,11 @@ header{padding-block:10px 12px;gap:8px 14px}
 [data-pal="glass"] input[type=checkbox]:checked:not(#_){border-color:transparent}
 [data-pal="glass"] :is(.btn.primary,.fab):active:not(#_){box-shadow:0 0 0 6px var(--hl)}
 [data-pal="glass"] .pal[aria-checked=true]:not(#_){box-shadow:0 0 0 2px var(--accent)}
+/* glass: the button colour used as text or a thin line takes its text-safe shade */
+[data-pal="glass"] :is(.bgar,.brand .tagline,.steps li::marker){color:var(--accent-text,var(--accent))}
+[data-pal="glass"] :is(.row .val,.bigdue .val,.docs li.soon):not(#_){border-color:var(--accent-text,var(--accent))}
+[data-pal="glass"] :is(.warn,.alert,.answer blockquote.sect,.sugg li.fromman){border-left-color:var(--accent-text,var(--accent))}
+[data-pal="glass"] :is(select,input,textarea,button):focus-visible{outline-color:var(--accent-text,var(--accent))}
 </style>
 </head>
 <body>
@@ -1404,7 +1409,7 @@ let bikes = [], manuals = [], currentBike = null;
 const $ = id => document.getElementById(id);
 /* ================= settings + languages ================= */
 const SETTINGS_KEY = "mg.settings";
-const settings = Object.assign({lang: "el", theme: "auto", palette: "classic", glassAcc: "blue", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
+const settings = Object.assign({lang: "el", theme: "light", palette: "glass", glassAcc: "peach", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
   (() => { try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; } })());
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
 const L = () => settings.lang === "en" ? "en" : "el";
@@ -1803,20 +1808,28 @@ function readableAccent(hex, dark){
   return {acc: out, ink, hl: `rgba(${hex2rgb(out).join(",")},${dark ? .28 : .2})`};
 }
 let accOpen = false;
-const GLASS_ACC = {"blue": {"n": ["Μπλε", "Blue"], "c": ["#0a5fd0", "#5aa8ff"]}, "cherry": {"n": ["Βυσσινί", "Cherry"], "c": ["#9b1b3a", "#ff8aa3"]}, "green": {"n": ["Πράσινο", "Green"], "c": ["#1d7546", "#6fd6a0"]}, "orange": {"n": ["Πορτοκαλί", "Orange"], "c": ["#a8490a", "#ffa65c"]}, "purple": {"n": ["Μωβ", "Purple"], "c": ["#6a3fcf", "#b9a2ff"]}, "graphite": {"n": ["Γραφίτης", "Graphite"], "c": ["#3b404c", "#d9dde6"]}};
+const GLASS_ACC = {"peach": {"n": ["Ροδακινί", "Peach"], "c": ["#f2b79c", "#ffc4a6"]}, "blue": {"n": ["Μπλε", "Blue"], "c": ["#0a5fd0", "#5aa8ff"]}, "cherry": {"n": ["Βυσσινί", "Cherry"], "c": ["#9b1b3a", "#ff8aa3"]}, "green": {"n": ["Πράσινο", "Green"], "c": ["#1d7546", "#6fd6a0"]}, "orange": {"n": ["Πορτοκαλί", "Orange"], "c": ["#a8490a", "#ffa65c"]}, "purple": {"n": ["Μωβ", "Purple"], "c": ["#6a3fcf", "#b9a2ff"]}, "graphite": {"n": ["Γραφίτης", "Graphite"], "c": ["#3b404c", "#d9dde6"]}};
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
   if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   if (settings.palette === "glass" && settings.glassAcc && settings.glassAcc !== "blue" && GLASS_ACC[settings.glassAcc]) r.dataset.acc = settings.glassAcc; else delete r.dataset.acc;
   const isDark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  for (const k of ["--accent", "--accent-ink", "--hl", "--accent-fill"]) r.style.removeProperty(k);
+  for (const k of ["--accent", "--accent-ink", "--hl", "--accent-fill", "--accent-text"]) r.style.removeProperty(k);
   if (settings.palette === "glass"){
     let base;
     if (settings.glassAcc === "custom" && /^#[0-9a-f]{6}$/i.test(settings.glassHex || "")){
       const a = readableAccent(settings.glassHex, isDark); base = a.acc;
       r.style.setProperty("--accent", a.acc); r.style.setProperty("--accent-ink", a.ink); r.style.setProperty("--hl", a.hl);
-    } else base = (GLASS_ACC[settings.glassAcc] || GLASS_ACC.blue).c[isDark ? 1 : 0];
+    } else {
+      base = (GLASS_ACC[settings.glassAcc] || GLASS_ACC.blue).c[isDark ? 1 : 0];
+      r.style.setProperty("--accent", base); r.style.setProperty("--hl", `rgba(${hex2rgb(base).join(",")},${isDark ? .28 : .2})`);
+      r.style.setProperty("--accent-ink", contrast("#ffffff", base) >= contrast("#111111", base) ? "#ffffff" : "#111111");
+    }
+    // where the colour is used as text or a thin line (logo, value frames, step numbers), a deeper shade of it that reads on the page
+    { const bgc = isDark ? "#140a12" : "#e9eef9"; let {h, s: sa, l} = hex2hsl(base), tx = base;
+      for (let k = 0; k < 40 && contrast(tx, bgc) < 3.2; k++){ l = isDark ? Math.min(1, l + .025) : Math.max(0, l - .025); tx = hsl2hex(h, sa, l); }
+      r.style.setProperty("--accent-text", tx); }
     // see-through buttons: the fill lets the background show; the text on it is chosen for what the eye actually sees (fill over background)
     const al = Math.max(.25, Math.min(1, +settings.glassAlpha || 1));
     if (al < .995){
