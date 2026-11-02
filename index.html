@@ -1878,7 +1878,7 @@ async function refresh(){
   manuals = (await getAll("manuals")).sort((a, b) => a.created - b.created);
   const want = ls.get("mg.bike");
   currentBike = bikes.find(b => b.id === want) || (currentBike && bikes.find(b => b.id === currentBike.id)) || bikes[0] || null;
-  $("bikeSel").innerHTML = bikes.map(b => `<option value="${b.id}"${currentBike && b.id === currentBike.id ? " selected" : ""}>${esc(b.name)}</option>`).join("") + `<option value="__add">${t("addBikeOpt")}</option>`;
+  $("bikeSel").innerHTML = bikes.map(b => `<option value="${b.id}"${currentBike && b.id === currentBike.id ? " selected" : ""}>${esc(pickerName(b))}</option>`).join("") + `<option value="__add">${t("addBikeOpt")}</option>`;
   renderLib(); renderEmptyAsk(); updateTransPicker(); updateBanner(); if (!$("pSvc").hidden) renderService();
 }
 
@@ -2143,7 +2143,7 @@ function friendly(atom){
   const m = atom.match(/^([A-Z]+)(\d+)([A-Z]?)( II)?$/); if (!m) return atom;
   const bits = [];
   if (/^CRF1[01]\d0$/.test(m[1] + m[2])){                       // Honda Africa Twin codes
-    if (m[4]) bits.push("Adventure Sports");
+    if (m[4]) bits.push("Adv Sports");
     if (m[3] === "D") bits.push("DCT"); else bits.push(t("manualGear"));
   }
   return bits.length ? `${atom} (${bits.join(", ")})` : atom;
@@ -2170,10 +2170,17 @@ async function bikeVariants(bike){
   const list = [...counts].filter(([a, n]) => a.startsWith(best) && n >= 2).map(([a]) => a).sort();
   return list.length >= 2 ? list : [];
 }
+// in the bike picker, leave out what the version picker under it already says ("… Adventure Sports DCT" → "…")
+const VERSION_WORDS = /(\s+(adventure|adv\.?)\s+sports?|\s+dct|\s+\((?:manual|χειροκίνητο|dct)\))+\s*$/i;
+const pickerName = b => b.hasVariants ? (b.name.replace(VERSION_WORDS, "").trim() || b.name) : b.name;
 async function updateTransPicker(){
   const box = $("transPick"); box.hidden = true;
   if (!currentBike) return;
   const list = await bikeVariants(currentBike);
+  if (!!list.length !== !!currentBike.hasVariants){   // remember it, so the bike picker can shorten the name
+    currentBike.hasVariants = !!list.length; putOne("bikes", currentBike);
+    const o = $("bikeSel").querySelector(`option[value="${currentBike.id}"]`); if (o) o.textContent = pickerName(currentBike);
+  }
   const sel = $("transSel");
   sel.innerHTML = `<option value="">${t("allVersions")}</option>` + list.map(a => `<option value="${esc(a)}">${esc(friendly(a))}</option>`).join("");
   if (currentBike.variant && !list.includes(currentBike.variant)) currentBike.variant = "";

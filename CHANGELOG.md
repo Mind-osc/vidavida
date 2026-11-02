@@ -1,5 +1,10 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (39)
+- Πάνω, η «Μηχανή» δεν γράφει πια την έκδοση (π.χ. «Adventure Sports», «DCT») όταν υπάρχει από κάτω επιλογή «Έκδοση» που τη λέει ήδη· το όνομα της μηχανής στη βιβλιοθήκη μένει όπως το έγραψες.
+- Στις εκδόσεις γράφεται «Adv Sports» αντί για «Adventure Sports», για να χωράει.
+- *The bike picker leaves out version words already shown by the version picker; "Adv Sports" instead of "Adventure Sports".*
+
 ## 2 Νοεμβρίου 2026 (38)
 - Εικονίδια με νέα ονόματα αρχείων και το manifest έρχεται πάντα φρέσκο, ώστε το κινητό να πάρει σίγουρα το νέο στρογγυλό εικονίδιο (χωρίς λευκό πλαίσιο στην εκκίνηση) και να μη μείνει σε παλιό αντίγραφο.
 - *Icon files renamed and the manifest fetched network-first so phones pick up the new round icon instead of a cached one.*
