@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (34)
+- Το μενού (και το πάνελ επικοινωνίας) είναι πλέον κάρτα που έχει το ύψος που χρειάζεται για όσα δείχνει: μικρό στη λίστα, μεγαλύτερο σε μια σελίδα με πολλές επιλογές. Όταν αλλάζεις σελίδα, μεγαλώνει ή μικραίνει ομαλά προς τα κάτω· αν δεν χωράει, φτάνει ως το ύψος της οθόνης και κυλάει.
+- *Menu and feedback panels are floating cards sized to their content; their height eases when switching pages and caps at the screen height (then scrolls).*
+
 ## 2 Νοεμβρίου 2026 (33)
 - Νέοι χρήστες ξεκινούν με το σκούρο Γυαλί (ανθρακί φόντο, κεχριμπαρένια κουμπιά). Όσοι έχουν ήδη διαλέξει θέμα το κρατούν.
 - *New users start in dark Glass (charcoal background, amber buttons); existing choices are kept.*

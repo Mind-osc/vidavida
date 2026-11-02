@@ -560,6 +560,16 @@ header{padding-block:10px 12px;gap:8px 14px}
 .bname .bgar{color:var(--accent);-webkit-text-stroke:.6px var(--accent-edge);paint-order:stroke fill}   /* same colour as the buttons; on light pages a hairline edge in a deeper shade keeps it crisp */
 /* glass: a faint grain over the background hides colour banding in slow gradients (dithering) */
 [data-pal="glass"] body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");opacity:.05}
+/* side panels (menu, feedback): a floating card as tall as its content, up to the screen's height; it grows and shrinks smoothly */
+.drawer{top:max(10px,env(safe-area-inset-top,0px));bottom:auto;left:10px;width:min(360px,calc(100vw - 20px));
+  max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  border:1px solid var(--line);border-radius:18px;padding:0;overflow:hidden;transform:translateX(calc(-100% - 24px))}
+.drawer.open{transform:none}
+.drawer.sizing{transition:transform .2s ease,height .26s cubic-bezier(.2,.8,.2,1)}
+#menuBody,.drawer .dbody{min-height:0;flex:0 1 auto}
+#menuBody{padding-bottom:16px}
+[data-pal="glass"] .drawer:not(#_){border-radius:26px}
+@media (prefers-reduced-motion:reduce){.drawer.sizing{transition:none}}
 </style>
 </head>
 <body>
@@ -3407,6 +3417,18 @@ function seg(name, opts, cur){
 const MENU_ICO = {lang: "<circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18'/>", look: "<path d='M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-1.9-.5-1.2.3-2.6 1.7-2.6H17a4 4 0 0 0 4-4c0-5-4-9.5-9-9.5z'/><circle cx='7.5' cy='11' r='1.2'/><circle cx='11' cy='7' r='1.2'/><circle cx='15.5' cy='8' r='1.2'/>", units: "<rect x='3' y='8' width='18' height='8' rx='1.5'/><path d='M7 8v3M11 8v4M15 8v3M19 8v2'/>", bikes: "<circle cx='5.5' cy='16' r='3.5'/><circle cx='18.5' cy='16' r='3.5'/><path d='M5.5 16l4.5-7h3.5l5 7M9 12h7'/><path d='M14 6h3'/>", backup: "<path d='M7 18a5 5 0 0 1-.6-10A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z'/><path d='M12 11v6M9.5 13.5L12 11l2.5 2.5'/>", help: "<circle cx='12' cy='12' r='9'/><path d='M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.8'/><circle cx='12' cy='17' r='.6'/>"};
 let menuPage = null;   // null = the list of entries; otherwise the entry being shown
 function renderMenu(){
+  const dr = $("drawer"), live = !dr.hidden && dr.classList.contains("open"), h0 = live ? dr.offsetHeight : 0;
+  try{ renderMenuBody(); } finally { if (live) sizeDrawer(dr, h0); }
+}
+// ease a panel from its previous height to the height of what it now shows
+function sizeDrawer(dr, h0){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  dr.style.height = ""; const h1 = dr.offsetHeight; if (Math.abs(h1 - h0) < 2) return;
+  dr.classList.remove("sizing"); dr.style.height = h0 + "px"; void dr.offsetHeight;
+  dr.classList.add("sizing"); dr.style.height = h1 + "px";
+  clearTimeout(dr._sz); dr._sz = setTimeout(() => { dr.style.height = ""; dr.classList.remove("sizing"); }, 300);
+}
+function renderMenuBody(){
   const u = settings.units;
   const ico = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${MENU_ICO[k]}</svg>`;
   const PAGES = {
