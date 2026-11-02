@@ -1409,7 +1409,7 @@ let bikes = [], manuals = [], currentBike = null;
 const $ = id => document.getElementById(id);
 /* ================= settings + languages ================= */
 const SETTINGS_KEY = "mg.settings";
-const settings = Object.assign({lang: "el", theme: "light", palette: "glass", glassAcc: "peach", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
+const settings = Object.assign({lang: "el", theme: "light", palette: "glass", glassAcc: "amber", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
   (() => { try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; } })());
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
 const L = () => settings.lang === "en" ? "en" : "el";
@@ -1808,7 +1808,7 @@ function readableAccent(hex, dark){
   return {acc: out, ink, hl: `rgba(${hex2rgb(out).join(",")},${dark ? .28 : .2})`};
 }
 let accOpen = false;
-const GLASS_ACC = {"peach": {"n": ["Ροδακινί", "Peach"], "c": ["#f2b79c", "#ff8a1f"]}, "blue": {"n": ["Μπλε", "Blue"], "c": ["#0a5fd0", "#5aa8ff"]}, "cherry": {"n": ["Βυσσινί", "Cherry"], "c": ["#9b1b3a", "#ff8aa3"]}, "green": {"n": ["Πράσινο", "Green"], "c": ["#1d7546", "#6fd6a0"]}, "orange": {"n": ["Πορτοκαλί", "Orange"], "c": ["#a8490a", "#ffa65c"]}, "purple": {"n": ["Μωβ", "Purple"], "c": ["#6a3fcf", "#b9a2ff"]}, "graphite": {"n": ["Γραφίτης", "Graphite"], "c": ["#3b404c", "#d9dde6"]}};
+const GLASS_ACC = {"amber": {"n": ["Κεχριμπάρι", "Amber"], "c": ["#ffac22", "#ffac22"]}, "peach": {"n": ["Ροδακινί", "Peach"], "c": ["#f2b79c", "#ff8a1f"]}, "blue": {"n": ["Μπλε", "Blue"], "c": ["#0a5fd0", "#5aa8ff"]}, "cherry": {"n": ["Βυσσινί", "Cherry"], "c": ["#9b1b3a", "#ff8aa3"]}, "green": {"n": ["Πράσινο", "Green"], "c": ["#1d7546", "#6fd6a0"]}, "orange": {"n": ["Πορτοκαλί", "Orange"], "c": ["#a8490a", "#ffa65c"]}, "purple": {"n": ["Μωβ", "Purple"], "c": ["#6a3fcf", "#b9a2ff"]}, "graphite": {"n": ["Γραφίτης", "Graphite"], "c": ["#3b404c", "#d9dde6"]}};
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
