@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (31)
+- Το λογότυπο γράφεται «ViDA ViDA» (με μικρό i).
+- *Logo reads "ViDA ViDA" (lower-case i).*
+
 ## 2 Νοεμβρίου 2026 (30)
 - Λογότυπο «VIDA VIDA» με νέα γραμματοσειρά (Piye Meneh του Abdullah Rasyid). Ενσωματώνονται μόνο τα γράμματα του ονόματος.
 - *Logo lettering: Piye Meneh by Abdullah Rasyid; only the letters of the name are embedded.*
