@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (28)
+- Λογότυπο «VIDA VIDA» με τη γραμματοσειρά Rubik Distressed («φθαρμένα» γράμματα). Είναι ελεύθερη (SIL Open Font License), επιτρέπεται και σε εφαρμογή στο store, και ενσωματώνονται μόνο τα γράμματα του ονόματος.
+- *Logo lettering: Rubik Distressed (SIL OFL, fine for app stores); only the letters of the name are embedded.*
+
 ## 2 Νοεμβρίου 2026 (27)
 - Λογότυπο «VIDA VIDA» λίγο μεγαλύτερο, πάνω και στο μενού.
 - *Slightly larger logo lettering.*
