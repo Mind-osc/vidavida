@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (30)
+- Λογότυπο «VIDA VIDA» με νέα γραμματοσειρά (Piye Meneh του Abdullah Rasyid). Ενσωματώνονται μόνο τα γράμματα του ονόματος.
+- *Logo lettering: Piye Meneh by Abdullah Rasyid; only the letters of the name are embedded.*
+
 ## 2 Νοεμβρίου 2026 (29)
 - **Νέο λογότυπο:** μηχανή μέσα σε γρανάζι. Είναι πλέον το εικονίδιο της εφαρμογής στην αρχική οθόνη του κινητού (και στο iPhone), στην καρτέλα του browser και δίπλα στο «VIDA VIDA» μέσα στην εφαρμογή. Η οθόνη εκκίνησης της εφαρμογής έχει μαύρο φόντο.
 - *New logo (a bike inside a gear) as the home-screen icon, iPhone icon, browser tab icon and in-app logo; black splash background.*
