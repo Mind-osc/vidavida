@@ -1,7 +1,7 @@
 /* Vida Vida service worker: keeps the app available offline.
    Online: the page always comes fresh from the server (so updates show up at once) and the copy is saved.
    Offline: the saved copy is used. Icons and the manifest come from the saved copy first. */
-const CACHE = "vidavida-v25";
+const CACHE = "vidavida-v26";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-maskable-192.png", "./icon-maskable-512.png"];
 
 self.addEventListener("install", e => {

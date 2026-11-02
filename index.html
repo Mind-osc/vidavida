@@ -89,6 +89,22 @@
 .accs{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 6px}
 .acc{width:36px;height:36px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.75);box-shadow:inset 0 2px 4px rgba(255,255,255,.45),0 2px 6px rgba(0,0,0,.2);padding:0}
 .acc[aria-checked=true]{box-shadow:inset 0 2px 4px rgba(255,255,255,.45),0 0 0 3px var(--paper),0 0 0 5px var(--ink)}
+.accrow{display:flex;align-items:center;gap:12px;margin:2px 0 4px}
+.accball{position:relative;width:46px;height:46px;flex:none;border-radius:50%;border:0;padding:0;cursor:pointer;
+  background:conic-gradient(from 180deg,#ff3b30,#ff9500,#ffcc00,#34c759,#00c7be,#007aff,#5856d6,#af52de,#ff2d55,#ff3b30);
+  box-shadow:inset 0 2px 5px rgba(255,255,255,.55),0 3px 10px rgba(0,0,0,.25)}
+.accball::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--accent);border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.accball[aria-expanded=true]{box-shadow:inset 0 2px 5px rgba(255,255,255,.55),0 0 0 3px var(--paper),0 0 0 5px var(--accent)}
+.accname{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cpick{display:grid;gap:12px;padding:12px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi,transparent)}
+.cpick .sv{position:relative;height:150px;border-radius:14px;touch-action:none;cursor:crosshair;
+  background:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,hsl(var(--h,210),100%,50%))}
+.cpick .hue{position:relative;height:26px;border-radius:999px;touch-action:none;cursor:pointer;
+  background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+.cpick .knob{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;border:3px solid #fff;box-shadow:0 1px 6px rgba(0,0,0,.45),inset 0 0 0 1px rgba(0,0,0,.15);pointer-events:none}
+.cpick .hue .knob{top:50%}
+.cprow{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.cprow .btn.primary{pointer-events:none}
 [data-pal="glass"] input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:999px;cursor:pointer;
   background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);border:1px solid var(--line);box-shadow:inset 0 1px 3px var(--glass-sh);transition:background-color .2s ease}
 [data-pal="glass"] input[type=checkbox]::before{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
@@ -1706,12 +1722,39 @@ $("fbSend").onclick = () => {
 window.addEventListener("error", e => toast(t("appError", e.message || e.error || "?"), true));
 window.addEventListener("unhandledrejection", e => toast(t("appError", (e.reason && (e.reason.message || e.reason)) || "?"), true));
 const PALETTES = {"classic": {"n": ["Κλασικό", "Classic"], "sw": ["#0f1419", "#182028", "#fcab01", "#dfe3e7", "#ffffff"]}, "rosso": {"n": ["Ρόσσο", "Rosso"], "sw": ["#1f1515", "#5b595b", "#a9a6a6", "#9a0101", "#650a0b"]}, "sand": {"n": ["Άμμος", "Sand"], "sw": ["#dac3a4", "#c3b49f", "#9b9285", "#736f6b", "#55524f"]}, "espresso": {"n": ["Εσπρέσο", "Espresso"], "sw": ["#261c14", "#8a7c6a", "#736654", "#524433", "#ccc5b9"]}, "berry": {"n": ["Μούρο", "Berry"], "sw": ["#4b2b33", "#603649", "#361b27", "#a05c84", "#5e4555"]}, "teal": {"n": ["Πετρόλ", "Teal"], "sw": ["#2b4242", "#93a4ab", "#c3c6c3", "#7d8f8b", "#6b8784"]}, "sage": {"n": ["Φασκόμηλο", "Sage"], "sw": ["#526851", "#9fad94", "#f3f1e5", "#cfc8b6"]}, "glass": {"n": ["Γυαλί", "Glass"], "sw": ["#9cc3ff", "#d6bcff", "#ffd2bd", "#ffd2bd"]}};
+/* a button colour picked freely: kept readable — the text on it is white or black, whichever reads better,
+   and the colour is nudged lighter (dark theme) or darker (light theme) only as far as needed to stand out */
+const hex2rgb = h => [0, 2, 4].map(i => parseInt(h.slice(1).slice(i, i + 2), 16));
+const rgb2hex = c => "#" + c.map(x => Math.round(Math.max(0, Math.min(255, x))).toString(16).padStart(2, "0")).join("");
+const relLum = h => { const [r, g, b] = hex2rgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+const contrast = (a, b) => { const x = relLum(a), y = relLum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
+function hsv2hex(h, s, v){ const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); }; return rgb2hex([f(5), f(3), f(1)].map(x => x * 255)); }
+function hex2hsv(hex){ const [r, g, b] = hex2rgb(hex).map(x => x / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+  let h = 0; if (d){ h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60; if (h < 0) h += 360; }
+  return {h, s: mx ? d / mx : 0, v: mx}; }
+function hex2hsl(hex){ const [r, g, b] = hex2rgb(hex).map(x => x / 255), mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0; return {h: hex2hsv(hex).h, s, l}; }
+function hsl2hex(h, s, l){ const a = s * Math.min(l, 1 - l), f = n => { const k = (n + h / 30) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return rgb2hex([f(0), f(8), f(4)].map(x => x * 255)); }
+function readableAccent(hex, dark){
+  // only the lightness moves (hue and saturation stay), and only until the colour stands out from the background
+  const bg = dark ? "#140a12" : "#e9eef9", want = dark ? 3 : 1.3;
+  let {h, s, l} = hex2hsl(hex), out = hex;
+  for (let k = 0; k < 40 && contrast(out, bg) < want; k++){ l = dark ? Math.min(1, l + .025) : Math.max(0, l - .025); out = hsl2hex(h, s, l); }
+  const ink = contrast("#ffffff", out) >= contrast("#111111", out) ? "#ffffff" : "#111111";
+  return {acc: out, ink, hl: `rgba(${hex2rgb(out).join(",")},${dark ? .28 : .2})`};
+}
+let accOpen = false;
 const GLASS_ACC = {"blue": {"n": ["Μπλε", "Blue"], "c": ["#0a5fd0", "#5aa8ff"]}, "cherry": {"n": ["Βυσσινί", "Cherry"], "c": ["#9b1b3a", "#ff8aa3"]}, "green": {"n": ["Πράσινο", "Green"], "c": ["#1d7546", "#6fd6a0"]}, "orange": {"n": ["Πορτοκαλί", "Orange"], "c": ["#a8490a", "#ffa65c"]}, "purple": {"n": ["Μωβ", "Purple"], "c": ["#6a3fcf", "#b9a2ff"]}, "graphite": {"n": ["Γραφίτης", "Graphite"], "c": ["#3b404c", "#d9dde6"]}};
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
   if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   if (settings.palette === "glass" && settings.glassAcc && settings.glassAcc !== "blue" && GLASS_ACC[settings.glassAcc]) r.dataset.acc = settings.glassAcc; else delete r.dataset.acc;
+  const isDark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  if (settings.palette === "glass" && settings.glassAcc === "custom" && /^#[0-9a-f]{6}$/i.test(settings.glassHex || "")){
+    const a = readableAccent(settings.glassHex, isDark);
+    r.style.setProperty("--accent", a.acc); r.style.setProperty("--accent-ink", a.ink); r.style.setProperty("--hl", a.hl);
+  } else for (const k of ["--accent", "--accent-ink", "--hl"]) r.style.removeProperty(k);
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
   const tc = document.getElementById("themeColor"); if (tc) tc.content = (getComputedStyle(r).getPropertyValue("--bar").trim() || getComputedStyle(r).getPropertyValue("--paper").trim()) || (dark ? "#0f1419" : "#ffffff");   // the status bar follows the palette
   // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
@@ -3280,7 +3323,16 @@ function renderMenu(){
       <div class="mlabel">${t("theme")}</div>${seg("theme", [["auto", t("thAuto")], ["light", t("thLight")], ["dark", t("thDark")]], settings.theme)}
       <div class="mlabel">${t("palette")}</div>
       <div class="pals" role="radiogroup">${Object.entries(PALETTES).map(([k, p]) => `<button type="button" class="pal" role="radio" aria-checked="${k === (settings.palette || "classic")}" data-pal="${k}"><span class="sw">${p.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>${esc(p.n[L() === "en" ? 1 : 0])}</button>`).join("")}</div>
-      ${settings.palette === "glass" ? `<div class="mlabel">${t("btnColour")}</div><div class="accs" role="radiogroup">${Object.entries(GLASS_ACC).map(([k, a]) => `<button type="button" class="acc" role="radio" aria-checked="${k === (settings.glassAcc || "blue")}" data-acc="${k}" title="${esc(a.n[L() === "en" ? 1 : 0])}" aria-label="${esc(a.n[L() === "en" ? 1 : 0])}" style="background:linear-gradient(135deg,${a.c[1]},${a.c[0]})"></button>`).join("")}</div>` : ""}
+      ${settings.palette === "glass" ? `<div class="mlabel">${t("btnColour")}</div>
+        <div class="accrow"><button type="button" class="accball" id="accBall" aria-expanded="${accOpen}" aria-controls="cpick" aria-label="${t("btnColour")}"></button>
+          <span class="accname" id="accName">${settings.glassAcc === "custom" ? esc((settings.glassHex || "").toUpperCase()) : esc((GLASS_ACC[settings.glassAcc || "blue"] || GLASS_ACC.blue).n[L() === "en" ? 1 : 0])}</span></div>
+        ${accOpen ? (() => { const hx = settings.glassAcc === "custom" && settings.glassHex ? settings.glassHex : (GLASS_ACC[settings.glassAcc || "blue"] || GLASS_ACC.blue).c[0], c = hex2hsv(hx);
+          return `<div class="cpick" id="cpick" style="--h:${Math.round(c.h)}">
+            <div class="sv" id="cpSV"><i class="knob" style="left:${c.s * 100}%;top:${(1 - c.v) * 100}%;background:${hx}"></i></div>
+            <div class="hue" id="cpHue"><i class="knob" style="left:${c.h / 3.6}%;background:hsl(${Math.round(c.h)},100%,50%)"></i></div>
+            <div class="cprow"><span class="btn primary">${t("search")}</span><span class="accname" id="cpHex">${hx.toUpperCase()}</span></div>
+            <div class="accs" role="radiogroup">${Object.entries(GLASS_ACC).map(([k, a]) => `<button type="button" class="acc" role="radio" aria-checked="${k === settings.glassAcc}" data-acc="${k}" title="${esc(a.n[L() === "en" ? 1 : 0])}" aria-label="${esc(a.n[L() === "en" ? 1 : 0])}" style="background:linear-gradient(135deg,${a.c[1]},${a.c[0]})"></button>`).join("")}</div>
+          </div>`; })() : ""}` : ""}
       <label class="toggle"><input type="checkbox" id="bigToggle"${settings.big ? " checked" : ""}><span>${t("bigText")}</span></label>
     </section>
     <section><h3>${t("units")}</h3>
@@ -3303,6 +3355,28 @@ function renderMenu(){
 const fmtBytes = b => b > 1e9 ? (b / 1e9).toFixed(1) + " GB" : (b / 1e6).toFixed(0) + " MB";
 function openMenu(){ renderMenu(); $("drawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => $("drawer").classList.add("open")); $("menuBtn").setAttribute("aria-expanded", "true"); $("menuClose").focus(); }
 function closeMenu(){ $("drawer").classList.remove("open"); $("scrim").hidden = true; $("menuBtn").setAttribute("aria-expanded", "false"); setTimeout(() => { $("drawer").hidden = true; }, 200); }
+$("drawer").addEventListener("pointerdown", e => {
+  const area = e.target.closest("#cpSV, #cpHue"); if (!area) return;
+  e.preventDefault(); area.setPointerCapture(e.pointerId);
+  const box = $("cpick"), cur = settings.glassAcc === "custom" && settings.glassHex ? settings.glassHex : (GLASS_ACC[settings.glassAcc || "blue"] || GLASS_ACC.blue).c[0];
+  let {h, s: sat, v} = hex2hsv(cur); if (area.id === "cpSV" && !sat && !v) sat = v = 1;
+  const move = ev => {
+    const rc = area.getBoundingClientRect(), x = Math.max(0, Math.min(1, (ev.clientX - rc.left) / rc.width)), y = Math.max(0, Math.min(1, (ev.clientY - rc.top) / rc.height));
+    if (area.id === "cpHue") h = x * 360; else { sat = x; v = 1 - y; }
+    const hx = hsv2hex(h, sat, v);
+    settings.glassAcc = "custom"; settings.glassHex = hx; applyLook();
+    box.style.setProperty("--h", Math.round(h));
+    const k1 = box.querySelector("#cpSV .knob"), k2 = box.querySelector("#cpHue .knob");
+    k1.style.left = sat * 100 + "%"; k1.style.top = (1 - v) * 100 + "%"; k1.style.background = hx;
+    k2.style.left = h / 3.6 + "%"; k2.style.background = `hsl(${Math.round(h)},100%,50%)`;
+    $("cpHex").textContent = hx.toUpperCase(); $("accName").textContent = hx.toUpperCase(); box.querySelectorAll(".acc").forEach(b => b.setAttribute("aria-checked", "false"));
+  };
+  move(e);
+  const up = () => { area.removeEventListener("pointermove", move); area.removeEventListener("pointerup", up); area.removeEventListener("pointercancel", up); saveSettings(); };
+  area.addEventListener("pointermove", move); area.addEventListener("pointerup", up); area.addEventListener("pointercancel", up);
+});
+// "automatic" theme: follow the phone when it switches between light and dark
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => applyLook()); }catch(_){}
 $("menuBtn").onclick = openMenu; $("menuClose").onclick = closeMenu; $("scrim").onclick = () => { if (!$("helpDrawer").hidden) closeHelp(); else closeMenu(); };
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("drawer").hidden) closeMenu(); });
 
@@ -3319,6 +3393,7 @@ $("drawer").addEventListener("click", async e => {
   if (pb){ settings.palette = pb.dataset.pal; saveSettings(); applyLook(); renderMenu(); return; }
   const ab = e.target.closest(".acc[data-acc]");
   if (ab){ settings.glassAcc = ab.dataset.acc; saveSettings(); applyLook(); renderMenu(); return; }
+  if (e.target.closest("#accBall")){ accOpen = !accOpen; renderMenu(); if (accOpen) $("cpick")?.scrollIntoView({block: "nearest", behavior: "smooth"}); return; }
   if (e.target.closest("#helpBtn")){ closeMenu(); setTimeout(openHelp, 120); return; }
   if (e.target.id === "menuLib"){ closeMenu(); tab("lib"); }
   if (e.target.id === "installBtn" && installEvt){ installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; renderMenu(); }); }
