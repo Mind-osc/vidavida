@@ -510,7 +510,7 @@ const DICT = [
  ["ηχ",["horn","sound"]],["κορν",["horn"]],["κλαξον",["horn"]],["θερμαιν",["heated","grip heater"]],["χουφτ",["grip","grips"]],["γκριπ",["grip","throttle grip"]],
  ["εξαερωσ",["bleed","bleeding","air"],"act"],["κουρδιζ",["adjust","tune"],"act"],["σφιγγ",["tighten","tightening"],"act"],["χαλαρω",["loosen","slack"],"act"],
  ["ροπ",["torque","tighten"],"torque"],["συσφιξ",["torque","tighten"],"torque"],["σφιξ",["torque","tighten"],"torque"],["νιουτον",["torque"],"torque"],
- ["πιεσ",["pressure"],"pressure"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
+ ["πιεσ",["pressure"],"pressure"],["προδιαγραφ",["specification","recommended"],"grade"],["ιξωδ",["viscosity","sae"],"grade"],["τυπ",["type","recommended"],"grade"],["προτειν",["recommended","specified"],"grade"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
  ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["ελευθερ",["freeplay","free play","free"],"length"],["διαδρομ",["freeplay","free play","travel"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
  ["βιδ",["bolt","screw"]],["μπουλον",["bolt"]],["παξιμαδ",["nut"]],["ροδελ",["washer"]],
  ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement","αλλαγ","αλλαξ","αντικατασ"],"act"],["λιπαιν",["lubricate","lubricating","lubrication","λιπανσ","λιπαν"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing","αφαιρεσ","αφαιρ"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing","τοποθετησ"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging","φορτισ"],"act"],["γεμιζ",["fill","filling","add","συμπληρωσ","πληρωσ"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
@@ -539,7 +539,7 @@ const DICT = [
  ["λεβιε",["shift lever","gearshift"]],["τιμονιερ",["steering head","steering"]],["γυαλ",["windscreen","windshield"]],["παρμπριζ",["windscreen","windshield"]],
  ["σφιγκτηρ",["clamp"]],["στηριγμ",["mount","mounting","bracket"]],["βαση",["bracket","mount"]],["καρτερ",["crankcase"]],["καρβουν",["skid plate"]]
 ];
-const EN_INTENT = {torque:"torque", pressure:"pressure", capacity:"capacity", clearance:"length", gap:"length", slack:"length", thickness:"length"};
+const EN_INTENT = {torque:"torque", pressure:"pressure", capacity:"capacity", clearance:"length", gap:"length", slack:"length", thickness:"length", specification:"grade", spec:"grade", grade:"grade", viscosity:"grade", type:"grade"};
 
 /* value patterns found in Honda manuals */
 const RX = {
@@ -547,10 +547,12 @@ const RX = {
   torqueTable: /(?:^|[\s│])\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*,\s*\d+(?:\.\d+)?\s*\)/,   // workshop tables: 30 (3.1, 22)
   pressure: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:kpa|psi|bar)\b|kgf\/cm/i,
   capacity: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|us qt|us oz|gal|qt|quarts?)\b/i,
-  length: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:mm|in)\b|\d\.\d+\s*\(\d/i
+  length: /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:mm|in)\b|\d\.\d+\s*\(\d/i,
+  // a grade / specification of a fluid: viscosity (SAE nW-nn), oil standards (API Sx, JASO MAx), brake fluid (DOT n)
+  grade: /(?<![A-Za-z\d])\d{1,2}W\s?[-\/]?\s?\d{2}(?!\d)|\bSAE\s?\d{1,2}\b|\bJASO\s?(?:T\s?903|MA\d?|MB)|\bAPI\s?(?:service\s)?S[A-Z]\b|\bDOT\s?[345](?:\.1)?\b/i
 };
 const VALUE_ANY = /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?\s*(?:n[·.]?m|nm|kgm|kgf|lbf|lbs?\/ft|kpa|bar|psi|l|lt|lit|liters?|litres?|cc|cm3|cm³|ml|gal|qt|quarts?|mm|v|ah|a|w|°c|kg|rpm|min)\b|\d+(?:\.\d+)?\s*\(\s*\d+(?:\.\d+)?\s*(?:,\s*\d+(?:\.\d+)?\s*)?\)/i;
-function intentsOf(t){ const s = new Set(); for (const k of ["torque","pressure","capacity","length"]) if (RX[k].test(t)) s.add(k); if (RX.torqueTable.test(t)) s.add("torque"); return s; }
+function intentsOf(t){ const s = new Set(); for (const k of ["torque","pressure","capacity","length","grade"]) if (RX[k].test(t)) s.add(k); if (RX.torqueTable.test(t)) s.add("torque"); return s; }
 
 // Greek stem for searching Greek manuals: drop the ending, keep the root ("λαδιού" → "λαδ", "ελαστικών" → "ελαστικ")
 const G_END = ["ιουσ","ιου","ιων","ουσ","ου","ων","εσ","ησ","ασ","οσ","ια","ει","α","η","ο","ι","ε","σ","υ"];
@@ -588,6 +590,13 @@ function parseQuery(q){
     for (const c of fillQ) concepts.splice(concepts.indexOf(c), 1);
     if (!intents.size){ const air = concepts.some(c => c.alts.some(a => /^(tire|tyre|ελαστικ|λαστιχ|αερ)/.test(a))); intents.add(air ? "pressure" : "capacity");
       if (air) for (const c of concepts.filter(c => /^αερ/.test(c.src))) concepts.splice(concepts.indexOf(c), 1); }
+  }
+  // a grade (SAE nW-nn, DOT n) is what is asked for a fluid: "which oil", "oil specification", "brake fluid" on its own
+  const fluid = concepts.some(c => c.alts.some(a => /^(oil|fluid)$/.test(a)) && !c.alts.includes("coolant")), coolant = concepts.some(c => c.alts.includes("coolant"));
+  if (intents.has("grade") && (!fluid || coolant || intents.size > 1)) intents.delete("grade");
+  else if (fluid && !coolant && !intents.size && !concepts.some(c => c.act)){
+    const nq = norm(q);
+    if (/(^|\s)(ποιο|ποια|ποιον|τι|which|what)\s+(\S+\s+)?(λαδ|υγρ|oil|fluid)/.test(nq) || (concepts.some(c => c.alts.includes("fluid")) && concepts.filter(c => !c.intent).length <= 2)) intents.add("grade");
   }
   const seen = new Set(), out = [];
   for (const c of concepts){ const k = c.alts.join("|"); if (!seen.has(k)){ seen.add(k); out.push(c); } }
@@ -785,7 +794,7 @@ async function loadIndex(m, onProgress){
   const pages = t.pages.map((p, pi) => {
     const cells = p.c.map(([s, x0, y, x1, fh], i) => ({i, s, x0, y, x1, fh, n: norm(s)}));
     cells.forEach(c => { c.isVal = VALUE_ANY.test(c.s.replace(/(?<![\d.,])(\d{2,})L\b/g, (m, n) => +n >= 50 ? n + " links" : m));   // "120L" on a chain = links, not litres
-    c.intents = intentsOf(c.s); });
+    c.intents = intentsOf(c.s); c.isGrade = c.intents.has("grade"); });
     const txt = cells.map(c => c.s).join("\n"); const n = norm(txt);
     const toks = n.match(tokRe) || []; const tf = new Map();
     for (const w of toks) tf.set(w, (tf.get(w) || 0) + 1);
@@ -845,6 +854,8 @@ function how0Prose(p, L){
   }
   return blk.length >= 4 && blk.some(c => /[a-zα-ώ]-$|[.;:]$|\.\s+[A-ZΑ-Ω]/.test(c.s.trim())) && blk.filter(c => /^[a-zα-ώ]/.test(c.s)).length >= 2;
 }
+const OTHER_OIL = /(fork|differential|final drive|bevel|gear oil|gearbox|transmission|shaft drive|cardan|shock|suspension|chain oil|πιρουν|διαφορικ|αμορτισ|κιβωτ|αναρτ|καρδαν)/;
+const LETTER_REF = /\b(?:distance|dimension|length|gap|clearance|measurement|απόσταση|απόστασης|διάσταση|διάστασης|μήκος|διάκενο)\s+["“«]?[A-ZΑ-Ω]\b(?![a-zα-ω])/i;
 const THREAD = /^M\s?\d+(\s*[x×]\s*[\d.]+)?\b/;
 function threadRow(p, v){
   const lv = c => p.cells.some(o => o.isVal && o.x0 > c.x1 && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4));
@@ -917,8 +928,10 @@ function pairsOnPage(p, pq){
   // the row name for a centred layout: the label column closest to the value, then the line closest to the centre
   const nearestCol = (cs, ay) => { if (!cs.length) return null; const mx = Math.max(...cs.map(c => c.x1)); return cs.filter(c => c.x1 > mx - 15).sort((a, b) => Math.abs(a.y - ay) - Math.abs(b.y - ay))[0]; };
   const objHit = cs => { const n = cs.map(c => c.n).join(" "); return pq.objects.filter(o => cs.some(c => conceptIn(c.n, o)) || impliedObj(n, o)).length; };
-  for (const v of p.cells){
-    if (!v.isVal) continue;
+  const wantGrade = pq.intents.has("grade"), used = new Set();   // lines already read as the wrapped end of a value above
+  for (const v of p.cells.slice().sort((a, b) => b.y - a.y || a.x0 - b.x0)){
+    if (!v.isVal && !(wantGrade && v.isGrade)) continue;
+    if (used.has(v)) continue;
     if (p.cells.some(o => o !== v && o.isVal && /,\s*$/.test(o.s) && Math.abs(o.x0 - v.x0) < 3 && o.y > v.y + .5 && o.y - v.y < v.fh * 1.8)) continue;
     const rowTol = Math.max(1.5, v.fh * .4);
     // a label cell belongs to this value if it is level with it (± most of a line) and no other value in this column is closer
@@ -995,7 +1008,7 @@ function pairsOnPage(p, pq){
       if (!up) break; label.unshift(up);
     }
     let how = "row";
-    const prefix = v.s.replace(/^\s*\d{1,2}[.)]\s+/, "").split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit|max(imum)?|min(imum)?|approx(imately)?|appr|ca|about|up to|at least|not more than|μεγ(ιστο)?|ελαχ(ιστο)?|περιπου|περ|εως|εωσ)\b\.?/gi, "").replace(/(μέγιστο|ελάχιστο|περίπου|έως|μεγ\.|ελάχ\.|περ\.)/gi, "");
+    const prefix = v.s.replace(/^\s*\d{1,2}[.)]\s+/, "").split(/\d/)[0].replace(/\b(sae|dot|api|jaso|torque|capacity|standard|service limit|specified|unit|max(imum)?|min(imum)?|approx(imately)?|appr|ca|about|up to|at least|not more than|μεγ(ιστο)?|ελαχ(ιστο)?|περιπου|περ|εως|εωσ)\b\.?/gi, "").replace(/(μέγιστο|ελάχιστο|περίπου|έως|μεγ\.|ελάχ\.|περ\.)/gi, "");
     const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Lever pivot nut 10 N·m"
     // "Oil capacity  |  When changing an oil filter: 2.64 qt (2.5 L)": the row name on the left still names it
     const rowName = selfLabeled && label.length && gotText && label.every(c => c.s.length < 45 && !/[.!?]$/.test(c.s.trim())) && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .03;
@@ -1056,7 +1069,7 @@ function pairsOnPage(p, pq){
       if (!open && !/(,\s*[A-Za-zΑ-ώ][^,().]*|[a-zα-ώ]-)$/.test(vText)) break;
       const nx = p.cells.find(c => c !== cur && Math.abs(c.x0 - v.x0) < 4 && c.y < cur.y - .5 && cur.y - c.y < cur.fh * (k ? 1.6 : 2.2));
       if (!nx || (!open && nx.isVal) || (k && levelRow(nx))) break;
-      vText = /[a-zα-ώ]-$/.test(vText) ? vText.slice(0, -1) + nx.s : vText + " " + nx.s; cur = nx;
+      vText = /[a-zα-ώ]-$/.test(vText) ? vText.slice(0, -1) + nx.s : vText + " " + nx.s; cur = nx; used.add(nx);
     }
     label = [...new Set(label)].sort((a, b) => (a.x0 - b.x0 > 3 ? 1 : b.x0 - a.x0 > 3 ? -1 : b.y - a.y));
     // the row above names the part and has no figure of its own ("ΜΠΟΥΖΙ  ΑΒ12-3" over "ΔΙΑΚΕΝΟ  0.7mm")
@@ -1073,7 +1086,21 @@ function pairsOnPage(p, pq){
       const base = objHit([...label, v]), hs = ctxHeads(p, label[0], c => objHit([c, ...label, v]) > base);
       if (hs.length && objHit([...hs, ...label, v]) > base) label = [...hs.filter(h => !label.includes(h)), ...label];
     }
-    const objs = objHit([...label, v]);
+    let objs = objHit([...label, v]);
+    // a dimension named by a letter in a figure ("Distance B: 10–15 mm" on an XY900 figure): the sentence that uses the same letter
+    // elsewhere on the page says what it measures ("…measure distance B from the guard to the chain…")
+    if (objs < pq.objects.length){
+      const ref = [...label, v].map(c => c.s).join(" ").match(LETTER_REF);
+      if (ref){
+        const key = norm(ref[0]).replace(/\s+/g, " ");
+        for (const c of p.cells){
+          if (label.includes(c) || c === v || !norm(c.s).replace(/\s+/g, " ").includes(key)) continue;
+          const sent = p.cells.filter(o => !o.isVal && Math.abs(o.x0 - c.x0) < p.w * .1 && Math.abs(o.y - c.y) < c.fh * 2.4);
+          if (sent.map(o => o.s).join(" ").split(/\s+/).length < 6) continue;   // a figure caption ("3. Distance B"), not a sentence
+          objs = Math.max(objs, objHit([...sent, ...label, v]));
+        }
+      }
+    }
     if (!objs && (pq.objects.length || !pq.intents.size)) continue;
     if (pq.intents.size && ![...pq.intents].some(i => v.intents.has(i))) continue;   // "how much oil" wants litres, not "SAE 10W-40"
     // generic words ("bolt", "screw", "nut") count less than the part they hold ("caliper", "axle")
@@ -1082,7 +1109,10 @@ function pairsOnPage(p, pq){
     if (pq.objects.length && objs === pq.objects.length) s += 2;
     if (how === "row") s += .5;
     if ((vText.match(/[A-Za-zΑ-Ωα-ωά-ώ]{4,}/g) || []).length >= 6) s -= pq.intents.size ? 3 : 1;   // a figure inside running text ranks below a spec line   // a figure inside running text ranks below a spec line
-    if (how === "self" && v.s.length > 70 && /[.!?]$/.test(v.s.trim())) s -= 1.5;   // a figure in the middle of a long sentence
+    if (how === "self" && v.s.length > 70 && /[.!?]$/.test(v.s.trim())) s -= 1.5;
+    // "which oil" on its own means the engine's: the oil of another part (fork, final drive, gearbox) ranks below it
+    if (wantGrade && OTHER_OIL.test(norm([...label, v].map(c => c.s).join(" "))) && !pq.concepts.some(c => c.alts.some(a => OTHER_OIL.test(a)))) s -= 3;
+    if (wantGrade && v.isGrade && /^[a-zα-ώ]/.test(v.s.trim()) && v.s.replace(RX.grade, " ").split(/\s+/).filter(w => /^[A-Za-zΑ-Ωα-ωά-ώ]{2,}$/.test(w)).length >= 3) s -= 2;   // a grade in the middle of a sentence ("…do not use fluid other than DOT n because…")   // a figure in the middle of a long sentence
     if (how === "col" && label.some(c => /[:.]$/.test(c.s.trim())) && label.map(c => c.s).join(" ").split(/\s+/).length >= 5) s -= 1.5;   // "…should have the following value:" is an example in the text, not the spec table
     if (s <= 0) continue;
     const head = p.cells.filter(c => c.y > v.y + .5 && !c.isVal && isHeading(c) && !label.includes(c) && c.x0 <= v.x1 && (c.x1 >= v.x0 - p.w * .5) && (colIx(c) === kv || colIx(c) === colIx(label[0] || v))).sort((a, b) => a.y - b.y)[0];
@@ -2979,8 +3009,8 @@ const QUESTIONS = ["πώς ρυθμίζω την μπροστινή ανάρτη
  "πίεση ελαστικών","τζόγος αλυσίδας","διάκενο μπουζί","διάκενο βαλβίδων","στροφές ρελαντί","προτεινόμενο λάδι κινητήρα","υγρό φρένων","φθορά τακακιών","πάχος δισκόπλακας",
  "τζόγος μανέτας συμπλέκτη","τζόγος γκαζιού","ασφάλειες","λάμπες","μπαταρία","διαστήματα σέρβις","προφόρτιση αμορτισέρ","ρύθμιση πιρουνιού","μέγεθος ελαστικών",
  "αλυσίδα κρίκοι","γρανάζια δόντια","βάρος μηχανής","διαστάσεις μηχανής"];
-const INTENT_GR = {torque: "ροπή", capacity: "χωρητικότητα", pressure: "πίεση", length: "διάκενο"};
-const INTENT_EN = {torque: "torque", capacity: "capacity", pressure: "pressure", length: "clearance"};
+const INTENT_GR = {torque: "ροπή", capacity: "χωρητικότητα", pressure: "πίεση", length: "διάκενο", grade: "προδιαγραφή"};
+const INTENT_EN = {torque: "torque", capacity: "capacity", pressure: "pressure", length: "clearance", grade: "specification"};
 const QUESTIONS_EN = ["how to adjust front suspension","how to adjust rear suspension","how to adjust spring preload","how to adjust headlight aim","how to adjust brake lever",
  "how to adjust clutch lever","how to adjust seat height","how to adjust windscreen","how to replace a bulb","how to bleed the brakes","how to change engine oil","how to adjust drive chain slack","how to lubricate drive chain","how to check brake pads","how to check brake fluid",
  "how to remove the seat","how to charge the battery","how to check coolant","how to replace air cleaner","how to replace a fuse","how often service","engine oil change interval","oil filter change interval","air cleaner interval","spark plug interval",
