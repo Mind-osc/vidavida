@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (20)
+- Γυαλί: έφυγαν οι λεπτές λευκές γραμμές πάνω/κάτω στα κουμπιά (π.χ. «Ψάξε») και στα πεδία· το χρώμα σταματά ακριβώς στο περίγραμμα, οπότε οι καμπύλες της αναζήτησης, των κουμπιών και των καρτών είναι λείες, χωρίς θολή παρυφή.
+- *Glass: no hairline highlights on buttons and fields; colour clipped at the border so rounded edges render smoothly.*
+
 ## 2 Νοεμβρίου 2026 (19)
 - Ρώτα: έφυγε το κουτί «Ρώτα για …» όταν η μηχανή έχει manual, για πιο καθαρή οθόνη. Μένει μόνο όταν λείπει κάτι (δεν υπάρχει μηχανή ή PDF), για να λέει τι να κάνεις.
 - *Ask: the welcome box is gone once the bike has a manual; hints remain only when a bike or PDF is missing.*

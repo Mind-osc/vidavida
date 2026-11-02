@@ -538,6 +538,15 @@ header{padding-block:10px 12px;gap:8px 14px}
 .fbody{display:grid;gap:10px;padding:0 16px 14px}
 @media (prefers-reduced-motion:no-preference){.fold[open] .fbody{animation:foldin .2s ease}}
 @keyframes foldin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+/* glass, final word on edges: no hairline highlights or rims on controls; colour stops exactly at the border (smooth curves) */
+[data-pal="glass"] :is(.result,.card,.bike,.drawer,.fbsheet,.sugg,.banner,.empty,nav,.btn,select,input,textarea,.seg,.menubtn,.iconbtn,.dhead .x,.pal,.crow,.mitem,.mback,.chip,.fab,.mico,.cpick,.row .val,.bigdue .val,.docs li,.parts li,.fstats>div):not(#_){background-clip:padding-box}
+[data-pal="glass"] :is(.result,.card,.bike,.drawer,.fbsheet,.sugg,.banner,.empty,nav):not(#_){box-shadow:0 10px 30px var(--glass-sh)}
+[data-pal="glass"] :is(.btn,select,input,textarea,.seg,.menubtn,.iconbtn,.dhead .x,.pal,.crow,.mitem,.mback,.cpick,input[type=checkbox]):not(#_){box-shadow:none}
+[data-pal="glass"] :is(.btn.primary,.seg button[aria-checked=true],nav button[aria-selected=true],.fab,.mico):not(#_){border-color:transparent;box-shadow:0 4px 14px var(--glass-sh)}
+[data-pal="glass"] .btn.primary:not(#_){border:0}
+[data-pal="glass"] input[type=checkbox]:checked:not(#_){border-color:transparent}
+[data-pal="glass"] :is(.btn.primary,.fab):active:not(#_){box-shadow:0 0 0 6px var(--hl)}
+[data-pal="glass"] .pal[aria-checked=true]:not(#_){box-shadow:0 0 0 2px var(--accent)}
 </style>
 </head>
 <body>
