@@ -1,5 +1,11 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (5)
+- **Περισσότερα μοντέλα** στις προτάσεις όταν προσθέτεις μηχανή: όλη η γκάμα Voge (DS800X Rally, DS900X, DS625X, DS525X, 300 Rally, SR4 Max…), CFMoto (450MT, 450NK, 450SR, 450CL-C, 800MT…), Moto Morini (X-Cape, Seiemmezzo, Corsaro…), Kove, QJ Motor, Zontes, Benelli, εκδόσεις Ténéré 700.
+- Βρίσκει τη μάρκα και όταν γράφεται αλλιώς: με ελληνικά γράμματα («χόντα», «βόγκε», «τενερέ»), με λάθος («vogue») ή χωριστά («cf moto»).
+- Δείχνει όλα τα μοντέλα της μάρκας (με κύλιση), όχι μόνο τα πρώτα 10.
+- *More models in the bike suggestions (Voge, CFMoto, Moto Morini, Kove, QJ Motor, Zontes, Benelli, Ténéré 700 versions); brand names found when typed in Greek letters or with a typo.*
+
 ## 2 Νοεμβρίου 2026 (4)
 - **Manual σε στυλ BMW** (όνομα πάνω, τιμή δίπλα σε δεύτερη στήλη): διαβάζονται σωστά τιμές με «max.», «min.», «approx.» μπροστά, και τιμές που συνεχίζουν στην επόμενη γραμμή.
 - Νέες μονάδες: gal, quarts, lb/ft, Ah, και εύρη τιμών με «...» (π.χ. ύψος σέλας).

@@ -2701,12 +2701,28 @@ const MODELS = (`Honda CRF1000L Africa Twin (2016–2019)|Honda CRF1000L Africa 
 `Ducati Multistrada 950|Ducati Multistrada 1200|Ducati Multistrada 1260|Ducati Multistrada V2|Ducati Multistrada V4|Ducati DesertX|Ducati Scrambler 800|Ducati Monster 821|Ducati Monster 937|Ducati Panigale V2|Ducati Panigale V4|Ducati Hypermotard 950|Ducati SuperSport 950|` +
 `Triumph Tiger 800|Triumph Tiger 900|Triumph Tiger 1200|Triumph Tiger Explorer 1200|Triumph Street Triple 765|Triumph Speed Triple 1200|Triumph Bonneville T100|Triumph Bonneville T120|Triumph Scrambler 1200|Triumph Trident 660|` +
 `Aprilia Tuareg 660|Aprilia RS 660|Aprilia Tuono 660|Aprilia Tuono V4|Aprilia RSV4|Aprilia Shiver 750|Aprilia Shiver 900|Aprilia Dorsoduro 750|Aprilia Dorsoduro 900|Aprilia SR GT 200|` +
-`Moto Guzzi V85 TT|Moto Guzzi Stelvio|Moto Guzzi V7|Royal Enfield Himalayan 411|Royal Enfield Himalayan 450|Royal Enfield Interceptor 650|Royal Enfield Continental GT 650|Royal Enfield Classic 350|Husqvarna Norden 901|Husqvarna Svartpilen 401|Husqvarna Vitpilen 401|Husqvarna 701 Enduro|CFMoto 800MT|CFMoto 700CL-X|Benelli TRK 502|Benelli TRK 702|Harley-Davidson Pan America 1250|Harley-Davidson Sportster S|Piaggio Beverly 300|Piaggio Beverly 400|Piaggio Liberty 125|Vespa GTS 300|Vespa Primavera 125|SYM Symphony 125|SYM Joymax Z 300|Kymco Agility 125|Kymco Xciting 400|Kymco People S 150|Voge 525DSX|Voge 650DSX`).split("|");
+`Moto Guzzi V85 TT|Moto Guzzi Stelvio|Moto Guzzi V7|Royal Enfield Himalayan 411|Royal Enfield Himalayan 450|Royal Enfield Interceptor 650|Royal Enfield Continental GT 650|Royal Enfield Classic 350|Husqvarna Norden 901|Husqvarna Svartpilen 401|Husqvarna Vitpilen 401|Husqvarna 701 Enduro|CFMoto 800MT|CFMoto 700CL-X|Benelli TRK 502|Benelli TRK 702|Harley-Davidson Pan America 1250|Harley-Davidson Sportster S|Piaggio Beverly 300|Piaggio Beverly 400|Piaggio Liberty 125|Vespa GTS 300|Vespa Primavera 125|SYM Symphony 125|SYM Joymax Z 300|Kymco Agility 125|Kymco Xciting 400|Kymco People S 150|Voge 525DSX|Voge 650DSX|Voge DS800X Rally|Voge 800 Rally|Voge DS900X|Voge 900DSX|Voge DS625X|Voge DS525X|Voge 525DSX|Voge 500DS|Voge 650DS|Voge Rally 300|Voge 300 Rally|Voge 300RR|Voge 500R|Voge 525R|Voge R125|Voge RR660 S|Voge CU625|Voge Brivido 300R|Voge Trofeo 300AC|Voge Trofeo 500AC|Voge Trofeo 525ACX|Voge AC525X|Voge SR1 ADV 125|Voge SR16 125|Voge SR3|Voge SR4 Max 350|Voge SR450X|Voge Sfida SR 125|CFMoto 450MT|CFMoto 450MT Rally|CFMoto 450NK|CFMoto 450SR|CFMoto 450SR S|CFMoto 450CL-C|CFMoto 300NK|CFMoto 300SR|CFMoto 125NK|CFMoto 650MT|CFMoto 650NK|CFMoto 650GT|CFMoto 700MT|CFMoto 700MT Adventure|CFMoto 700CL-X Adventure|CFMoto 700CL-X Heritage|CFMoto 675SR-R|CFMoto 675NK|CFMoto 800MT Explore|CFMoto 800MT Sport|CFMoto 800MT-X|CFMoto 800NK|CFMoto 1000MT-X|Moto Morini X-Cape 650|Moto Morini X-Cape 700|Moto Morini X-Cape 1200|Moto Morini Seiemmezzo STR|Moto Morini Seiemmezzo SCR|Moto Morini Corsaro 750|Moto Morini Corsaro 1200|Moto Morini Calibro|Moto Morini Alltrhike|Moto Morini Kanguro 300|Moto Morini Granpasso 1200|Kove 450 Rally|Kove 800X|Kove 800X Pro|QJ Motor SRT 800X|QJ Motor SRT 700X|QJ Motor SRT 550X|Zontes 350T|Zontes 350X|Zontes 703F|Benelli TRK 702X|Benelli TRK 552X|Benelli Leoncino 500|Benelli BKX 300|Yamaha Ténéré 700 Rally Edition|Yamaha Ténéré 700 Extreme|Yamaha Ténéré 700 Explore`).split("|");
+MODELS.splice(0, MODELS.length, ...new Set(MODELS));
 let suggIdx = -1;
+// brand names as people type them: in Greek letters, by ear, or with a slip ("vogue", "χοντα", "cf moto")
+const BRAND_ALIAS = {vogue: "voge", vog: "voge", βογκε: "voge", βοτζε: "voge", βοτζ: "voge", βογκ: "voge", χοντα: "honda", χοντ: "honda", γιαμαχα: "yamaha", γιαμα: "yamaha", σουζουκι: "suzuki", σουζ: "suzuki",
+  καβασακι: "kawasaki", καβα: "kawasaki", κτμ: "ktm", μπεμβε: "bmw", μπμβ: "bmw", βμω: "bmw", ντουκατι: "ducati", ντουκ: "ducati", τραιαμφ: "triumph", τραιαμ: "triumph", απριλια: "aprilia", μπενελι: "benelli", μπενελλι: "benelli",
+  μορινι: "morini", mortibeli: "morini", mortibel: "morini", morin: "morini", morrini: "morini", σιεφμοτο: "cfmoto", σιεφ: "cfmoto", cf: "cfmoto", κοβε: "kove", ζοντες: "zontes", τενερε: "tenere", αφρικα: "africa", τρανσαλπ: "transalp",
+  χαρλει: "harley", βεσπα: "vespa", κιμκο: "kymco", σιμ: "sym", χουσκβαρνα: "husqvarna", ρογιαλ: "royal", ενφιλντ: "enfield", γκουτσι: "guzzi", tenere: "tenere"};
+const lev = (a, b) => { const d = Array.from({length: a.length + 1}, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; };
 function suggest(q){
-  const toks = norm(q).split(/[\s\-]+/).filter(Boolean);
+  let toks = norm(q).replace(/\bcf\s*moto\b/g, "cfmoto").replace(/\bqj\s*motor\b/g, "qj").split(/[\s\-]+/).filter(Boolean);
   if (!toks.length) return [];
-  return MODELS.filter(m => { const words = norm(m).split(/[\s\-()–/]+/).filter(Boolean); return toks.every(t => words.some(w => w.startsWith(t)) || norm(m).includes(t)); }).slice(0, 10);
+  toks = toks.map(t => BRAND_ALIAS[t] || Object.entries(BRAND_ALIAS).find(([k]) => k.length >= 4 && t.length >= 4 && (t.startsWith(k) || k.startsWith(t)) && /[α-ω]/.test(t))?.[1] || t);
+  const wordsOf = m => norm(m).split(/[\s\-()–/]+/).filter(Boolean);
+  const hit = (t, m, fuzzy) => { const ws = wordsOf(m); return ws.some(w => w.startsWith(t)) || norm(m).includes(t) || (fuzzy && t.length >= 4 && ws.some(w => w.length >= 4 && lev(t, w.slice(0, t.length + 1)) <= (t.length >= 7 ? 2 : 1))); };
+  let out = MODELS.filter(m => toks.every(t => hit(t, m, false)));
+  if (!out.length) out = MODELS.filter(m => toks.every(t => hit(t, m, true)));   // a typo: allow one or two letters off
+  // the brand typed first ("voge …"), then models whose name starts with what was typed
+  const first = toks[0];
+  out.sort((a, b) => (wordsOf(a)[0].startsWith(first) ? 0 : 1) - (wordsOf(b)[0].startsWith(first) ? 0 : 1));
+  return out.slice(0, 40);
 }
 function showSugg(){
   const list = suggest($("newBike").value); const ul = $("sugg"); suggIdx = -1;
