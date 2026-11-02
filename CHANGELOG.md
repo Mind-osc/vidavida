@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (27)
+- Λογότυπο «VIDA VIDA» λίγο μεγαλύτερο, πάνω και στο μενού.
+- *Slightly larger logo lettering.*
+
 ## 2 Νοεμβρίου 2026 (26)
 - Λογότυπο: το δεύτερο «VIDA» έχει ακριβώς το χρώμα των κουμπιών (στο φωτεινό με ένα πολύ λεπτό περίγραμμα για να ξεχωρίζει).
 - *Logo: the second "VIDA" uses exactly the button colour, with a hairline edge on light pages.*
