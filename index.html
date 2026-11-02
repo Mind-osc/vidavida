@@ -516,6 +516,13 @@ header{padding-block:10px 12px;gap:8px 14px}
 /* "‹ Menu" is a real button */
 .mback{display:inline-flex;align-items:center;gap:4px;padding:6px 14px 6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink)}
 [data-pal="glass"] .mback{background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi)}
+/* search: the field spans the width, "Search" sits centred under it; examples and "looking for" centred */
+.askrow{flex-direction:column;align-items:center;gap:10px}
+.askrow .sugg-wrap{width:100%;flex:none}
+.askrow > .btn{min-width:130px;padding:8px 26px;font-size:15px}
+.chips{justify-content:center;margin-top:12px}
+.terms{text-align:center}
+.askrow #qsugg,.askrow #qhist{top:calc(100% + 58px)}   /* lists open under the "Search" button, not over it */
 </style>
 </head>
 <body>
