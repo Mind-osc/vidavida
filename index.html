@@ -505,6 +505,17 @@ header{padding-block:10px 12px;gap:8px 14px}
 /* glass: text printed in the page colour on a dark/ink chip must use the solid page colour (the glass one is see-through) */
 [data-pal="glass"] :is(#toast,.sline .code,.grpline .code,.due-items .code){color:var(--bar)}
 [data-pal="glass"] #toast{border-radius:18px;box-shadow:0 10px 30px var(--glass-sh)}
+/* menu entries: thin rows whose corners run concentric with the icon (outer radius = icon radius + gap) */
+.mlist{gap:6px}
+.mitem{--pad:5px;--ir:11px;padding:var(--pad) 12px var(--pad) var(--pad);border-radius:calc(var(--ir) + var(--pad));gap:11px}
+.mico{width:34px;height:34px;border-radius:var(--ir)}
+.mico svg{width:20px;height:20px}
+.mtxt b{font-size:14.5px}
+[data-pal="glass"] .mitem{--ir:17px;border-radius:999px}
+[data-pal="glass"] .mico{border-radius:50%}
+/* "‹ Menu" is a real button */
+.mback{display:inline-flex;align-items:center;gap:4px;padding:6px 14px 6px 10px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink)}
+[data-pal="glass"] .mback{background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi)}
 </style>
 </head>
 <body>
