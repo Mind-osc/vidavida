@@ -30,6 +30,25 @@
 :root[data-theme="dark"]{
   --paper:#0f1419; --panel:#182028; --ink:#e4e9ed; --muted:#94a1ac; --line:#2b3640;
   --accent:#fcab01; --accent-edge:transparent; --accent-ink:#1d1500; --hl:rgba(240,180,41,.26); --danger:#ff6b5e; --ok:#4cc38a; color-scheme:dark}
+/* colour palettes (menu → Appearance → Colours): each has a light and a dark variant, chosen by the Theme setting */
+:root[data-pal="rosso"]{--paper:#f4f2f2; --panel:#ffffff; --ink:#1f1515; --muted:#5b595b; --line:#d9d5d5; --accent:#9a0101; --accent-ink:#ffffff; --accent-edge:transparent; --hl:rgba(154,1,1,0.22); --danger:#650a0b; --ok:#2f6b3c; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="rosso"]:not([data-theme="light"]){--paper:#1f1515; --panel:#2a2020; --ink:#efeaea; --muted:#a9a6a6; --line:#3f3434; --accent:#e25a52; --accent-ink:#1f1515; --accent-edge:transparent; --hl:rgba(226,90,82,0.3); --danger:#ff8a80; --ok:#7fc79a; color-scheme:dark}}
+:root[data-pal="rosso"][data-theme="dark"]{--paper:#1f1515; --panel:#2a2020; --ink:#efeaea; --muted:#a9a6a6; --line:#3f3434; --accent:#e25a52; --accent-ink:#1f1515; --accent-edge:transparent; --hl:rgba(226,90,82,0.3); --danger:#ff8a80; --ok:#7fc79a; color-scheme:dark}
+:root[data-pal="sand"]{--paper:#f3ede2; --panel:#fbf8f2; --ink:#2e2b28; --muted:#625e5a; --line:#ddd2c0; --accent:#55524f; --accent-ink:#f3ede2; --accent-edge:transparent; --hl:rgba(85,82,79,0.22); --danger:#a3302a; --ok:#3d6b3a; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="sand"]:not([data-theme="light"]){--paper:#2b2926; --panel:#37342f; --ink:#efe6d6; --muted:#b9b0a2; --line:#4c4843; --accent:#dac3a4; --accent-ink:#2b2926; --accent-edge:transparent; --hl:rgba(218,195,164,0.3); --danger:#ff8a7a; --ok:#9fcf8f; color-scheme:dark}}
+:root[data-pal="sand"][data-theme="dark"]{--paper:#2b2926; --panel:#37342f; --ink:#efe6d6; --muted:#b9b0a2; --line:#4c4843; --accent:#dac3a4; --accent-ink:#2b2926; --accent-edge:transparent; --hl:rgba(218,195,164,0.3); --danger:#ff8a7a; --ok:#9fcf8f; color-scheme:dark}
+:root[data-pal="espresso"]{--paper:#f2eee8; --panel:#faf8f4; --ink:#261c14; --muted:#5e5243; --line:#dcd4c8; --accent:#524433; --accent-ink:#f2eee8; --accent-edge:transparent; --hl:rgba(82,68,51,0.22); --danger:#a3302a; --ok:#3d6b3a; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="espresso"]:not([data-theme="light"]){--paper:#261c14; --panel:#32261c; --ink:#efe9df; --muted:#bdb3a4; --line:#4b3e31; --accent:#ccc5b9; --accent-ink:#261c14; --accent-edge:transparent; --hl:rgba(204,197,185,0.3); --danger:#ff8a7a; --ok:#9fcf8f; color-scheme:dark}}
+:root[data-pal="espresso"][data-theme="dark"]{--paper:#261c14; --panel:#32261c; --ink:#efe9df; --muted:#bdb3a4; --line:#4b3e31; --accent:#ccc5b9; --accent-ink:#261c14; --accent-edge:transparent; --hl:rgba(204,197,185,0.3); --danger:#ff8a7a; --ok:#9fcf8f; color-scheme:dark}
+:root[data-pal="berry"]{--paper:#f7eff3; --panel:#ffffff; --ink:#361b27; --muted:#5e4555; --line:#e4d3dc; --accent:#8c4a71; --accent-ink:#ffffff; --accent-edge:transparent; --hl:rgba(140,74,113,0.22); --danger:#a3262a; --ok:#2f6b3c; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="berry"]:not([data-theme="light"]){--paper:#2a1520; --panel:#3b2230; --ink:#f3e7ed; --muted:#c6aebb; --line:#563545; --accent:#c47ea6; --accent-ink:#2a1520; --accent-edge:transparent; --hl:rgba(196,126,166,0.3); --danger:#ff8a80; --ok:#7fc79a; color-scheme:dark}}
+:root[data-pal="berry"][data-theme="dark"]{--paper:#2a1520; --panel:#3b2230; --ink:#f3e7ed; --muted:#c6aebb; --line:#563545; --accent:#c47ea6; --accent-ink:#2a1520; --accent-edge:transparent; --hl:rgba(196,126,166,0.3); --danger:#ff8a80; --ok:#7fc79a; color-scheme:dark}
+:root[data-pal="teal"]{--paper:#eef1ef; --panel:#fbfcfb; --ink:#1f3232; --muted:#4d6360; --line:#cfd5d1; --accent:#2b4242; --accent-ink:#eef1ef; --accent-edge:transparent; --hl:rgba(43,66,66,0.22); --danger:#a3302a; --ok:#2f6b3c; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="teal"]:not([data-theme="light"]){--paper:#1c2e2e; --panel:#253b3b; --ink:#e7eeec; --muted:#a3b4b9; --line:#38504f; --accent:#93a4ab; --accent-ink:#1c2e2e; --accent-edge:transparent; --hl:rgba(147,164,171,0.3); --danger:#ff8a80; --ok:#8fd1a8; color-scheme:dark}}
+:root[data-pal="teal"][data-theme="dark"]{--paper:#1c2e2e; --panel:#253b3b; --ink:#e7eeec; --muted:#a3b4b9; --line:#38504f; --accent:#93a4ab; --accent-ink:#1c2e2e; --accent-edge:transparent; --hl:rgba(147,164,171,0.3); --danger:#ff8a80; --ok:#8fd1a8; color-scheme:dark}
+:root[data-pal="sage"]{--paper:#f3f1e5; --panel:#fbfaf4; --ink:#22301f; --muted:#566552; --line:#d9d2c0; --accent:#526851; --accent-ink:#f3f1e5; --accent-edge:transparent; --hl:rgba(82,104,81,0.22); --danger:#a3302a; --ok:#2f6b3c; color-scheme:only light}
+@media (prefers-color-scheme:dark){:root[data-pal="sage"]:not([data-theme="light"]){--paper:#1d261c; --panel:#283327; --ink:#f3f1e5; --muted:#b4bfa9; --line:#3b4a39; --accent:#9fad94; --accent-ink:#1d261c; --accent-edge:transparent; --hl:rgba(159,173,148,0.3); --danger:#ff8a7a; --ok:#a6d68f; color-scheme:dark}}
+:root[data-pal="sage"][data-theme="dark"]{--paper:#1d261c; --panel:#283327; --ink:#f3f1e5; --muted:#b4bfa9; --line:#3b4a39; --accent:#9fad94; --accent-ink:#1d261c; --accent-edge:transparent; --hl:rgba(159,173,148,0.3); --danger:#ff8a7a; --ok:#a6d68f; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -267,6 +286,11 @@ body{padding-bottom:72px}
 .seg button{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 14px var(--f-body);padding:9px 6px;cursor:pointer}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-checked=true]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.pals{display:grid;grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:8px;margin-bottom:6px}
+.pal{border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);padding:5px 4px 6px;cursor:pointer;font:500 12px var(--f-body);text-align:center}
+.pal .sw{display:flex;height:30px;border-radius:5px;overflow:hidden;margin-bottom:5px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.pal .sw i{flex:1}
+.pal[aria-checked=true]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);font-weight:700}
 .toggle{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer;margin-top:4px}
 .toggle input{width:20px;height:20px;accent-color:var(--accent)}
 .hist{list-style:none;margin:0;padding:0;display:grid;gap:2px}
@@ -1183,7 +1207,7 @@ let bikes = [], manuals = [], currentBike = null;
 const $ = id => document.getElementById(id);
 /* ================= settings + languages ================= */
 const SETTINGS_KEY = "mg.settings";
-const settings = Object.assign({lang: "el", theme: "auto", big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
+const settings = Object.assign({lang: "el", theme: "auto", palette: "classic", big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
   (() => { try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; } })());
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
 const L = () => settings.lang === "en" ? "en" : "el";
@@ -1276,7 +1300,7 @@ const T = {
   morePages: ["Άλλες σχετικές σελίδες", "Other relevant pages"], pAbbr: ["σελ.", "p."], show: ["Δείξε", "Show"],
   renderFail: [e => `Δεν μπόρεσα να εμφανίσω τη σελίδα: ${e}`, e => `Couldn't show the page: ${e}`], loading: ["Φόρτωση…", "Loading…"],
   noStorage: ["Ο browser δεν επιτρέπει αποθήκευση εδώ. Άνοιξε το αρχείο σε Chrome, Edge ή Firefox.", "This browser doesn't allow storage here. Open the file in Chrome, Edge or Firefox."],
-  menu: ["Μενού", "Menu"], language: ["Γλώσσα", "Language"], appearance: ["Εμφάνιση", "Appearance"], theme: ["Θέμα", "Theme"],
+  menu: ["Μενού", "Menu"], language: ["Γλώσσα", "Language"], appearance: ["Εμφάνιση", "Appearance"], theme: ["Θέμα", "Theme"], palette: ["Χρώματα", "Colours"],
   thAuto: ["Αυτόματο", "Auto"], thLight: ["Φωτεινό", "Light"], thDark: ["Σκοτεινό", "Dark"], bigText: ["Μεγάλα γράμματα (για το γκαράζ)", "Large text (for the garage)"],
   units: ["Μονάδες", "Units"], uTorque: ["Ροπή", "Torque"], uPressure: ["Πίεση", "Pressure"], uVolume: ["Όγκος", "Volume"],
   unitsNote: ["Η τιμή στη μονάδα που διαλέγεις μπαίνει μεγάλη· οι άλλες μένουν από κάτω, όπως τις γράφει το manual.", "The value in your unit is shown large; the others stay below, as printed in the manual."],
@@ -1556,11 +1580,13 @@ $("fbSend").onclick = () => {
 };
 window.addEventListener("error", e => toast(t("appError", e.message || e.error || "?"), true));
 window.addEventListener("unhandledrejection", e => toast(t("appError", (e.reason && (e.reason.message || e.reason)) || "?"), true));
+const PALETTES = {"classic": {"n": ["Κλασικό", "Classic"], "sw": ["#0f1419", "#182028", "#fcab01", "#dfe3e7", "#ffffff"]}, "rosso": {"n": ["Ρόσσο", "Rosso"], "sw": ["#1f1515", "#5b595b", "#a9a6a6", "#9a0101", "#650a0b"]}, "sand": {"n": ["Άμμος", "Sand"], "sw": ["#dac3a4", "#c3b49f", "#9b9285", "#736f6b", "#55524f"]}, "espresso": {"n": ["Εσπρέσο", "Espresso"], "sw": ["#261c14", "#8a7c6a", "#736654", "#524433", "#ccc5b9"]}, "berry": {"n": ["Μούρο", "Berry"], "sw": ["#4b2b33", "#603649", "#361b27", "#a05c84", "#5e4555"]}, "teal": {"n": ["Πετρόλ", "Teal"], "sw": ["#2b4242", "#93a4ab", "#c3c6c3", "#7d8f8b", "#6b8784"]}, "sage": {"n": ["Φασκόμηλο", "Sage"], "sw": ["#526851", "#9fad94", "#f3f1e5", "#cfc8b6"]}};
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
+  if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  const tc = document.getElementById("themeColor"); if (tc) tc.content = dark ? "#0f1419" : "#ffffff";
+  const tc = document.getElementById("themeColor"); if (tc) tc.content = getComputedStyle(r).getPropertyValue("--paper").trim() || (dark ? "#0f1419" : "#ffffff");   // the status bar follows the palette
   // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
   const cs = document.getElementById("colorScheme"); if (cs) cs.content = settings.theme === "light" ? "only light" : settings.theme === "dark" ? "dark" : "light dark";
   document.body.classList.toggle("bigtext", !!settings.big);
@@ -3109,6 +3135,8 @@ function renderMenu(){
     <section><h3>${t("language")}</h3>${seg("lang", [["el", "Ελληνικά"], ["en", "English"]], L())}</section>
     <section><h3>${t("appearance")}</h3>
       <div class="mlabel">${t("theme")}</div>${seg("theme", [["auto", t("thAuto")], ["light", t("thLight")], ["dark", t("thDark")]], settings.theme)}
+      <div class="mlabel">${t("palette")}</div>
+      <div class="pals" role="radiogroup">${Object.entries(PALETTES).map(([k, p]) => `<button type="button" class="pal" role="radio" aria-checked="${k === (settings.palette || "classic")}" data-pal="${k}"><span class="sw">${p.sw.map(c => `<i style="background:${c}"></i>`).join("")}</span>${esc(p.n[L() === "en" ? 1 : 0])}</button>`).join("")}</div>
       <label class="toggle"><input type="checkbox" id="bigToggle"${settings.big ? " checked" : ""}><span>${t("bigText")}</span></label>
     </section>
     <section><h3>${t("units")}</h3>
@@ -3147,6 +3175,8 @@ $("drawer").addEventListener("click", async e => {
     else { settings.units[name] = v; saveSettings(); rerunIfAny(); }
     renderMenu(); return;
   }
+  const pb = e.target.closest("[data-pal]");
+  if (pb){ settings.palette = pb.dataset.pal; saveSettings(); applyLook(); renderMenu(); return; }
   const h = e.target.closest("[data-hq]");
   if (h){ closeMenu(); tab("ask"); $("q").value = h.dataset.hq; $("askForm").requestSubmit(); return; }
   if (e.target.id === "clearHist"){ settings.history = []; saveSettings(); renderMenu(); }
