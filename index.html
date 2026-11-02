@@ -93,7 +93,7 @@
 .accball{position:relative;width:46px;height:46px;flex:none;border-radius:50%;border:0;padding:0;cursor:pointer;
   background:conic-gradient(from 180deg,#ff3b30,#ff9500,#ffcc00,#34c759,#00c7be,#007aff,#5856d6,#af52de,#ff2d55,#ff3b30);
   box-shadow:inset 0 2px 5px rgba(255,255,255,.55),0 3px 10px rgba(0,0,0,.25)}
-.accball::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--accent);border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.accball::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--accent-fill,var(--accent));border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .accball[aria-expanded=true]{box-shadow:inset 0 2px 5px rgba(255,255,255,.55),0 0 0 3px var(--paper),0 0 0 5px var(--accent)}
 .accname{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .cpick{display:grid;gap:12px;padding:12px;border:1px solid var(--line);border-radius:20px;background:var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi,transparent)}
@@ -105,25 +105,29 @@
 .cpick .hue .knob{top:50%}
 .cprow{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .cprow .btn.primary{pointer-events:none}
+.cpick .alpha{position:relative;height:26px;border-radius:999px;touch-action:none;cursor:pointer;
+  background:linear-gradient(to right,transparent,var(--c,#0a5fd0)),conic-gradient(#c9ccd3 25%,#fff 0 50%,#c9ccd3 0 75%,#fff 0) 0 0/12px 12px}
+.cpick .alpha .knob{top:50%}
+.cplbl{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:-6px}
 [data-pal="glass"] input[type=checkbox]{-webkit-appearance:none;appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:999px;cursor:pointer;
   background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);border:1px solid var(--line);box-shadow:inset 0 1px 3px var(--glass-sh);transition:background-color .2s ease}
 [data-pal="glass"] input[type=checkbox]::before{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;
   background:linear-gradient(180deg,#fff,#eef1f6);box-shadow:0 2px 6px rgba(0,0,0,.25),inset 0 1px 0 #fff;transition:transform .22s cubic-bezier(.3,1.4,.5,1),width .15s ease}
 [data-pal="glass"] input[type=checkbox]:active::before{width:28px}
-[data-pal="glass"] input[type=checkbox]:checked{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);border-color:transparent}
+[data-pal="glass"] input[type=checkbox]:checked{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));border-color:transparent}
 [data-pal="glass"] input[type=checkbox]:checked::before{transform:translateX(18px)}
 [data-pal="glass"] input[type=checkbox]:checked:active::before{transform:translateX(12px)}
 [data-pal="glass"] input[type=checkbox]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 [data-pal="glass"] :is(.btn,.chip,.pal,.crow,.menubtn,.iconbtn,nav button,.seg button):active{transform:scale(.95);filter:none;background-color:var(--hl)}
 [data-pal="glass"] :is(.btn.primary,.fab):active{filter:brightness(1.15);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 0 6px var(--hl)}
 [data-pal="glass"] :is(.pal,.crow,.docs li,.parts li,.fstats>div,.online){border-radius:16px}
-[data-pal="glass"] .btn.primary,[data-pal="glass"] .seg button[aria-checked=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 14px var(--glass-sh)}
+[data-pal="glass"] .btn.primary,[data-pal="glass"] .seg button[aria-checked=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 14px var(--glass-sh)}
 [data-pal="glass"] .seg button{border-radius:999px}
 [data-pal="glass"] .seg button+button{border-left-color:transparent}
 [data-pal="glass"] .seg{padding:2px}
 [data-pal="glass"] .row .val,[data-pal="glass"] .bigdue .val{border-radius:12px;background:var(--paper)}
 [data-pal="glass"] :is(.warn,.alert,.answer blockquote.sect){border-radius:0 14px 14px 0;background:var(--paper)}
-[data-pal="glass"] .fab{background:linear-gradient(180deg,rgba(255,255,255,.4),transparent 70%),var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px var(--glass-sh)}
+[data-pal="glass"] .fab{background:linear-gradient(180deg,rgba(255,255,255,.4),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px var(--glass-sh)}
 [data-pal="glass"] .pageimg{border-radius:0 0 22px 22px}
 [data-pal="glass"] .result{overflow:hidden}
 [data-pal="glass"] .scrim{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
@@ -455,7 +459,7 @@ body{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
 [data-pal="glass"] nav{border-radius:999px;background:linear-gradient(180deg,var(--glass-hi) -140%,transparent 45%),var(--panel);
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 30px var(--glass-sh)}
 [data-pal="glass"] nav button{border-radius:999px}
-[data-pal="glass"] nav button[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px var(--glass-sh)}
+[data-pal="glass"] nav button[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px var(--glass-sh)}
 /* ---- drop-down lists: a soft chevron inset from the edge ---- */
 select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 14px center/12px 8px,var(--panel)}
 [data-pal="glass"] select:not(#_){background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 16px center/12px 8px,linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper)}
@@ -492,7 +496,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url
 [data-pal="glass"] .mback{color:var(--ink)}
 #menuBody section.mpage{border-bottom:0;padding-top:6px}
 [data-pal="glass"] .mitem{border-radius:20px;background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi)}
-[data-pal="glass"] .mico{border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+[data-pal="glass"] .mico{border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
 /* ---- library: the manual's file name on one line, its kind and "remove" under it ---- */
 .man{display:grid;gap:8px;align-items:stretch}
 .man .n{line-height:1.4}
@@ -523,6 +527,17 @@ header{padding-block:10px 12px;gap:8px 14px}
 .chips{justify-content:center;margin-top:12px}
 .terms{text-align:center}
 .askrow #qsugg,.askrow #qhist{top:calc(100% + 58px)}   /* lists open under the "Search" button, not over it */
+/* Details tab: sections that fold open */
+.card.fold{display:block;padding:0;gap:0}
+.fold > summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fold > summary::-webkit-details-marker{display:none}
+.fold > summary .eyebrow{flex:1;min-width:0;margin:0}
+.fcount{flex:none;min-width:22px;height:22px;padding:0 7px;border-radius:999px;display:grid;place-items:center;font:700 12px var(--f-body);background:var(--accent-fill,var(--accent));color:var(--accent-ink)}
+.fchev{flex:none;width:12px;height:12px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-3px) rotate(45deg);transition:transform .2s ease}
+.fold[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
+.fbody{display:grid;gap:10px;padding:0 16px 14px}
+@media (prefers-reduced-motion:no-preference){.fold[open] .fbody{animation:foldin .2s ease}}
+@keyframes foldin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -1380,13 +1395,13 @@ let bikes = [], manuals = [], currentBike = null;
 const $ = id => document.getElementById(id);
 /* ================= settings + languages ================= */
 const SETTINGS_KEY = "mg.settings";
-const settings = Object.assign({lang: "el", theme: "auto", palette: "classic", glassAcc: "blue", big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
+const settings = Object.assign({lang: "el", theme: "auto", palette: "classic", glassAcc: "blue", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
   (() => { try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; } })());
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
 const L = () => settings.lang === "en" ? "en" : "el";
 const T = {
   bike: ["Μηχανή", "Bike"], version: ["Έκδοση", "Version"], allVersions: ["Όλες οι εκδόσεις", "All versions"],
-  tabAsk: ["Ρώτα", "Ask"], tabLib: ["Μηχανές", "Bikes"], tabCard: ["Κάρτα", "Card"],
+  tabAsk: ["Ρώτα", "Ask"], tabLib: ["Μηχανές", "Bikes"], tabCard: ["Στοιχεία", "Details"],
   qPh: ["Γράψε π.χ. ροπή, πίεση, λάδι…", "Type e.g. torque, pressure, oil…"], search: ["Ψάξε", "Search"], question: ["Ερώτηση", "Question"],
   newBike: ["Νέα μηχανή", "New bike"], bikePh: ["Γράψε π.χ. afr, tenere, gs…", "Type e.g. afr, tenere, gs…"], bikeName: ["Όνομα μηχανής", "Bike name"], add: ["Προσθήκη", "Add"],
   libNote: ["Τα PDF και το ευρετήριο αποθηκεύονται μόνο σε αυτόν τον browser, σε αυτή τη συσκευή. Δεν στέλνεται τίποτα πουθενά. Για μεταφορά σε άλλη συσκευή χρησιμοποίησε το «Αντίγραφο ασφαλείας» από το μενού. Τα σκαναρισμένα PDF (μόνο εικόνα, χωρίς κείμενο) δεν μπορούν να αναζητηθούν.",
@@ -1433,7 +1448,7 @@ const T = {
   pin: ["☆ Στην κάρτα", "☆ Add to card"], pinned: ["★ Στην κάρτα", "★ On the card"], unpin: ["Αφαίρεση", "Remove"], pinDone: ["Μπήκε στα αγαπημένα της κάρτας.", "Added to the card's favourites."],
   partsTitle: ["Ανταλλακτικά & αναλώσιμα", "Parts & consumables"], partsEmpty: ["Γράψε κωδικούς που χρειάζεσαι στο μαγαζί (φίλτρα, μπουζί, τακάκια, μπαταρία, λάστιχα).", "Keep the codes you need at the shop (filters, plugs, pads, battery, tyres)."],
   partName: ["Ανταλλακτικό", "Part"], partCode: ["Κωδικός", "Code"], partNote: ["Σημείωση", "Note"],
-  partNamePh: ["π.χ. Φίλτρο λαδιού", "e.g. Oil filter"], partCodePh: ["κωδικός (π.χ. 15410-MFJ-D01)", "code (e.g. 15410-MFJ-D01)"], partNotePh: ["σημείωση (μάρκα, τιμή…)", "note (brand, price…)"],
+  partNamePh: ["π.χ. Φίλτρο λαδιού", "e.g. Oil filter"], partCodePh: ["κωδικός (π.χ. XY-12345)", "code (e.g. XY-12345)"], partNotePh: ["σημείωση (μάρκα, τιμή…)", "note (brand, price…)"],
   partsFromManual: ["Βρέθηκαν στο manual — πάτα για προσθήκη:", "Found in the manual — tap to add:"], fromManualPage: ["από το manual,", "from the manual,"],
   shareList: ["Κοινοποίηση λίστας", "Share list"], copied: ["Αντιγράφηκε.", "Copied."], saved: ["Αποθηκεύτηκε.", "Saved."],
   notesTitle: ["Σημειώσεις", "Notes"], notesPh: ["π.χ. λάδι που βάζω, λάστιχα, μετατροπές, ρυθμίσεις ανάρτησης…", "e.g. oil I use, tyres, mods, suspension settings…"],
@@ -1473,7 +1488,7 @@ const T = {
   morePages: ["Άλλες σχετικές σελίδες", "Other relevant pages"], pAbbr: ["σελ.", "p."], show: ["Δείξε", "Show"],
   renderFail: [e => `Δεν μπόρεσα να εμφανίσω τη σελίδα: ${e}`, e => `Couldn't show the page: ${e}`], loading: ["Φόρτωση…", "Loading…"],
   noStorage: ["Ο browser δεν επιτρέπει αποθήκευση εδώ. Άνοιξε το αρχείο σε Chrome, Edge ή Firefox.", "This browser doesn't allow storage here. Open the file in Chrome, Edge or Firefox."],
-  menu: ["Μενού", "Menu"], language: ["Γλώσσα", "Language"], appearance: ["Εμφάνιση", "Appearance"], theme: ["Θέμα", "Theme"], palette: ["Χρώματα", "Colours"], btnColour: ["Χρώμα κουμπιών", "Button colour"],
+  menu: ["Μενού", "Menu"], language: ["Γλώσσα", "Language"], appearance: ["Εμφάνιση", "Appearance"], theme: ["Θέμα", "Theme"], palette: ["Χρώματα", "Colours"], btnColour: ["Χρώμα κουμπιών", "Button colour"], opacity: ["Διαφάνεια", "Transparency"],
   thAuto: ["Αυτόματο", "Auto"], thLight: ["Φωτεινό", "Light"], thDark: ["Σκοτεινό", "Dark"], bigText: ["Μεγάλα γράμματα (για το γκαράζ)", "Large text (for the garage)"],
   units: ["Μονάδες", "Units"], uTorque: ["Ροπή", "Torque"], uPressure: ["Πίεση", "Pressure"], uVolume: ["Όγκος", "Volume"],
   unitsNote: ["Η τιμή στη μονάδα που διαλέγεις μπαίνει μεγάλη· οι άλλες μένουν από κάτω, όπως τις γράφει το manual.", "The value in your unit is shown large; the others stay below, as printed in the manual."],
@@ -1786,10 +1801,21 @@ function applyLook(){
   if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   if (settings.palette === "glass" && settings.glassAcc && settings.glassAcc !== "blue" && GLASS_ACC[settings.glassAcc]) r.dataset.acc = settings.glassAcc; else delete r.dataset.acc;
   const isDark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  if (settings.palette === "glass" && settings.glassAcc === "custom" && /^#[0-9a-f]{6}$/i.test(settings.glassHex || "")){
-    const a = readableAccent(settings.glassHex, isDark);
-    r.style.setProperty("--accent", a.acc); r.style.setProperty("--accent-ink", a.ink); r.style.setProperty("--hl", a.hl);
-  } else for (const k of ["--accent", "--accent-ink", "--hl"]) r.style.removeProperty(k);
+  for (const k of ["--accent", "--accent-ink", "--hl", "--accent-fill"]) r.style.removeProperty(k);
+  if (settings.palette === "glass"){
+    let base;
+    if (settings.glassAcc === "custom" && /^#[0-9a-f]{6}$/i.test(settings.glassHex || "")){
+      const a = readableAccent(settings.glassHex, isDark); base = a.acc;
+      r.style.setProperty("--accent", a.acc); r.style.setProperty("--accent-ink", a.ink); r.style.setProperty("--hl", a.hl);
+    } else base = (GLASS_ACC[settings.glassAcc] || GLASS_ACC.blue).c[isDark ? 1 : 0];
+    // see-through buttons: the fill lets the background show; the text on it is chosen for what the eye actually sees (fill over background)
+    const al = Math.max(.25, Math.min(1, +settings.glassAlpha || 1));
+    if (al < .995){
+      const bg = hex2rgb(isDark ? "#140a12" : "#e9eef9"), mix = rgb2hex(hex2rgb(base).map((c, i) => c * al + bg[i] * (1 - al)));
+      r.style.setProperty("--accent-fill", `rgba(${hex2rgb(base).join(",")},${al.toFixed(2)})`);
+      r.style.setProperty("--accent-ink", contrast("#ffffff", mix) >= contrast("#111111", mix) ? "#ffffff" : "#111111");
+    }
+  }
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
   const tc = document.getElementById("themeColor"); if (tc) tc.content = (getComputedStyle(r).getPropertyValue("--bar").trim() || getComputedStyle(r).getPropertyValue("--paper").trim()) || (dark ? "#0f1419" : "#ffffff");   // the status bar follows the palette
   // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
@@ -2966,19 +2992,16 @@ async function renderCard(){
   if (!currentBike){ box.innerHTML = `<div class="empty">${t("emptyNoBike")}</div>`; return; }
   const bike = currentBike, hasMan = manuals.some(m => m.bikeId === bike.id);
   bike.pins = bike.pins || []; bike.parts = bike.parts || [];
+  const fold = (k, title, count, body) => { const open = (settings.cardFold || {})[k];
+    return `<details class="card fold" data-fold="${k}"${open ? " open" : ""}><summary><span class="eyebrow">${title}</span>${count ? `<span class="fcount">${count}</span>` : ""}<span class="fchev" aria-hidden="true"></span></summary><div class="fbody">${body}</div></details>`; };
   box.innerHTML = `
-    <section class="card">
-      <div class="chead"><div class="eyebrow">${t("cardTitle")}${selVariant() ? ` · ${esc(friendly(selVariant()))}` : ""}</div>
-        ${hasMan ? `<button type="button" class="btn small" id="cardRefresh">↻ ${t("cardRefresh")}</button>` : ""}</div>
+    ${fold("specs", `${t("cardTitle")}${selVariant() ? ` · ${esc(friendly(selVariant()))}` : ""}`, "", `
+      ${hasMan ? `<div class="chead"><span></span><button type="button" class="btn small" id="cardRefresh">↻ ${t("cardRefresh")}</button></div>` : ""}
       <div id="cardSpecs">${hasMan ? `<div class="loading">${t("cardLoading")}</div>` : `<p class="mnote">${t("cardNoManual")}</p>`}</div>
-      <p class="mnote">${t("cardHint")}</p>
-    </section>
-    <section class="card">
-      <div class="eyebrow">★ ${t("pinsTitle")}</div>
-      <div id="cardPins">${bike.pins.length ? `<div class="loading">${t("cardLoading")}</div>` : `<p class="mnote">${t("pinsEmpty")}</p>`}</div>
-    </section>
-    <section class="card">
-      <div class="eyebrow">${t("partsTitle")}</div>
+      <p class="mnote">${t("cardHint")}</p>`)}
+    ${fold("pins", `★ ${t("pinsTitle")}`, bike.pins.length || "", `
+      <div id="cardPins">${bike.pins.length ? `<div class="loading">${t("cardLoading")}</div>` : `<p class="mnote">${t("pinsEmpty")}</p>`}</div>`)}
+    ${fold("parts", t("partsTitle"), bike.parts.length || "", `
       <div id="partsList">${partsListHTML(bike)}</div>
       <form id="partForm" class="partform">
         <input id="partName" data-tlabel="partName" placeholder="${t("partNamePh")}" required>
@@ -2987,13 +3010,13 @@ async function renderCard(){
         <button class="btn" type="submit">${t("add")}</button>
       </form>
       <div id="partSugg"></div>
-      ${bike.parts.length ? `<button type="button" class="btn small" id="partsShare">${t("shareList")}</button>` : ""}
-    </section>
+      ${bike.parts.length ? `<button type="button" class="btn small" id="partsShare">${t("shareList")}</button>` : ""}`)}
     <section class="card">
       <div class="eyebrow">${t("notesTitle")}</div>
       <textarea id="bikeNotes" rows="5" placeholder="${t("notesPh")}" aria-label="${t("notesTitle")}">${esc(bike.notes || "")}</textarea>
       <div class="meta" id="notesSaved"></div>
     </section>`;
+  box.querySelectorAll("details.fold").forEach(d => d.addEventListener("toggle", () => { settings.cardFold = {...(settings.cardFold || {}), [d.dataset.fold]: d.open}; saveSettings(); }));
   wireCard();
   if (!hasMan) return;
   const card = await computeCard(bike, false);
@@ -3367,6 +3390,8 @@ function renderMenu(){
           return `<div class="cpick" id="cpick" style="--h:${Math.round(c.h)}">
             <div class="sv" id="cpSV"><i class="knob" style="left:${c.s * 100}%;top:${(1 - c.v) * 100}%;background:${hx}"></i></div>
             <div class="hue" id="cpHue"><i class="knob" style="left:${c.h / 3.6}%;background:hsl(${Math.round(c.h)},100%,50%)"></i></div>
+            <div class="cplbl"><span>${t("opacity")}</span><span id="cpAlv">${Math.round((1 - (+settings.glassAlpha || 1)) * 100)}%</span></div>
+            <div class="alpha" id="cpAlpha" style="--c:${hx}"><i class="knob" style="left:${((+settings.glassAlpha || 1) - .25) / .75 * 100}%;background:${hx}"></i></div>
             <div class="cprow"><span class="btn primary">${t("search")}</span><span class="accname" id="cpHex">${hx.toUpperCase()}</span></div>
             <div class="accs" role="radiogroup">${Object.entries(GLASS_ACC).map(([k, a]) => `<button type="button" class="acc" role="radio" aria-checked="${k === settings.glassAcc}" data-acc="${k}" title="${esc(a.n[L() === "en" ? 1 : 0])}" aria-label="${esc(a.n[L() === "en" ? 1 : 0])}" style="background:linear-gradient(135deg,${a.c[1]},${a.c[0]})"></button>`).join("")}</div>
           </div>`; })() : ""}` : ""}
@@ -3398,12 +3423,16 @@ const fmtBytes = b => b > 1e9 ? (b / 1e9).toFixed(1) + " GB" : (b / 1e6).toFixed
 function openMenu(){ menuPage = null; renderMenu(); $("drawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => $("drawer").classList.add("open")); $("menuBtn").setAttribute("aria-expanded", "true"); $("menuClose").focus(); }
 function closeMenu(){ $("drawer").classList.remove("open"); $("scrim").hidden = true; $("menuBtn").setAttribute("aria-expanded", "false"); setTimeout(() => { $("drawer").hidden = true; }, 200); }
 $("drawer").addEventListener("pointerdown", e => {
-  const area = e.target.closest("#cpSV, #cpHue"); if (!area) return;
+  const area = e.target.closest("#cpSV, #cpHue, #cpAlpha"); if (!area) return;
   e.preventDefault(); area.setPointerCapture(e.pointerId);
   const box = $("cpick"), cur = settings.glassAcc === "custom" && settings.glassHex ? settings.glassHex : (GLASS_ACC[settings.glassAcc || "blue"] || GLASS_ACC.blue).c[0];
   let {h, s: sat, v} = hex2hsv(cur); if (area.id === "cpSV" && !sat && !v) sat = v = 1;
   const move = ev => {
     const rc = area.getBoundingClientRect(), x = Math.max(0, Math.min(1, (ev.clientX - rc.left) / rc.width)), y = Math.max(0, Math.min(1, (ev.clientY - rc.top) / rc.height));
+    if (area.id === "cpAlpha"){   // only how see-through the buttons are; the colour stays
+      settings.glassAlpha = +(.25 + x * .75).toFixed(2); applyLook();
+      area.querySelector(".knob").style.left = x * 100 + "%"; $("cpAlv").textContent = Math.round((1 - settings.glassAlpha) * 100) + "%"; return;
+    }
     if (area.id === "cpHue") h = x * 360; else { sat = x; v = 1 - y; }
     const hx = hsv2hex(h, sat, v);
     settings.glassAcc = "custom"; settings.glassHex = hx; applyLook();
@@ -3411,7 +3440,7 @@ $("drawer").addEventListener("pointerdown", e => {
     const k1 = box.querySelector("#cpSV .knob"), k2 = box.querySelector("#cpHue .knob");
     k1.style.left = sat * 100 + "%"; k1.style.top = (1 - v) * 100 + "%"; k1.style.background = hx;
     k2.style.left = h / 3.6 + "%"; k2.style.background = `hsl(${Math.round(h)},100%,50%)`;
-    $("cpHex").textContent = hx.toUpperCase(); $("accName").textContent = hx.toUpperCase(); box.querySelectorAll(".acc").forEach(b => b.setAttribute("aria-checked", "false"));
+    $("cpHex").textContent = hx.toUpperCase(); box.querySelector("#cpAlpha").style.setProperty("--c", hx); box.querySelector("#cpAlpha .knob").style.background = hx; $("accName").textContent = hx.toUpperCase(); box.querySelectorAll(".acc").forEach(b => b.setAttribute("aria-checked", "false"));
   };
   move(e);
   const up = () => { area.removeEventListener("pointermove", move); area.removeEventListener("pointerup", up); area.removeEventListener("pointercancel", up); saveSettings(); };
