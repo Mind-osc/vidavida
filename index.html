@@ -1417,7 +1417,7 @@ let bikes = [], manuals = [], currentBike = null;
 const $ = id => document.getElementById(id);
 /* ================= settings + languages ================= */
 const SETTINGS_KEY = "mg.settings";
-const settings = Object.assign({lang: "el", theme: "light", palette: "glass", glassAcc: "amber", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
+const settings = Object.assign({lang: "el", theme: "dark", palette: "glass", glassAcc: "amber", glassAlpha: 1, cardFold: {}, big: false, units: {torque: "N·m", pressure: "psi", volume: "L"}, history: []},
   (() => { try{ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }catch(e){ return {}; } })());
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(e){} }
 const L = () => settings.lang === "en" ? "en" : "el";

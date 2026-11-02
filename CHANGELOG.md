@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (33)
+- Νέοι χρήστες ξεκινούν με το σκούρο Γυαλί (ανθρακί φόντο, κεχριμπαρένια κουμπιά). Όσοι έχουν ήδη διαλέξει θέμα το κρατούν.
+- *New users start in dark Glass (charcoal background, amber buttons); existing choices are kept.*
+
 ## 2 Νοεμβρίου 2026 (32)
 - Γυαλί: η μετάβαση του φόντου (ειδικά στο σκούρο, από ανθρακί σε μαύρο) είναι πλέον ομαλή, χωρίς ορατές γραμμές — πιο σταδιακή καμπύλη και ένας σχεδόν αόρατος κόκκος που σπάει τα «σκαλοπάτια» της οθόνης.
 - *Glass: smoother background gradient without visible bands (eased stops plus a faint grain/dither).*
