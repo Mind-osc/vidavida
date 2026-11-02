@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 2 Νοεμβρίου 2026 (10)
+- **Νέο θέμα «Γυαλί»** στο Μενού → Εμφάνιση → Χρώματα: ημιδιάφανες, θολές επιφάνειες πάνω σε απαλό χρωματιστό φόντο, με γυαλάδα στην πάνω άκρη και μεγάλες καμπύλες. Κουμπιά, πεδία και καρτέλες έχουν σχήμα «χαπιού». Έχει ανοιχτή και σκούρη εκδοχή. Σε κινητά χωρίς θόλωμα ή με «Μείωση διαφάνειας» οι επιφάνειες γίνονται συμπαγείς για να διαβάζονται καθαρά.
+- *New "Glass" theme: frosted translucent surfaces over a soft colour field, pill-shaped controls, light and dark; solid surfaces when blur is unavailable or reduced transparency is on.*
+
 ## 2 Νοεμβρίου 2026 (9)
 - **Χρώματα:** στο Μενού → Εμφάνιση υπάρχουν πλέον 6 νέες παλέτες εκτός από την κλασική: Ρόσσο, Άμμος, Εσπρέσο, Μούρο, Πετρόλ, Φασκόμηλο. Η καθεμία έχει ανοιχτή και σκούρη εκδοχή, που ακολουθεί τη ρύθμιση Θέμα (Αυτόματο / Φωτεινό / Σκοτεινό). Όλοι οι συνδυασμοί είναι ελεγμένοι για αναγνωσιμότητα. Η γραμμή κατάστασης του κινητού παίρνει το χρώμα της παλέτας.
 - *Colours: six new palettes besides the classic one (Rosso, Sand, Espresso, Berry, Teal, Sage), each with a light and a dark variant following the Theme setting; contrast-checked; the status bar follows the palette.*

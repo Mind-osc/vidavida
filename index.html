@@ -49,6 +49,44 @@
 :root[data-pal="sage"]{--paper:#f3f1e5; --panel:#fbfaf4; --ink:#22301f; --muted:#566552; --line:#d9d2c0; --accent:#526851; --accent-ink:#f3f1e5; --accent-edge:transparent; --hl:rgba(82,104,81,0.22); --danger:#a3302a; --ok:#2f6b3c; color-scheme:only light}
 @media (prefers-color-scheme:dark){:root[data-pal="sage"]:not([data-theme="light"]){--paper:#1d261c; --panel:#283327; --ink:#f3f1e5; --muted:#b4bfa9; --line:#3b4a39; --accent:#9fad94; --accent-ink:#1d261c; --accent-edge:transparent; --hl:rgba(159,173,148,0.3); --danger:#ff8a7a; --ok:#a6d68f; color-scheme:dark}}
 :root[data-pal="sage"][data-theme="dark"]{--paper:#1d261c; --panel:#283327; --ink:#f3f1e5; --muted:#b4bfa9; --line:#3b4a39; --accent:#9fad94; --accent-ink:#1d261c; --accent-edge:transparent; --hl:rgba(159,173,148,0.3); --danger:#ff8a7a; --ok:#a6d68f; color-scheme:dark}
+/* Glass: frosted, translucent surfaces over a soft colour field, with large rounded corners */
+:root[data-pal="glass"]{--paper:rgba(255,255,255,.38); --panel:rgba(255,255,255,.52); --ink:#16171c; --muted:#454852; --line:rgba(255,255,255,.75); --accent:#0a5fd0; --accent-ink:#ffffff; --accent-edge:transparent; --hl:rgba(10,95,208,.20); --danger:#b3261e; --ok:#1e6f40; --bar:#e9eef9; --glass-hi:rgba(255,255,255,.9); --glass-sh:rgba(40,50,90,.16); color-scheme:only light; --glass-bg:radial-gradient(60% 45% at 12% 8%,#9cc3ff 0,transparent 70%),radial-gradient(55% 40% at 92% 22%,#d6bcff 0,transparent 70%),radial-gradient(60% 45% at 30% 88%,#ffd2bd 0,transparent 70%),radial-gradient(50% 40% at 85% 80%,#a6ecd9 0,transparent 70%),#eef1f8}
+@media (prefers-color-scheme:dark){:root[data-pal="glass"]:not([data-theme="light"]){--paper:rgba(255,255,255,.07); --panel:rgba(28,32,46,.52); --ink:#f3f5fa; --muted:#b8bdcb; --line:rgba(255,255,255,.16); --accent:#5aa8ff; --accent-ink:#0a1020; --accent-edge:transparent; --hl:rgba(90,168,255,.28); --danger:#ff8a80; --ok:#7fd6a0; --bar:#0b1022; --glass-hi:rgba(255,255,255,.22); --glass-sh:rgba(0,0,0,.45); color-scheme:dark; --glass-bg:radial-gradient(60% 45% at 12% 8%,#1d3f8f 0,transparent 70%),radial-gradient(55% 40% at 92% 22%,#4b2491 0,transparent 70%),radial-gradient(60% 45% at 30% 88%,#7a2f1d 0,transparent 70%),radial-gradient(50% 40% at 85% 80%,#0f5a4c 0,transparent 70%),#0b1022}}
+:root[data-pal="glass"][data-theme="dark"]{--paper:rgba(255,255,255,.07); --panel:rgba(28,32,46,.52); --ink:#f3f5fa; --muted:#b8bdcb; --line:rgba(255,255,255,.16); --accent:#5aa8ff; --accent-ink:#0a1020; --accent-edge:transparent; --hl:rgba(90,168,255,.28); --danger:#ff8a80; --ok:#7fd6a0; --bar:#0b1022; --glass-hi:rgba(255,255,255,.22); --glass-sh:rgba(0,0,0,.45); color-scheme:dark; --glass-bg:radial-gradient(60% 45% at 12% 8%,#1d3f8f 0,transparent 70%),radial-gradient(55% 40% at 92% 22%,#4b2491 0,transparent 70%),radial-gradient(60% 45% at 30% 88%,#7a2f1d 0,transparent 70%),radial-gradient(50% 40% at 85% 80%,#0f5a4c 0,transparent 70%),#0b1022}
+[data-pal="glass"] body{background:var(--bar)}
+[data-pal="glass"] body::before{content:"";position:fixed;inset:0;z-index:-1;background:var(--glass-bg)}
+[data-pal="glass"] :is(.result,.card,.bike,.drawer,.fbsheet,.sugg,.banner,.empty){
+  background:linear-gradient(180deg,var(--glass-hi) -140%,transparent 45%),var(--panel);
+  -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);
+  border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 30px var(--glass-sh)}
+[data-pal="glass"] :is(.result,.card,.bike,.banner,.empty){border-radius:22px}
+[data-pal="glass"] .drawer{border-radius:0 26px 26px 0}
+[data-pal="glass"] .fbsheet{border-radius:26px 26px 0 0}
+[data-pal="glass"] .sugg{border-radius:16px}
+[data-pal="glass"] :is(.btn,select,input[type=text],.seg,.menubtn,.chip,.iconbtn,.dhead .x,.att,.tag){border-radius:999px}
+[data-pal="glass"] :is(.btn,select,input[type=text],.seg,.menubtn,.iconbtn,.dhead .x,.pal,.crow,.docs li,.parts li,.fstats>div){
+  background:linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper);border-color:var(--line);box-shadow:inset 0 1px 0 var(--glass-hi)}
+[data-pal="glass"] :is(textarea,#bikeNotes,.pcode,.checks,.fbinfo){border-radius:16px;background:var(--paper)}
+[data-pal="glass"] input:is([type=number],[type=date],[type=month],[type=search],[type=email],[type=tel],[type=url],:not([type])){border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink);box-shadow:inset 0 1px 0 var(--glass-hi);padding:8px 12px}
+.pal[data-pal="glass"] .sw{background:radial-gradient(70% 90% at 15% 20%,#9cc3ff,transparent 70%),radial-gradient(70% 90% at 85% 25%,#d6bcff,transparent 70%),radial-gradient(70% 90% at 35% 95%,#ffd2bd,transparent 70%),radial-gradient(60% 90% at 90% 90%,#a6ecd9,transparent 70%),#eef1f8;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 0 0 1px rgba(255,255,255,.6),0 2px 6px rgba(40,50,90,.18);border-radius:10px}
+.pal[data-pal="glass"] .sw i{display:none}
+[data-pal="glass"] :is(.pal,.crow,.docs li,.parts li,.fstats>div,.online){border-radius:16px}
+[data-pal="glass"] .btn.primary,[data-pal="glass"] .seg button[aria-checked=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 14px var(--glass-sh)}
+[data-pal="glass"] .seg button{border-radius:999px}
+[data-pal="glass"] .seg button+button{border-left-color:transparent}
+[data-pal="glass"] .seg{padding:2px}
+[data-pal="glass"] .row .val,[data-pal="glass"] .bigdue .val{border-radius:12px;background:var(--paper)}
+[data-pal="glass"] :is(.warn,.alert,.answer blockquote.sect){border-radius:0 14px 14px 0;background:var(--paper)}
+[data-pal="glass"] nav{border-bottom-color:var(--line)}
+[data-pal="glass"] nav button[aria-selected=true]{border-bottom:0;background:var(--panel);border-radius:999px;box-shadow:inset 0 1px 0 var(--glass-hi),0 4px 14px var(--glass-sh)}
+[data-pal="glass"] nav{border-bottom:0;padding:4px;gap:4px;border-radius:999px;background:var(--paper);box-shadow:inset 0 1px 0 var(--glass-hi);width:max-content;max-width:100%;overflow-x:auto}
+[data-pal="glass"] .fab{background:linear-gradient(180deg,rgba(255,255,255,.4),transparent 70%),var(--accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px var(--glass-sh)}
+[data-pal="glass"] .pageimg{border-radius:0 0 22px 22px}
+[data-pal="glass"] .result{overflow:hidden}
+[data-pal="glass"] .scrim{-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+/* no frosting available, or the phone asks for less transparency: solid surfaces in the same colours */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){[data-pal="glass"] :is(.result,.card,.bike,.drawer,.fbsheet,.sugg,.banner,.empty){background:var(--bar)}}
+@media (prefers-reduced-transparency:reduce){[data-pal="glass"] :is(.result,.card,.bike,.drawer,.fbsheet,.sugg,.banner,.empty){background:var(--bar);-webkit-backdrop-filter:none;backdrop-filter:none}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
@@ -1580,13 +1618,13 @@ $("fbSend").onclick = () => {
 };
 window.addEventListener("error", e => toast(t("appError", e.message || e.error || "?"), true));
 window.addEventListener("unhandledrejection", e => toast(t("appError", (e.reason && (e.reason.message || e.reason)) || "?"), true));
-const PALETTES = {"classic": {"n": ["Κλασικό", "Classic"], "sw": ["#0f1419", "#182028", "#fcab01", "#dfe3e7", "#ffffff"]}, "rosso": {"n": ["Ρόσσο", "Rosso"], "sw": ["#1f1515", "#5b595b", "#a9a6a6", "#9a0101", "#650a0b"]}, "sand": {"n": ["Άμμος", "Sand"], "sw": ["#dac3a4", "#c3b49f", "#9b9285", "#736f6b", "#55524f"]}, "espresso": {"n": ["Εσπρέσο", "Espresso"], "sw": ["#261c14", "#8a7c6a", "#736654", "#524433", "#ccc5b9"]}, "berry": {"n": ["Μούρο", "Berry"], "sw": ["#4b2b33", "#603649", "#361b27", "#a05c84", "#5e4555"]}, "teal": {"n": ["Πετρόλ", "Teal"], "sw": ["#2b4242", "#93a4ab", "#c3c6c3", "#7d8f8b", "#6b8784"]}, "sage": {"n": ["Φασκόμηλο", "Sage"], "sw": ["#526851", "#9fad94", "#f3f1e5", "#cfc8b6"]}};
+const PALETTES = {"classic": {"n": ["Κλασικό", "Classic"], "sw": ["#0f1419", "#182028", "#fcab01", "#dfe3e7", "#ffffff"]}, "rosso": {"n": ["Ρόσσο", "Rosso"], "sw": ["#1f1515", "#5b595b", "#a9a6a6", "#9a0101", "#650a0b"]}, "sand": {"n": ["Άμμος", "Sand"], "sw": ["#dac3a4", "#c3b49f", "#9b9285", "#736f6b", "#55524f"]}, "espresso": {"n": ["Εσπρέσο", "Espresso"], "sw": ["#261c14", "#8a7c6a", "#736654", "#524433", "#ccc5b9"]}, "berry": {"n": ["Μούρο", "Berry"], "sw": ["#4b2b33", "#603649", "#361b27", "#a05c84", "#5e4555"]}, "teal": {"n": ["Πετρόλ", "Teal"], "sw": ["#2b4242", "#93a4ab", "#c3c6c3", "#7d8f8b", "#6b8784"]}, "sage": {"n": ["Φασκόμηλο", "Sage"], "sw": ["#526851", "#9fad94", "#f3f1e5", "#cfc8b6"]}, "glass": {"n": ["Γυαλί", "Glass"], "sw": ["#9cc3ff", "#d6bcff", "#ffd2bd", "#a6ecd9"]}};
 function applyLook(){
   const r = document.documentElement;
   if (settings.theme === "light" || settings.theme === "dark") r.dataset.theme = settings.theme; else delete r.dataset.theme;
   if (settings.palette && settings.palette !== "classic" && PALETTES[settings.palette]) r.dataset.pal = settings.palette; else delete r.dataset.pal;
   const dark = settings.theme === "dark" || (settings.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
-  const tc = document.getElementById("themeColor"); if (tc) tc.content = getComputedStyle(r).getPropertyValue("--paper").trim() || (dark ? "#0f1419" : "#ffffff");   // the status bar follows the palette
+  const tc = document.getElementById("themeColor"); if (tc) tc.content = (getComputedStyle(r).getPropertyValue("--bar").trim() || getComputedStyle(r).getPropertyValue("--paper").trim()) || (dark ? "#0f1419" : "#ffffff");   // the status bar follows the palette
   // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
   const cs = document.getElementById("colorScheme"); if (cs) cs.content = settings.theme === "light" ? "only light" : settings.theme === "dark" ? "dark" : "light dark";
   document.body.classList.toggle("bigtext", !!settings.big);
