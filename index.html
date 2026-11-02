@@ -463,7 +463,7 @@ body.bigtext .wrap{zoom:1.15}
 pdfjsLib.GlobalWorkerOptions.workerSrc = "pdf.worker.min.js"; // worker code is inlined above (pdfjsWorker global) → works offline
 
 /* ================= storage (IndexedDB, this browser only) ================= */
-const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 5;
+const DBNAME = "manual-garage", DBVER = 2, INDEX_VERSION = 6;
 let idb;
 function openDB(){
   return new Promise((res, rej) => {
@@ -513,7 +513,7 @@ const DICT = [
  ["πιεσ",["pressure"],"pressure"],["χωρητικ",["capacity"],"capacity"],["ποσοτ",["capacity","quantity","amount"],"capacity"],["λιτρ",["capacity","liter","litre"],"capacity"],
  ["διακεν",["clearance","gap"],"length"],["τζογ",["slack","free play","freeplay","play"],"length"],["ελευθερ",["freeplay","free play","free"],"length"],["διαδρομ",["freeplay","free play","travel"],"length"],["φθορ",["wear","limit","thickness"],"length"],["παχ",["thickness"],"length"],
  ["βιδ",["bolt","screw"]],["μπουλον",["bolt"]],["παξιμαδ",["nut"]],["ροδελ",["washer"]],
- ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement","αλλαγ","αντικατασ"],"act"],["λιπαιν",["lubricate","lubricating","lubrication","λιπανσ","λιπαν"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing","αφαιρεσ","αφαιρ"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing","τοποθετησ"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging","φορτισ"],"act"],["γεμιζ",["fill","filling","add","συμπληρωσ","πληρωσ"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
+ ["λαδ",["oil","λιπαντικ"]],["φιλτρ",["filter","cleaner"]],["αλλαζ",["change","changing","replace","replacing","replacement","αλλαγ","αλλαξ","αντικατασ"],"act"],["λιπαιν",["lubricate","lubricating","lubrication","λιπανσ","λιπαν"],"act"],["αφαιρ",["remove","removal","removing"],"act"],["βγαζ",["remove","removal","removing","αφαιρεσ","αφαιρ"],"act"],["ξεβιδ",["remove","removal","loosen"],"act"],["τοποθετ",["install","installation","installing","τοποθετησ"],"act"],["καθαρ",["clean","cleaning"],"act"],["φορτιζ",["charge","charging","φορτισ"],"act"],["γεμιζ",["fill","filling","add","συμπληρωσ","πληρωσ"],"act"],["συμπληρ",["fill","add","adding"],"act"],["εξαερ",["bleed","bleeding"],"act"],["αερ",["air"]],["μπουζ",["spark plug"]],
  ["αλυσιδ",["chain"]],["γραναζ",["sprocket"]],["τανυσ",["tension","slack"]],
  ["λαστιχ",["tire","tyre"]],["ελαστικ",["tire","tyre"]],["τροχ",["wheel"]],["ροδ",["wheel","rim"]],["ζαντ",["rim","wheel"]],
  ["αξον",["axle","shaft"]],["αξων",["axle","shaft"]],["φρεν",["brake"]],["δαγκαν",["caliper"]],["δισκ",["disc","disk"]],
@@ -522,7 +522,7 @@ const DICT = [
  ["συμπλεκτ",["clutch"]],["ταχυτ",["gear","speed"]],["κιβωτ",["transmission","gearbox"]],["κινητηρ",["engine"]],["μοτερ",["engine"]],
  ["κυλινδρ",["cylinder"]],["κεφαλ",["cylinder head","head"]],["βαλβιδ",["valve"]],["μπεκ",["injector"]],
  ["ρεζερβουαρ",["fuel tank","tank","fuel quantity","usable fuel","ρεζερβ","ντεποζ","τεποζ"]],["ντεποζιτ",["fuel tank","tank","ρεζερβ","ντεποζ","τεποζ"]],["καυσιμ",["fuel"]],["βενζιν",["fuel","gasoline","petrol"]],
- ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork","front suspension"]],["αναρτ",["suspension","fork","shock absorber"]],["αμορτισ",["shock absorber","shock","rear suspension","rear cushion"]],
+ ["εξατμ",["exhaust","muffler"]],["πιρουν",["fork","front suspension"]],["αναρτ",["suspension","fork","shock absorber","αμορτισ","πιρουν"]],["αμορτισ",["shock absorber","shock","rear suspension","rear cushion"]],
  ["ρυθμ",["adjust","adjuster","setting"]],["προφορτ",["preload","pre-load"]],["αποσβεσ",["damping","rebound","compression"]],
  ["σελα",["seat"]],["τιμον",["handlebar"]],["σασι",["frame"]],["μαρσπιε",["footpeg","step"]],["σταντ",["stand"]],
  ["καθρεφτ",["mirror","mirrors","rearview"]],["καθρεπτ",["mirror"]],["μιζ",["starter"]],["γεννητρ",["alternator","generator"]],
@@ -607,10 +607,13 @@ async function indexPdf(data, onProgress){
     const tc = await pg.getTextContent();
     fixShiftedText(tc.items, shiftState);
     try{ await dropHiddenText(pg, vp, tc); }catch(_){}
+    // pages stored sideways and turned by the PDF (/Rotate 90): work in the page as it is shown
+    const vr = pg.rotate % 360 !== 0;
+    if (vr) for (const it of tc.items){ if (!it.transform) continue; const m = pdfjsLib.Util.transform(vp.transform, it.transform); it.transform = [m[0], -m[1], -m[2], -m[3], m[4], vp.height - m[5]]; }
     const cells = cellsFromContent(tc, vp.width);
     if (cells.reduce((s, c) => s + c[0].length, 0) > 40) textPages++;
     const [vx, vy] = pg.view; // page origin (usually 0,0)
-    pages.push({w: Math.round(vp.width), h: Math.round(vp.height), ox: vx, oy: vy, c: cells});
+    pages.push(vr ? {w: Math.round(vp.width), h: Math.round(vp.height), ox: 0, oy: 0, vr: 1, c: cells} : {w: Math.round(vp.width), h: Math.round(vp.height), ox: vx, oy: vy, c: cells});
     pg.cleanup();
     if (onProgress && (i % 5 === 0 || i === pdf.numPages)){ onProgress(i, pdf.numPages); await new Promise(r => setTimeout(r)); }
   }
@@ -726,7 +729,9 @@ function cellsFromContent(tc, pageW){
     if (cur) cells.push(cur);
   }
   const R = v => Math.round(v * 10) / 10;
-  return cells.map(c => [c.s.replace(/\s+/g, " ").trim(), R(c.x0), R(c.y), R(c.x1), R(c.fh)]).filter(c => c[0]);
+  // fonts without a mapping for "." give "\uFFFD" ("2\uFFFD5 L", "…interval\uFFFD"): put the full stop back
+  const fixDot = s => s.includes("\uFFFD") ? s.replace(/(\d)\uFFFD(?=\d)/g, "$1.").replace(/\uFFFD(?=\s|$|\))/g, ".") : s;
+  return cells.map(c => [fixDot(c.s.replace(/\s+/g, " ").trim()), R(c.x0), R(c.y), R(c.x1), R(c.fh)]).filter(c => c[0]);
 }
 
 /* ================= OCR for scanned manuals =================
@@ -784,7 +789,7 @@ async function loadIndex(m, onProgress){
     const txt = cells.map(c => c.s).join("\n"); const n = norm(txt);
     const toks = n.match(tokRe) || []; const tf = new Map();
     for (const w of toks) tf.set(w, (tf.get(w) || 0) + 1);
-    return {pi, w: p.w, h: p.h, ox: p.ox || 0, oy: p.oy || 0, cells, n, tf, len: toks.length};
+    return {pi, w: p.w, h: p.h, ox: p.ox || 0, oy: p.oy || 0, vr: p.vr || 0, cells, n, tf, len: toks.length};
   });
   const ix = {pages, labels: computeLabels(pages, t.labels)};
   cache.set(m.id, ix); return ix;
@@ -865,6 +870,43 @@ function threadRow(p, v){
     && p.cells.some(o => o !== c && o.x0 > c.x1 && hasLetters(o) && Math.abs(o.y - c.y) < Math.max(1.5, o.fh * .4)) && !lv(c)).sort((a, b) => a.y - b.y)[0];
   return hd ? [hd, ...blk] : blk;
 }
+/* Spec lists printed as an indented outline ("Battery:" / "  Voltage, capacity:" / "    12 V, 8.6 Ah"), over two or three
+   page columns: the less-indented lines above a label (in its column, or at the foot of the column before) name what it belongs to. */
+function colStarts(p){
+  if (p._cols) return p._cols;
+  // left edges where several lines start; clusters of them, far apart, are the page's columns
+  const h = new Map(); for (const c of p.cells) if (hasLetters(c)){ const k = Math.round(c.x0); h.set(k, (h.get(k) || 0) + 1); }
+  const xs = [...h.entries()].filter(([, n]) => n >= 3).map(([x]) => x).sort((a, b) => a - b), starts = [];
+  for (const x of xs) if (!starts.length || x - starts[starts.length - 1].last > p.w * .15) starts.push({x, last: x}); else starts[starts.length - 1].last = x;
+  return p._cols = starts.map(s => s.x);
+}
+function ctxHeads(p, L, useful){
+  const cs = colStarts(p); if (!cs.length) return [];
+  const colOf = c => cs.reduce((k, x, i) => c.x0 >= x - 15 ? i : k, 0);
+  const isHead = (c, ref) => !c.isVal && hasLetters(c) && c.s.length < 45 && !/^[a-zα-ω(]/.test(c.s) && !/^\d+[.)]/.test(c.s.trim()) && !/[.!?]$/.test(c.s.trim()) && c.y - p.oy < p.h * .9
+    && (/:$/.test(c.s.trim()) || c.fh > ref.fh * 1.12);
+  const out = [];
+  for (let cur = L, lvl = 0; lvl < 3; lvl++){
+    const k = colOf(cur), ind = cur.x0 - cs[k];
+    const same = p.cells.filter(c => c !== cur && colOf(c) === k && c.y > cur.y + .5 && c.x0 - cs[k] < ind - 3 && isHead(c, cur)).sort((a, b) => a.y - b.y);
+    let nx = same.find(c => !p.cells.some(o => o !== c && o.y > cur.y + .5 && o.y < c.y - .5 && colOf(o) === k && o.x0 - cs[k] < c.x0 - cs[k] - 3 && hasLetters(o)));   // nothing less indented in between
+    if (!nx && k > 0 && !p.cells.some(o => o !== cur && colOf(o) === k && o.y > cur.y + .5 && hasLetters(o) && o.y - p.oy < p.h * .93 && o.fh <= cur.fh * 1.12 && !/^(TIP|NOTE|NOTICE)/.test(o.s))){
+      // first line of its column: the outline continues from the foot of the previous column
+      const prev = p.cells.filter(c => colOf(c) === k - 1 && c.x0 - cs[k - 1] < ind - 3 && isHead(c, cur) && c.y - p.oy < p.h * .9).sort((a, b) => a.y - b.y);
+      nx = prev[0] || null;   // the outline's last heading in that column
+    }
+    // a section title in a bigger font, earlier in reading order ("Drive chain slack" over the column before)
+    if (!nx && !lvl){
+      const ord = c => colOf(c) * 1e4 + (p.h - c.y), oc = ord(cur);
+      nx = p.cells.filter(c => c !== cur && c.fh > cur.fh * 1.12 && hasLetters(c) && c.s.length < 45 && !/[.!?]$/.test(c.s.trim()) && c.y - p.oy < p.h * .9 && ord(c) < oc && colOf(c) >= colOf(cur) - 1)
+        .sort((a, b) => ord(b) - ord(a)).slice(0, 3).find(c => useful(c)) || null;
+      if (nx){ out.unshift(nx); break; }
+    }
+    if (!nx) break;
+    out.unshift(nx); cur = nx;
+  }
+  return out;
+}
 function pairsOnPage(p, pq){
   const pairs = [];
   // a line level with a value of its own is a table row, not the continuation of a multi-line name
@@ -882,9 +924,13 @@ function pairsOnPage(p, pq){
     const mine = c => colVals.every(o => o === v || Math.abs(o.y - c.y) > Math.abs(v.y - c.y));
     const sameRow = p.cells.filter(c => c !== v && Math.abs(c.y - v.y) < Math.max(rowTol, v.fh * .85) && c.x1 <= v.x0 + 1 && mine(c)).sort((a, b) => b.x0 - a.x0 || b.y - a.y);
     let label = [], lastX = v.x0, gotText = false;
+    const cs = colStarts(p), colIx = c => cs.reduce((k, x, i) => c.x0 >= x - 15 ? i : k, 0), kv = colIx(v);
     for (const c of sameRow){
       const gap = lastX - c.x1;
       if (c.isVal) break;                                     // another value = another column
+      // text from the page column to the left, when this value sits indented inside a column of its own (outline-style spec lists)
+      if (!gotText && kv > 0 && colIx(c) < kv && cs[kv] > c.x1 && v.x0 - cs[kv] > 4
+        && p.cells.some(o => colIx(o) === kv && !o.isVal && /[A-Za-zΑ-Ωα-ω]{3,}/.test(o.s) && o.x0 < v.x0 - 4 && o.y > v.y && o.y - v.y < v.fh * 6)) break;
       if (gotText){ if (hasLetters(c) && gap < p.w * .12 && !(label[0].x0 > p.w * .48 && c.x1 < p.w * .52)) { label.unshift(c); lastX = c.x0; continue; } break; }
       // spec lists print the name far left and the value mid-page ("ΧΩΡΗΤΙΚΟΤΗΤΑ ΡΕΖΕΡΒΟΥΑΡ ........ 20 LIT")
       if (gap > p.w * .33 && !(gap < p.w * .55 && c.s.length < 60 && !/[.!?:]$/.test(c.s.trim()) && hasLetters(c))) break;
@@ -947,16 +993,20 @@ function pairsOnPage(p, pq){
       if (!up) break; label.unshift(up);
     }
     let how = "row";
-    const prefix = v.s.split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit|max(imum)?|min(imum)?|approx(imately)?|appr|ca|about|up to|at least|not more than|μεγ(ιστο)?|ελαχ(ιστο)?|περιπου|περ|εως|εωσ)\b\.?/gi, "").replace(/(μέγιστο|ελάχιστο|περίπου|έως|μεγ\.|ελάχ\.|περ\.)/gi, "");
+    const prefix = v.s.replace(/^\s*\d{1,2}[.)]\s+/, "").split(/\d/)[0].replace(/\b(torque|capacity|standard|service limit|specified|unit|max(imum)?|min(imum)?|approx(imately)?|appr|ca|about|up to|at least|not more than|μεγ(ιστο)?|ελαχ(ιστο)?|περιπου|περ|εως|εωσ)\b\.?/gi, "").replace(/(μέγιστο|ελάχιστο|περίπου|έως|μεγ\.|ελάχ\.|περ\.)/gi, "");
     const selfLabeled = /[A-Za-zΑ-Ωα-ωΆ-Ώά-ώ]{3,}/.test(prefix);           // e.g. "Lever pivot nut 10 N·m"
-    if (selfLabeled){
+    // "Oil capacity  |  When changing an oil filter: 2.64 qt (2.5 L)": the row name on the left still names it
+    const rowName = selfLabeled && label.length && gotText && label.every(c => c.s.length < 45 && !/[.!?]$/.test(c.s.trim())) && v.x0 - Math.max(...label.map(c => c.x1)) > p.w * .03;
+    if (rowName) how = "row";
+    else if (selfLabeled){
       label = []; how = "self";
       // a figure inside a sentence: the start of the sentence on the line(s) above names the part ("…σφίξτε τη / βίδα … με / ροπή 12 Nm")
-      if (objHit([v]) < pq.objects.length){
+      if (objHit([v]) < pq.objects.length && !/^\s*\d{1,2}[.)]\s/.test(v.s)){   // (an item of a numbered list names itself)
         let cur = v;
         for (let k = 0; k < 2; k++){
           const up = p.cells.find(c => c !== cur && !c.isVal && !levelVal(c) && !label.includes(c) && Math.abs(c.x0 - cur.x0) < 14 && c.y > cur.y + .5 && c.y - cur.y < cur.fh * 1.8 && hasLetters(c));
-          if (!up) break; label.unshift(up); cur = up;
+          if (!up || (/^\s*\d{1,2}[.)]\s/.test(cur.s) && /^\s*\d{1,2}[.)]\s/.test(up.s))) break;   // (the previous item of a numbered list is another subject)
+          label.unshift(up); cur = up;
           if (objHit([...label, v]) >= pq.objects.length) break;
         }
         if (objHit([...label, v]) <= objHit([v])) label = [];
@@ -1017,17 +1067,23 @@ function pairsOnPage(p, pq){
       const up = col.find(c => c.y - L.y < L.fh * 2.4 && !level(c, o => o.isVal) && Math.abs(c.x0 - L.x0) < 3) || col.find(c => !level(c, o => true));
       if (up && up.s.length < 40 && !/[.!?]$/.test(up.s.trim()) && objHit([up, ...label, v]) > objHit([...label, v])) label.unshift(up);
     }
+    if (pq.objects.length && objHit([...label, v]) < pq.objects.length && (how === "col" || how === "row" || how === "wrap") && label.length){
+      const base = objHit([...label, v]), hs = ctxHeads(p, label[0], c => objHit([c, ...label, v]) > base);
+      if (hs.length && objHit([...hs, ...label, v]) > base) label = [...hs.filter(h => !label.includes(h)), ...label];
+    }
     const objs = objHit([...label, v]);
     if (!objs && (pq.objects.length || !pq.intents.size)) continue;
-    if (pq.intents.size && v.intents.size && ![...pq.intents].some(i => v.intents.has(i))) continue;
+    if (pq.intents.size && ![...pq.intents].some(i => v.intents.has(i))) continue;   // "how much oil" wants litres, not "SAE 10W-40"
     // generic words ("bolt", "screw", "nut") count less than the part they hold ("caliper", "axle")
     let s = pq.objects.reduce((t, o) => t + ([...label, v].some(c => conceptIn(c.n, o)) ? (o.alts.some(a => /^(bolt|screw|nut)s?$/.test(a)) ? 1 : 2) : 0), 0);
     for (const it of pq.intents){ if (v.intents.has(it)) s += 3; else s -= 4; }
     if (pq.objects.length && objs === pq.objects.length) s += 2;
     if (how === "row") s += .5;
+    if ((vText.match(/[A-Za-zΑ-Ωα-ωά-ώ]{4,}/g) || []).length >= 6) s -= pq.intents.size ? 3 : 1;   // a figure inside running text ranks below a spec line   // a figure inside running text ranks below a spec line
+    if (how === "self" && v.s.length > 70 && /[.!?]$/.test(v.s.trim())) s -= 1.5;   // a figure in the middle of a long sentence
     if (how === "col" && label.some(c => /[:.]$/.test(c.s.trim())) && label.map(c => c.s).join(" ").split(/\s+/).length >= 5) s -= 1.5;   // "…should have the following value:" is an example in the text, not the spec table
     if (s <= 0) continue;
-    const head = p.cells.filter(c => c.y > v.y + .5 && !c.isVal && isHeading(c) && !label.includes(c) && c.x0 <= v.x1 && (c.x1 >= v.x0 - p.w * .5)).sort((a, b) => a.y - b.y)[0];
+    const head = p.cells.filter(c => c.y > v.y + .5 && !c.isVal && isHeading(c) && !label.includes(c) && c.x0 <= v.x1 && (c.x1 >= v.x0 - p.w * .5) && (colIx(c) === kv || colIx(c) === colIx(label[0] || v))).sort((a, b) => a.y - b.y)[0];
     // model variant heading in the table above this value (e.g. "XY900S/S II"), only if it is a heading row of its own
     const lx0 = Math.min(v.x0, ...label.map(c => c.x0));
     const varCell = p.cells.filter(c => CODE_FULL.test(c.s) && c.y > v.y + .5 && c.y - v.y < v.fh * 14 && c.x1 > lx0 - 2 && c.x0 < v.x1
@@ -1078,7 +1134,9 @@ async function renderPage(m, pageNo, cssWidth, marks){
   const c = document.createElement("canvas"); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
   const ctx = c.getContext("2d");
   await page.render({canvasContext: ctx, viewport: vp}).promise;
-  const box = cell => { const r = vp.convertToViewportRectangle([cell.x0 - 1, cell.y - cell.fh * .28, cell.x1 + 1, cell.y + cell.fh * .95]);
+  const vr = cache.get(m.id)?.pages[pageNo - 1]?.vr;
+  const box = cell => { const r = vr ? [(cell.x0 - 1) * scale, (base.height - cell.y - cell.fh * .95) * scale, (cell.x1 + 1) * scale, (base.height - cell.y + cell.fh * .28) * scale]
+      : vp.convertToViewportRectangle([cell.x0 - 1, cell.y - cell.fh * .28, cell.x1 + 1, cell.y + cell.fh * .95]);
     return [Math.min(r[0], r[2]), Math.min(r[1], r[3]), Math.abs(r[2] - r[0]), Math.abs(r[3] - r[1])]; };
   ctx.globalCompositeOperation = "multiply";
   for (const cell of marks?.weak || []){ ctx.fillStyle = "rgba(255,214,64,.45)"; ctx.fillRect(...box(cell)); }
@@ -1249,7 +1307,7 @@ const T = {
   svcSoonKm: [(k, at) => `Επόμενο σέρβις σε ${k} (στα ${at}).`, (k, at) => `Next service in ${k} (at ${at}).`],
   svcSoonDays: [(n, d) => `Ετήσιος έλεγχος σε ${n} μέρες (${d}).`, (n, d) => `Annual check in ${n} days (${d}).`],
   hiddenSched: [n => `${n === 1 ? "Κρύφτηκε 1 εργασία" : `Κρύφτηκαν ${n} εργασίες`} που κατά το manual αφορούν άλλη έκδοση.`, n => `${n} item${n === 1 ? "" : "s"} that the manual lists for another version ${n === 1 ? "is" : "are"} hidden.`],
-  schedTitle: ["Πρόγραμμα συντήρησης", "Maintenance schedule"], schedPicItem: ["Βρες τον αριθμό αυτό στην αριστερή στήλη του πίνακα: τα σημάδια δείχνουν σε ποια χιλιόμετρα/μήνες γίνεται (τα γράμματα a, b… παραπέμπουν στα διαστήματα).", "Find this number in the table's left column: the marks show at which distance/months it is due (letters a, b… refer to the intervals)."],
+  schedTitle: ["Πρόγραμμα συντήρησης", "Maintenance schedule"], schedNoTable: ["Αυτό το manual δεν έχει πίνακα συντήρησης· να τι γράφει στο κείμενο:", "This manual has no maintenance table; this is what its text says:"], schedPicItem: ["Βρες τον αριθμό αυτό στην αριστερή στήλη του πίνακα: τα σημάδια δείχνουν σε ποια χιλιόμετρα/μήνες γίνεται (τα γράμματα a, b… παραπέμπουν στα διαστήματα).", "Find this number in the table's left column: the marks show at which distance/months it is due (letters a, b… refer to the intervals)."],
   schedPicNote: ["Το κείμενο είναι αυτούσιο από το manual· ο πίνακας διαβάζεται μόνο από την εικόνα της σελίδας.", "The text is verbatim from the manual; the table itself can only be read from the page image."], schedPicture: ["Ο πίνακας σε αυτό το manual είναι εικόνα· δες τη σελίδα από κάτω. Τα διαστήματα όπως τα γράφει:", "The table in this manual is a picture; see the page below. The intervals as printed:"], schedWord: ["πρόγραμμα συντήρησης", "maintenance schedule"],
   serviceAt: ["Σέρβις στα", "Service at"], plusAnnual: ["και ετήσιος έλεγχος", "plus an annual check"],
   annualCheck: ["Ετήσιος έλεγχος", "Annual check"], regularReplace: ["Τακτική αντικατάσταση", "Regular replace"],
@@ -1720,11 +1778,14 @@ function splitValue(s){
   return {main: s, conv: ""};
 }
 // put the value in the unit chosen in the menu first; the rest stay as the manual prints them
-const UNIT_RX = {"N·m": /n[·.]?m\b/i, "kgf·m": /kgf[·.]?m\b/i, "lbf·ft": /lbf[·.]?ft|lbs?\/ft/i, "psi": /psi\b/i, "kPa": /kpa\b/i, "kgf/cm²": /kgf\/cm/i, "L": /\d\s*(l|liters?|litres?)\b/i, "US qt": /us qt/i, "Imp qt": /imp qt/i};
+const UNIT_RX = {"N·m": /n[·.]?m\b/i, "kgf·m": /kgf[·.]?m\b/i, "lbf·ft": /lbf[·.]?ft|lbs?\/ft|ft-lbs?/i, "psi": /psi\b/i, "kPa": /kpa\b/i, "kgf/cm²": /kgf\/cm/i, "L": /\d\s*(l|liters?|litres?)\b/i, "US qt": /us qt/i, "Imp qt": /imp qt/i};
 function preferUnit(parts, note){
   const prefs = [settings.units.torque, settings.units.pressure, settings.units.volume];
   let k = 0;
-  for (const u of prefs){ const i = parts.findIndex(p => UNIT_RX[u] && UNIT_RX[u].test(p)); if (i >= 0){ k = i; break; } }
+  let found = false;
+  for (const u of prefs){ const i = parts.findIndex(p => UNIT_RX[u] && UNIT_RX[u].test(p)); if (i >= 0){ k = i; found = true; break; } }
+  // US-first manuals ("0.03 in ~ 0.04 in (0.8 mm ~ 1 mm)"): metric first
+  if (!found && /\d\s*(in|ft|mi|gal|oz|lbs?)\b|ft-lb|lb\/ft/i.test(parts[0])){ const i = parts.findIndex(p => /\d\s*(mm|cm|m|km|kg|g|ml|mL)\b/.test(p)); if (i > 0) k = i; }
   const main = parts[k], rest = parts.filter((_, i) => i !== k);
   return {main, conv: rest.join(" · ") + (note ? ` (${note})` : "")};
 }
@@ -1803,7 +1864,7 @@ const pairLabel = pr => pr.label.map(c => c.s).join(" ");
 const trHTML = s => { if (L() === "en") return ""; const g = translate(s); return g ? ` <span class="tr">(${esc(g)})</span>` : ""; };
 // a value written inside a sentence ("SLACK: 20 – 30 mm (0.8 – 1.2 in)", "Replace when 50 mm (2.0 in) or more")
 // → the measurement becomes the value, the sentence stays (verbatim) as its label
-const MEASURE_RE = /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?(?:\s*(?:[–-]|\.\.\.)\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|lbs?\/ft|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|gal|qt|quarts?|in|°C|kgm|kg|bar|rpm|Ah|V)(?![A-Za-z])(?:\s*\([^()]*\))?/;
+const MEASURE_RE = /(?<![A-Za-z\d])(?<![^.]\.)\d+(?:[.,]\d+)?(?:\s*(?:N[·.]?m|mm|in|kPa|psi|bar|ft-lbs?|lbf[·.]?ft)?\s*(?:[–~-]|\.\.\.)\s*\d+(?:[.,]\d+)?)?\s*(?:N[·.]?m|kgf[·.]?m|lbf[·.]?ft|lbs?\/ft|ft-lbs?|kPa|psi|kgf\/cm2?|mm|cm3|cm³|cc|mL|ml|L|LIT|lit|lt|liters?|litres?|gal|qt|quarts?|in|°C|kgm|kg|bar|rpm|Ah|V)(?![A-Za-z])(?:\s*±\s*\d+(?:[.,]\d+)?\s*[A-Za-z]{1,6}\b)?(?:\s*\([^()]*\))?/;
 function extractMeasure(s){
   const m = s.match(MEASURE_RE);
   if (!m) return {measure: s, text: ""};
@@ -1819,7 +1880,7 @@ function rowHTML(pr, pq, big){
   return `<div class="row${big ? " big" : ""}">
     <div class="rl">
       ${pr.variant ? `<span class="variant">${esc(variantTag(pr.variant))}</span>` : ""}
-      ${lbl ? (pr.how === "col" && !em.text && (/[.!?](\s|$)/.test(lbl.trim()) || lbl.trim().split(/\s+/).length >= 7)
+      ${lbl ? (pr.how === "col" && !em.text && (/[.!?](\s|$)/.test(lbl.trim()) || (lbl.trim().split(/\s+/).length >= 7 && !pr.label.every(c => /:$/.test(c.s.trim()))))
         ? `<span class="lbl ctx" title="${t("ctxTitle")}">${t("ctx")}: «${markText(lbl, pq)}»</span>`
         : `<span class="lbl">${markText(lbl, pq)}${trHTML(lbl)}</span>`) : ""}
     </div>
@@ -1931,7 +1992,9 @@ async function findProcedures(bike, pq){
         const hn = norm(hs.map(h => h.s).join(" | "));
         let k = objs.filter(o => conceptIn(hn, o)).length;
         // the heading names part of it and the page text the rest ("Front Seat" … "high seat position")
-        if (k < objs.length){ if (!k || objs.some(o => !conceptIn(p.n, o))) continue; k -= .5; }
+        // a side word ("front", "rear") missing from a page about the part is tolerated: some manuals have one section for both
+        const sideW = o => o.alts.some(x => /^(front|rear|left|right)$/.test(x));
+        if (k < objs.length){ if (!k || objs.some(o => !sideW(o) && !conceptIn(p.n, o))) continue; k -= objs.some(o => !conceptIn(p.n, o)) ? 1 : .5; }
         const a = acts.filter(o => conceptIn(hn, o)).length + acts.filter(o => !conceptIn(hn, o) && conceptIn(p.n, o)).length * .5;   // the action said in the text counts a little
         const steps = p.cells.some(c => STEP_RE.test(c.s)) ? 1 : 0;
         const sc = k * 3 + a * 2 + steps - (/(specification|contents|index|maintenance schedule)/.test(hn) ? 6 : 0);
@@ -1996,7 +2059,7 @@ async function answerHowto(q, out){
    (I, R, C, A, L) placed under the mileage columns, plus Annual check / Regular replace / Refer-to-page columns.
    Every code is taken from its position on the page; nothing is inferred. Tables drawn with icons (no text) are skipped. */
 const SCHED_Q = /(καθε ποτε|ποσο συχνα|ανα ποσα|\bποτε\b|διαστημ|προγραμμα (συντηρ|σερβισ)|\bσερβισ|συντηρησ|how often|\binterval|\bschedule|\bmaintenance\b|\bwhen\b)/;
-const SCHED_IGNORE = new Set(["maintenance","service","interval","schedule","change","replacement","replace","check","inspection","inspect","adjust","adjustment","setting","lubricate","lubrication","lubricant","grease","code","dtc","every","when","often","how"]);
+const SCHED_IGNORE = new Set(["σερβι","σερβισ","συντηρ","συντηρη","συντηρησ","maintenance","service","interval","schedule","change","replacement","replace","check","inspection","inspect","adjust","adjustment","setting","lubricate","lubrication","lubricant","grease","code","dtc","every","when","often","how"]);
 const CODE_MEAN = {
   I: ["Έλεγχος (καθάρισμα, ρύθμιση, λίπανση ή αντικατάσταση αν χρειάζεται)", "Inspect (clean, adjust, lubricate or replace if necessary)"],
   C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"]};
@@ -2131,6 +2194,119 @@ function parseScheduleGeneric(p){
   const colLabels = hcells.map((c, i) => c.s.trim().replace(/^ΚΑΘΕ/i, "κάθε").replace(/\d[\d.,]*/, m => kmFmt(parseInt(m.replace(/\D/g, ""), 10) / 1000)) + " km" + (months[cols[i].n] ? (L() === "en" ? ` (or ${months[cols[i].n]} months)` : ` (ή ${months[cols[i].n]} μήνες)`) : ""));
   return {cols: cols.map(c => c.n), rows, legend, hdr: km, months, colLabels, repeat: cols.some(c => c.every) ? hcells.map(c => c.s).join(" · ") : undefined, generic: true};
 }
+/* Interval tables: one row per item with its own interval in columns ("Item | Calendar | Miles | Km | Notes": "Oil and oil filter  6M  3000  5000  Replace.") */
+const NOTE_CODE = [[/replace|change|αντικατ|αλλαγ/i, "R"], [/clean|καθαρ/i, "C"], [/adjust|ρυθμ/i, "A"], [/lubric|λιπ/i, "L"], [/inspect|check|ελεγχ/i, "I"]];
+function parseIntervalTable(p){
+  const lvl = (a, b) => Math.abs(a.y - b.y) < Math.max(2, a.fh * .6);
+  const km = p.cells.find(c => /^(km|χλμ)$/i.test(c.s.trim()) && p.cells.some(o => o !== c && /^(miles?|mi|μίλια)$/i.test(o.s.trim()) && Math.abs(o.y - c.y) < c.fh * 2.5));
+  if (!km) return null;
+  const mi = p.cells.find(o => /^(miles?|mi|μίλια)$/i.test(o.s.trim()) && Math.abs(o.y - km.y) < km.fh * 2.5);
+  const cal = p.cells.find(o => /^(calendar|months?|μήνες|ημερολογ)/i.test(o.s.trim()) && Math.abs(o.y - km.y) < km.fh * 2.5);
+  const notes = p.cells.find(o => /^(notes?|remarks?|σημειώσεις|παρατηρήσεις)$/i.test(o.s.trim()) && Math.abs(o.y - km.y) < km.fh * 2.5);
+  const colX = c => c ? (c.x0 + c.x1) / 2 : null, kx = colX(km), mx = colX(mi), cx = colX(cal);
+  const leftEdge = Math.min(...[km, mi, cal].filter(Boolean).map(c => c.x0)) - 6;
+  const top = Math.min(...[km, mi, cal, notes].filter(Boolean).map(c => c.y)) - km.fh * .6;
+  const title = (p.cells.filter(c => /interval|διάστημα/i.test(c.s) && c.y > top && c.y - top < km.fh * 6 && c.x0 > leftEdge - 40).sort((a, b) => b.y - a.y)[0] || {s: ""}).s.trim();
+  const breakIn = /break[- ]?in|στρώσ|ροδάρ/i.test(title);
+  const inCol = (c, x) => x !== null && Math.abs(colX(c) - x) < 22;
+  const anchors = p.cells.filter(c => c.y < top && inCol(c, kx) && /^(\d[\d.,]*|-|—)$/.test(c.s.trim())).sort((a, b) => b.y - a.y);
+  if (anchors.length < 3) return null;
+  const rows = []; let lastItem = "";
+  for (const an of anchors){
+    // the item's name: level with the figures, or centred on a row that has two lines of figures ("Spark plug": inspect 5000 / replace 10000)
+    const isName = c => c.x1 < leftEdge && c.y < top && /[A-Za-zΑ-Ωα-ω]{3,}/.test(c.s) && !/^[a-zα-ω(]/.test(c.s.replace(/^[▲■●◆*\s]+/, ""));
+    let itemCells = p.cells.filter(c => isName(c) && lvl(c, an)).sort((a, b) => a.x0 - b.x0);
+    if (!itemCells.length){ const nb = p.cells.filter(c => isName(c) && Math.abs(c.y - an.y) < an.fh * 1.7 && !anchors.some(a => a !== an && lvl(a, c)) && anchors.filter(a => Math.abs(a.y - c.y) < Math.abs(an.y - c.y) - .5).length === 0).sort((a, b) => Math.abs(a.y - an.y) - Math.abs(b.y - an.y));
+      if (nb.length && nb[0].s.replace(/^[▲■●◆*\s]+/, "").trim() !== lastItem) itemCells = [nb[0]]; }
+    let item = itemCells.map(c => c.s.trim()).join(" ").replace(/^[▲■●◆*\s]+/, "").trim();
+    // a name over two lines ("Functions of electrical" / "parts")
+    if (itemCells.length){ const nx = p.cells.find(c => c.x1 < leftEdge && c.y < an.y - .5 && an.y - c.y < an.fh * 1.6 && Math.abs(c.x0 - itemCells[0].x0) < 3 && /^[a-zα-ω(]/.test(c.s) && !anchors.some(a => lvl(a, c))); if (nx) item += " " + nx.s.trim(); }
+    if (!item) item = lastItem; else lastItem = item;
+    if (!item) continue;
+    const kmS = an.s.trim(), miC = mi && p.cells.find(c => lvl(c, an) && inCol(c, mx)), calC = cal && p.cells.find(c => lvl(c, an) && inCol(c, cx));
+    let note = "";
+    if (notes){ const n0 = p.cells.find(c => lvl(c, an) && c.x0 >= notes.x0 - 25) || p.cells.find(c => c.x0 >= notes.x0 - 25 && c.y > an.y && c.y - an.y < an.fh * 1.3 && c.y < top && !anchors.some(a => lvl(a, c))); if (n0){ note = n0.s.trim();
+      for (let cur = n0;;){ const nx = p.cells.find(c => Math.abs(c.x0 - n0.x0) < 3 && c.y < cur.y - .5 && cur.y - c.y < cur.fh * 1.6 && !anchors.some(a => lvl(a, c))); if (!nx || /[.]$/.test(note)) break; note += " " + nx.s.trim(); cur = nx; } } }
+    const kmN = /\d/.test(kmS) ? parseInt(kmS.replace(/[.,]/g, ""), 10) : 0, calS = calC ? calC.s.trim() : "", mo = calS.match(/^(\d+)\s*(M|μ|months?|μήνες)?$/i);
+    if (!kmN && !mo) continue;
+    const code = (NOTE_CODE.find(([re]) => re.test(note)) || [, ""])[1];
+    const parts = [kmN ? kmFmt(kmN / 1000) + " km" : "", miC && /\d/.test(miC.s) ? miC.s.trim() + " mi" : "", mo ? (L() === "en" ? `${mo[1]} months` : `${mo[1]} μήνες`) : ""].filter(Boolean);
+    const every = (breakIn ? (L() === "en" ? "Break-in: " : "Στρώσιμο: ") : (L() === "en" ? "Every " : "Κάθε ")) + parts.join(" · ") + (note ? " — " + note : "");
+    rows.push({cell: itemCells[0] || an, item, stars: 0, codes: {}, annual: "", regular: "", every, everyKm: breakIn ? 0 : kmN, years: !breakIn && mo ? +mo[1] / 12 : 0, everyCode: code,
+      ref: "", note: "", noteText: "", user: false, shop: false, page: p.pi + 1, cells: [an, ...itemCells, miC, calC].filter(Boolean)});
+  }
+  if (rows.length < 3) return null;
+  const common = Object.entries(rows.filter(r => r.everyKm).reduce((m, r) => (m[r.everyKm] = (m[r.everyKm] || 0) + 1, m), {})).sort((a, b) => b[1] - a[1])[0];
+  return {cols: [], rows, legend: "", hdr: km, months: {}, breakIn, colLabels: common ? [(L() === "en" ? "every " : "κάθε ") + kmFmt(common[0] / 1000) + " km"] : [title || "—"], interval: true, generic: true};
+}
+/* Tick tables: "NO. | ITEM | CHECK OR MAINTENANCE JOB | 1000 km | 10000 km | … | ANNUAL CHECK" with √ marks; each job line ("• Replace.") gets its own ticks */
+const TICK = /^[√✓✔●■x×]$/;
+// the job's first verb decides its letter: "Check condition. Adjust gap and clean." → I, "Replace." → R
+const codeOfJob = job => { let best = null; for (const [re, c] of NOTE_CODE){ const m = job.match(re); if (m && (!best || m.index < best.i)) best = {i: m.index, c}; } return best ? best.c : "I"; };
+function parseTickTable(p){
+  const hdr = p.cells.filter(c => /^\d[\d.,]*\s*(km|χλμ)$/i.test(c.s.trim()));
+  const byRow = new Map(); for (const c of hdr){ const k = Math.round(c.y / 4); byRow.set(k, [...(byRow.get(k) || []), c]); }
+  const hc = [...byRow.values()].sort((a, b) => b.length - a.length)[0];
+  if (!hc || hc.length < 3) return null;
+  hc.sort((a, b) => a.x0 - b.x0);
+  const cols = hc.map(c => ({n: parseInt(c.s.replace(/\D/g, ""), 10) / 1000, x: (c.x0 + c.x1) / 2}));
+  const hy = Math.min(...hc.map(c => c.y)), fh = hc[0].fh;
+  const ann = p.cells.find(c => /^(annual|ετήσι)/i.test(c.s.trim()) && Math.abs(c.y - hy) < fh * 3 && c.x0 > hc[hc.length - 1].x1 - 5);
+  const annX = ann ? (ann.x0 + ann.x1) / 2 + 3 : null;
+  const spacing = (cols[cols.length - 1].x - cols[0].x) / (cols.length - 1);
+  const zoneL = cols[0].x - spacing * .6, top = hy - fh * 2.2;   // (the "(600 mi)" line under the header)
+  const ticks = p.cells.filter(c => TICK.test(c.s.trim()) && c.y < top && c.x0 > zoneL);
+  if (ticks.length < 3) return null;
+  const jobCol = p.cells.find(c => /^(check|έλεγχ|εργασ|maintenance job|check or maintenance)/i.test(c.s.trim()) && Math.abs(c.y - hy) < fh * 3 && c.x1 < zoneL);
+  const jobX = jobCol ? jobCol.x0 - 4 : zoneL - spacing * 2.5;
+  const names = p.cells.filter(c => c.y < top && c.x1 < jobX + 2 && /[A-Za-zΑ-Ωα-ω]{2,}/.test(c.s)).sort((a, b) => b.y - a.y);
+  // item names, joined when wrapped ("Evaporative emis-" / "sion control system")
+  const items = [];
+  for (const c of names){
+    const prev = items[items.length - 1];
+    if (prev && prev.y - c.y < c.fh * 1.6 && Math.abs(prev.cells[0].x0 - c.x0) < 4 && (/-$/.test(prev.text) || /^[a-zα-ω]/.test(c.s))){ prev.text = /-$/.test(prev.text) ? prev.text.slice(0, -1) + c.s.trim() : prev.text + " " + c.s.trim(); prev.cells.push(c); prev.y = (prev.y + c.y) / 2; continue; }
+    items.push({text: c.s.trim().replace(/^\d{1,2}\s*\*?\s*/, ""), y: c.y, cells: [c]});
+  }
+  if (items.length < 2) return null;
+  const itemOf = y => items.reduce((a, b) => Math.abs(b.y - y) < Math.abs(a.y - y) ? b : a);
+  // job lines: a bullet and its continuation
+  const jobs = [];
+  for (const c of p.cells.filter(c => c.y < top && c.x0 >= jobX && c.x1 < zoneL + 4 && /[A-Za-zΑ-Ωα-ω]{2,}/.test(c.s)).sort((a, b) => b.y - a.y)){
+    const prev = jobs[jobs.length - 1];
+    if (prev && !/^[•·-]/.test(c.s.trim()) && prev.y - c.y < c.fh * 1.6 && !/[.]$/.test(prev.text)){ prev.text = /-$/.test(prev.text) ? prev.text.slice(0, -1) + c.s.trim() : prev.text + " " + c.s.trim(); prev.y2 = c.y; continue; }
+    jobs.push({text: c.s.trim().replace(/^[•·-]\s*/, ""), y: c.y, y2: c.y, cells: [c]});
+  }
+  const rows = [];
+  // tick rows: ticks at the same height belong to the job line(s) beside them
+  const tickRows = new Map(); for (const t of ticks){ const k = [...tickRows.keys()].find(k => Math.abs(k - t.y) < t.fh * .6) ?? t.y; tickRows.set(k, [...(tickRows.get(k) || []), t]); }
+  const out = new Map();
+  for (const [y, ts] of tickRows){
+    const it = itemOf(y);
+    const near = jobs.filter(j => itemOf(j.y) === it).sort((a, b) => Math.min(Math.abs(a.y - y), Math.abs(a.y2 - y)) - Math.min(Math.abs(b.y - y), Math.abs(b.y2 - y)));
+    const dj = j => Math.min(Math.abs(j.y - y), Math.abs(j.y2 - y)), d0 = near.length ? dj(near[0]) : 0;
+    const jl = near.filter(j => dj(j) < ts[0].fh * 1.6 && dj(j) - d0 < ts[0].fh * .8);
+    const job = (jl.length ? jl : near.slice(0, 1)).sort((a, b) => b.y - a.y).map(j => j.text).join(" ");
+    const code = codeOfJob(job);
+    const key = it.text + "|" + job;
+    const r = out.get(key) || {cell: it.cells[0], item: it.text + (job ? " — " + job : ""), stars: 0, codes: {}, annual: "", regular: "", every: "", everyKm: 0, years: 0, everyCode: "", ref: "", note: "", noteText: "", user: false, shop: false, page: p.pi + 1, cells: [...it.cells]};
+    for (const t of ts){ const tx = (t.x0 + t.x1) / 2;
+      if (annX !== null && Math.abs(tx - annX) < spacing * .45){ r.annual = code; r.cells.push(t); continue; }
+      const best = cols.reduce((a, b) => Math.abs(b.x - tx) < Math.abs(a.x - tx) ? b : a);
+      if (Math.abs(best.x - tx) < spacing * .45){ r.codes[best.n] = code; r.cells.push(t); } }
+    out.set(key, r);
+  }
+  // "Every 40000 km (24000 mi)" written across the columns
+  for (const c of p.cells.filter(c => c.y < top && c.x0 > zoneL - 10 && /(every|κάθε)\s+\d/i.test(c.s))){
+    const it = itemOf(c.y), jb = jobs.filter(j => itemOf(j.y) === it).sort((a, b) => Math.abs(a.y - c.y) - Math.abs(b.y - c.y))[0];
+    const mk = c.s.match(/(\d[\d.,]*)\s*(km|χλμ)/i), mo = norm(c.s).match(/(\d+)\s*(years?|χρον|months?|μην)/);
+    out.set(it.text + "|every|" + c.s, {cell: it.cells[0], item: it.text + (jb ? " — " + jb.text : ""), stars: 0, codes: {}, annual: "", regular: "", every: c.s.trim(), everyKm: mk ? parseInt(mk[1].replace(/[.,]/g, ""), 10) : 0,
+      years: mo ? (/month|μην/.test(mo[2]) ? +mo[1] / 12 : +mo[1]) : 0, everyCode: (NOTE_CODE.find(([re]) => re.test(jb ? jb.text : "")) || [, "I"])[1], ref: "", note: "", noteText: "", user: false, shop: false, page: p.pi + 1, cells: [...it.cells, c]});
+  }
+  rows.push(...out.values());
+  if (rows.length < 2) return null;
+  const colLabels = hc.map((c, i) => { const mi = p.cells.find(o => Math.abs((o.x0 + o.x1) / 2 - cols[i].x) < spacing * .4 && o.y < c.y - .5 && c.y - o.y < c.fh * 1.8 && /mi\)?$/.test(o.s.trim())); return kmFmt(cols[i].n) + " km" + (mi ? " " + mi.s.trim() : ""); });
+  return {cols: cols.map(c => c.n), rows, legend: "", hdr: hc[0], months: {}, colLabels, generic: true};
+}
 const schedCache = new Map();
 async function findSchedules(bike){
   const out = [];
@@ -2140,6 +2316,8 @@ async function findSchedules(bike){
       for (const p of ix.pages){
         let s = null;
         if (/x\s*1,000\s*km/i.test(p.n.replace(/×/g, "x"))) s = parseSchedule(p);
+        else if (/(^|\s)(km|χλμ)(\s|$)/.test(p.n) && /(^|\s)(miles?|μιλια)(\s|$)/.test(p.n) && (s = parseIntervalTable(p))) ;
+        else if (/[√✓✔]/.test(p.n) && /\d\s*(km|χλμ)/.test(p.n) && (s = parseTickTable(p))) ;
         else if (/(^|\s)(km|χλμ)(\s|$)/.test(p.n) && /(καθε|every)\s*\d/.test(p.n)) s = parseScheduleGeneric(p);
         if (s) found.push({m, p, page: p.pi + 1, label: ix.labels[p.pi], ...s});
       }
@@ -2189,13 +2367,17 @@ async function answerSchedule(q, out){
   if (!scheds.length) return false;
   const pq = parseQuery(q);
   const objs = pq.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a)));
-  const sc = scheds.slice().sort((a, b) => ({owner: 0, service: 1}[a.m.kind] ?? 2) - ({owner: 0, service: 1}[b.m.kind] ?? 2))[0];
+  const sc = scheds.slice().sort((a, b) => ({owner: 0, service: 1}[a.m.kind] ?? 2) - ({owner: 0, service: 1}[b.m.kind] ?? 2) || (a.breakIn ? 1 : 0) - (b.breakIn ? 1 : 0))[0];
   let hits = [];
   if (objs.length){
-    for (const s of scheds) for (const r of s.rows){ const n = norm(r.item); const k = objs.filter(o => conceptIn(n, o)).length; if (k) hits.push({s, r, k}); }
+    // match the item's name ("Engine oil"), not the job text after it ("… check for oil leakage"), unless only the job text matches
+    for (const nameOnly of [true, false]){
+      for (const s of scheds) for (const r of s.rows){ const n = norm(nameOnly ? r.item.split(" — ")[0] : r.item); const k = objs.filter(o => conceptIn(n, o)).length; if (k) hits.push({s, r, k}); }
+      if (hits.some(h => h.k === objs.length)) break; hits = [];
+    }
     const best = Math.max(0, ...hits.map(h => h.k)); hits = hits.filter(h => h.k === best && best === objs.length).sort((a, b) => {
       const st = h => objs.some(o => o.alts.some(x => norm(h.r.item).startsWith(x))) ? 0 : 1;   // "ΛΑΔΙ ΚΙΝΗΤΗΡΑ" before "ΦΙΛΤΡΟ ΛΑΔΙΟΥ"
-      return st(a) - st(b) || a.r.item.length - b.r.item.length; }).slice(0, 6);
+      return st(a) - st(b) || a.r.item.split(" — ")[0].length - b.r.item.split(" — ")[0].length; }).slice(0, 6);
     if (!hits.length) return false;                   // the item isn't in the schedule → normal search
   }
   const main = hits.length ? hits[0].s : sc;
@@ -2209,7 +2391,7 @@ async function answerSchedule(q, out){
   if (selVariant()) hits = hits.filter(h => { const codes = expandVariant(h.r.noteText || ""); if (!codes.length) return true;
     const ok = fitsVariant({variant: (h.r.noteText.match(CODE_RE) || [""])[0]}, false); if (!ok) hiddenSched++; return ok; });
   hits = hits.slice(0, 4);
-  const repeat = await scheduleNote(main, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα/i);
+  const repeat = await scheduleNote(main, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα|repeat the maintenance intervals/i);
   const srcHead = s => `<div class="srchead"><b>${esc(kindName(s.m.kind))}</b> · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`;
   const general = `<div class="row big"><div class="rl"><span class="lbl">${t("serviceAt")}</span></div>
       <div class="rv"><span class="val">${main.colLabels ? main.colLabels.map(esc).join(" · ") : main.cols.map(kmFmt).join(" · ") + " km"}</span>
@@ -2315,6 +2497,46 @@ async function answerSchedulePage(q, out){
     const c = await renderPage(best.m, best.page, holder.clientWidth || 700, {weak: lines.flatMap(l => l.cells), strong: best.items.flatMap(b => b.cells)});
     c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
     holder.onclick = () => openViewer({m: best.m, page: best.page, hitCells: [], pairs: []}, []); addShare(out);
+  }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
+  return true;
+}
+
+/* no maintenance table at all: the sentences that give a distance or time for the item ("…ελέγξτε κάθε 1000km…", "…the first 500 km, change the oil…") */
+const DIST_RE = /\d[\d.,]*\s*(km|χλμ|mi|miles)\b|\d+\s*(μήν|μην|months?|χρόν|years?)/i;
+async function answerScheduleText(q, out){
+  const pq = parseQuery(q), objs = pq.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a)));
+  if (!objs.length) return false;
+  const acts = pq.concepts.filter(c => c.act);
+  const found = [];
+  for (const m of manuals.filter(m => m.bikeId === currentBike.id)){
+    const ix = await loadIndex(m);
+    for (const p of ix.pages) for (const c of p.cells){
+      if (!DIST_RE.test(c.s)) continue;
+      const nb = p.cells.filter(o => o !== c && Math.abs(o.x0 - c.x0) < 20 && Math.abs(o.y - c.y) < c.fh * 1.7 && !/^\s*(\d{1,2}[.)]|•)\s/.test(c.y > o.y ? o.s : c.s)).sort((a, b) => b.y - a.y);
+      const cells = [...nb.filter(o => o.y > c.y), c, ...nb.filter(o => o.y < c.y)].slice(0, 3);
+      const text = cells.map(o => o.s).join(" ").replace(/([a-zα-ώ])- ([a-zα-ώ])/g, "$1$2"), n = norm(text);
+      if (!objs.every(o => conceptIn(n, o))) continue;
+      found.push({m, p, ix, cells, text, sc: 1 + (acts.some(a => conceptIn(n, a)) ? 1 : 0) + (/καθε|every|κάθε/.test(n) ? .5 : 0) + (m.kind === "owner" ? .2 : 0)});
+    }
+  }
+  if (!found.length) return false;
+  found.sort((a, b) => b.sc - a.sc);
+  const best = found[0], page = best.p.pi + 1, label = best.ix.labels[best.p.pi];
+  const same = found.filter(f => f.m === best.m && f.p === best.p).slice(0, 3), more = found.filter(f => f.p !== best.p).slice(0, 2);
+  out.innerHTML = `<article class="result">
+    <div class="answer"><div class="eyebrow">${t("schedTitle")}</div>
+      <div class="srchead"><b>${esc(kindName(best.m.kind))}</b> · ${t("pAbbr")} ${esc(label || "—")} (PDF ${page})</div>
+      <p class="mnote">${t("schedNoTable")}</p>
+      <div class="rows">${same.map(f => `<div class="row"><div class="rl"><span class="lbl">“${markText(f.text, pq)}”${trHTML(f.text)}</span></div></div>`).join("")}</div>
+      ${more.map(f => `<div class="hint">“${esc(f.text)}” — ${t("pAbbr")} ${esc(f.ix.labels[f.p.pi] || "—")} (PDF ${f.p.pi + 1})</div>`).join("")}
+    </div>
+    <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", page)}</div></div>
+    <div class="extra">${srcLine({m: best.m, page, label})}</div></article>`;
+  const holder = out.querySelector(".pageimg");
+  try{
+    const c = await renderPage(best.m, page, holder.clientWidth || 700, {weak: [], strong: same.flatMap(f => f.cells)});
+    c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
+    holder.onclick = () => openViewer({m: best.m, page, hitCells: [], pairs: []}, []); addShare(out);
   }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
   return true;
 }
@@ -2611,7 +2833,7 @@ $("askForm").addEventListener("submit", async e => {
   }
   if (SCHED_Q.test(norm(q))){
     try{
-      if (await answerSchedule(q, out) || await answerSchedulePage(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
+      if (await answerSchedule(q, out) || await answerSchedulePage(q, out) || await answerScheduleText(q, out)){ const pq0 = parseQuery(q); $("terms").hidden = !pq0.concepts.length;
         $("terms").innerHTML = t("lookingFor") + " " + [t("schedWord"), ...pq0.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a))).map(c => esc(c.alts.join(" / ")))].map(x => `<b>${x}</b>`).join(" + "); return; }
     }catch(err){ console.error(err); }
   }
@@ -2976,7 +3198,7 @@ async function planSchedule(bike){
     const n = r.note.match(/\d+/)[0];
     r.noteText = (await scheduleNote(sc, new RegExp("^\\s*(NOTE\\s*)?" + n + "\\s*[:.]\\s+[A-Za-z]", "i"))).replace(/^\s*(NOTE\s*)?\d+\s*[:.]\s*/i, "");
   }
-  if (sc.repeat === undefined) sc.repeat = await scheduleNote(sc, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα/i);
+  if (sc.repeat === undefined) sc.repeat = await scheduleNote(sc, /at higher odometer readings|Όταν ξεπεράσετε τα αναφερόμενα|repeat the maintenance intervals/i);
   const rows = sc.rows.filter(r => { const code = (r.noteText || "").match(CODE_RE); return !code || fitsVariant({variant: code[0]}, false); });
   const cols = sc.cols.slice();
   const init = cols.length > 2 && (cols[1] - cols[0]) !== (cols[2] - cols[1]) ? cols[0] : null;
@@ -3012,6 +3234,12 @@ function computeStatus(bike, plan, recs){
   const prevM = [...ms].reverse().find(m => m * 1000 <= odo);
   const itemsAt = M => plan.rows.map(r => ({row: r, code: codeAt(plan, r, M)})).filter(x => x.code);
   if (nextM) st.next = {km: nextM * 1000, inKm: nextM * 1000 - odo, items: itemsAt(nextM)};
+  else if (!plan.cols.length){   // a table of intervals ("every 5000 km"): the next multiple of the shortest one
+    const ks = plan.rows.map(everyKm).filter(k => k >= 1000);
+    if (ks.length){ const cnt = {}; for (const k of ks) cnt[k] = (cnt[k] || 0) + 1;
+      const base = Math.min(...Object.keys(cnt).filter(k => cnt[k] >= 3).map(Number), Infinity) < Infinity ? Math.min(...Object.keys(cnt).filter(k => cnt[k] >= 3).map(Number)) : Math.min(...ks), nk = (Math.floor(odo / base) + 1) * base;
+      st.next = {km: nk, inKm: nk - odo, items: plan.rows.filter(r => everyKm(r) >= 1000 && nk % everyKm(r) === 0).map(r => ({row: r, code: r.everyCode || "I"}))}; }
+  }
   else st.beyond = true;                                   // past the table and the manual gives no repeat rule
   const full = recs.filter(r => !r.quick);
   if (prevM && full.length && !full.some(r => r.km >= prevM * 1000 - 1500))
