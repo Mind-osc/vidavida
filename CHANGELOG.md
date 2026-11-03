@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 3 Νοεμβρίου 2026 (56)
+- Κάτω μπάρα: η φούσκα της επιλεγμένης καρτέλας είναι πλέον ουδέτερο, διάφανο γυαλί (χωρίς κίτρινη απόχρωση)· μόνο το εικονίδιο και το όνομα της καρτέλας παίρνουν το χρώμα του θέματος, όπως στο iPhone.
+- *Bottom bar: the selected-tab bubble is now neutral clear glass; only its icon and label take the theme colour.*
+
 ## 3 Νοεμβρίου 2026 (55)
 - Κάτω μπάρα: η γυάλινη «φούσκα» της επιλεγμένης καρτέλας δεν φουσκώνει πια όταν αλλάζεις καρτέλα· απλώς γλιστράει.
 - *Bottom bar: the selected-tab bubble no longer swells while it moves.*
