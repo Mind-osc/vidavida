@@ -1810,6 +1810,8 @@ const T = {
   svcSum: [(n, r) => `${n} ${n === 1 ? "εργασία" : "εργασίες"}${r ? ` · ${r} ${r === 1 ? "αντικατάσταση" : "αντικαταστάσεις"}` : ""}`, (n, r) => `${n} ${n === 1 ? "item" : "items"}${r ? ` · ${r} to replace` : ""}`],
   svcRepl: [n => `${n} αντικατ.`, n => `${n} replace`], svcChk: [n => `${n} ${n === 1 ? "έλεγχος" : "έλεγχοι"}`, n => `${n} ${n === 1 ? "check" : "checks"}`],
   svcOther: [n => `+${n} ακόμα`, n => `+${n} more`], svcNoLog: ["Δεν έχεις καταχωρήσει σέρβις ακόμα — πάτα εδώ για να το προσθέσεις, ώστε να βγαίνουν σωστές υπενθυμίσεις.", "No service logged yet — tap here to add it for accurate reminders."],
+  svcIconsOnly: ["Το manual δείχνει τις εργασίες κάθε σέρβις με σύμβολα, που δεν διαβάζονται ως κείμενο· δες τη σελίδα του πίνακα. (Με το service manual ανεβασμένο, εδώ βγαίνει και η λίστα εργασιών.)", "The manual marks each service's work with symbols, which can't be read as text; see the table page. (With the service manual added, the item list appears here.)"],
+  svcSeePage: [p => `Δες τον πίνακα (σελ. ${p})`, p => `See the table (p. ${p})`],
   svcCodes: ["Τι σημαίνουν τα γράμματα", "What the letters mean"],
   nextAt: [k => `επόμενο στα ${k}`, k => `next at ${k}`], nextBy: [d => `επόμενη έως ${d}`, d => `next by ${d}`], notLogged: ["δεν έχει καταχωρηθεί αλλαγή", "no change logged yet"],
   addCalendar: ["Υπενθύμιση στο ημερολόγιο (.ics)", "Add reminders to calendar (.ics)"], icsDone: ["Κατέβηκε το αρχείο. Άνοιξέ το για να μπουν οι υπενθυμίσεις στο ημερολόγιο.", "File downloaded. Open it to add the reminders to your calendar."],
@@ -1838,6 +1840,9 @@ const T = {
   procPage: ["Διαδικασία: σελ.", "Procedure: p."], item: ["Εργασία", "Item"], annualShort: ["Ετήσια", "Annual"], regularShort: ["Αντικ.", "Replace"],
   repeatTr: ["σε μεγαλύτερα χιλιόμετρα, επανάλαβε με την ίδια συχνότητα", "at higher readings, repeat at the same interval"],
   fullSchedule: [n => `Όλο το πρόγραμμα (${n} εργασίες)`, n => `Full schedule (${n} items)`],
+  schedIconRow: [n => `Στη σελίδα είναι σημειωμένη η γραμμή «${n}»· τα σύμβολα στη γραμμή δείχνουν σε ποια σέρβις (στήλες χιλιομέτρων) γίνεται.`, n => `The row "${n}" is outlined on the page; its symbols show at which services (distance columns) it is due.`],
+  schedIconExtra: [x => `Στην ίδια γραμμή γράφει: «${x}».`, x => `The same row says: "${x}".`],
+  schedIconKm: [(k, p) => `Ανά εργασία με γράμματα: ${k}, σελ. ${p} (από κάτω).`, (k, p) => `Item by item with letters: ${k}, p. ${p} (below).`],
   schedIcons: ["Στο owner's manual ο πίνακας δείχνει τις εργασίες με σύμβολα — δες τη σελίδα από κάτω. Η λίστα ανά εργασία είναι από το άλλο manual.", "In the owner's manual the table marks the work with symbols — see the page below. The item-by-item list comes from the other manual."],
   alsoIn: ["Υπάρχει και στο", "Also in the"],
   schedVerbatim: ["Τα γράμματα (I, R, C, A, L) και τα χιλιόμετρα είναι αυτούσια από τον πίνακα του manual· στη σελίδα η γραμμή έχει πορτοκαλί πλαίσιο.", "The letters (I, R, C, A, L) and mileages are verbatim from the manual's table; on the page the row has an orange frame."],
@@ -2944,7 +2949,7 @@ function numsWithX(c, from){
   return out;
 }
 function parseSchedule(p){
-  const hdr = p.cells.find(c => /x\s*1,000\s*km/i.test(c.s));
+  const hdr = p.cells.find(c => /[x×]\s*1,000\s*km/i.test(c.s));
   if (!hdr) return null;
   const rowTol = Math.max(2, hdr.fh * .6);
   // mileage columns: numbers after "km" in the header cell and in the cells to its right on the same row
@@ -2986,7 +2991,10 @@ function parseSchedule(p){
       cells: [it, ...rc.filter(c => /^[ICRAL]$/.test(c.s.trim()) || /^EVERY/i.test(c.s) || c.s === regular)]});
   }
   // a table whose marks are symbols (no I/R letters): no rows, but its mileage columns still say when the services are
-  if (rows.length < 3) return cols.length >= 3 && items.length >= 5 ? {cols: cols.map(c => c.n), rows: [], iconOnly: true, legend: "", hdr} : null;
+  if (rows.length < 3) return cols.length >= 3 && items.length >= 5 ? {cols: cols.map(c => c.n), rows: [], iconOnly: true, legend: "", hdr,
+    names: items.map(c => ({cell: c, item: c.s.replace(/^\*+\s*|\*\d+$/g, "").replace(/\s*\*\d+\s*$/, "").trim(),
+      // words printed on the same row ("2 Years", "Every 1,000 km (600 mi):"), verbatim
+      extra: p.cells.filter(o => o !== c && Math.abs(o.y - c.y) < Math.max(2, c.fh * .6) && o.x0 > c.x1 && /year|month|every|\d\s*(km|mi)\b/i.test(o.s)).sort((a, b) => a.x0 - b.x0).map(o => o.s.trim()).join(" ")})).filter(x => x.item.length > 2)} : null;
   return {cols: cols.map(c => c.n), rows, legend: legend ? legend.s : "", hdr};
 }
 /* Schedule tables of other makes (e.g. in Greek): a header row "km | 1000 | ΚΑΘΕ 5000 | ΚΑΘΕ 10000", a "ΜΗΝΕΣ" row,
@@ -3246,9 +3254,14 @@ async function answerSchedule(q, out){
     const best = Math.max(0, ...hits.map(h => h.k)); hits = hits.filter(h => h.k === best && best === objs.length).sort((a, b) => {
       const st = h => objs.some(o => o.alts.some(x => norm(h.r.item).startsWith(x))) ? 0 : 1;   // "ΛΑΔΙ ΚΙΝΗΤΗΡΑ" before "ΦΙΛΤΡΟ ΛΑΔΙΟΥ"
       return st(a) - st(b) || a.r.item.split(" — ")[0].length - b.r.item.split(" — ")[0].length; }).slice(0, 6);
-    if (!hits.length) return false;                   // the item isn't in the schedule → normal search
   }
-  const main = hits.length ? hits[0].s : sc;
+  let iconHit = null;
+  if (objs.length) for (const s of scheds.filter(o => o.iconOnly).sort((a, b) => (a.m.kind === "owner" ? 0 : 1) - (b.m.kind === "owner" ? 0 : 1))){
+    const nm = (s.names || []).filter(x => objs.every(o => conceptIn(norm(x.item), o))).sort((a, b) => a.item.length - b.item.length)[0];
+    if (nm){ iconHit = {s, nm}; break; }
+  }
+  if (objs.length && !hits.length && !iconHit) return false;   // the item isn't in the schedule → normal search
+  const main = iconHit && (!hits.length || iconHit.s.m.kind === "owner") ? iconHit.s : hits.length ? hits[0].s : sc;
   const listFrom = main.rows.length ? main : scheds.filter(o => o.rows.length).sort((a, b) => b.rows.length - a.rows.length)[0];
   for (const h of hits){
     if (h.r.note){ const n = h.r.note.match(/\d+/)[0];
@@ -3266,7 +3279,7 @@ async function answerSchedule(q, out){
       <div class="rv"><span class="val">${main.colLabels ? main.colLabels.map(esc).join(" · ") : main.cols.map(kmFmt).join(" · ") + " km"}</span>
       ${main.rows.some(r => r.annual) && !main.colLabels ? `<span class="conv">${t("plusAnnual")}</span>` : ""}</div></div>`;
   let nextHTML = "";
-  if (!hits.length){
+  if (!objs.length){
     let st = null; try{ const plan = await planSchedule(currentBike); if (plan && currentBike.odo) st = computeStatus(currentBike, plan, await getRecords(currentBike)); }catch(e){ console.error(e); }
     nextHTML = st && st.next ? `<div class="rows"><div class="row big"><div class="rl"><span class="lbl">${t("nextTitle")}</span></div><div class="rv"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div></div></div>`
       : `<div class="hint">${t(currentBike.odo ? "schedNoNext" : "schedNeedOdo")}</div>`;
@@ -3277,23 +3290,23 @@ async function answerSchedule(q, out){
       ${srcHead(main)}${nextHTML}
       ${hits.length ? `<div class="rows">${hits.map(h => scheduleRowHTML(h.r, h.s, pq, hits.length === 1)).join("")}</div>` : `<div class="rows">${general}</div>`}
       ${hiddenSched ? `<div class="hint">${t("hiddenSched", hiddenSched)}</div>` : ""}
+      ${main.iconOnly ? `<div class="hint">${iconHit && iconHit.s === main ? t("schedIconRow", esc(iconHit.nm.item)) + (iconHit.nm.extra ? ` ${t("schedIconExtra", esc(iconHit.nm.extra))}` : "") + (hits.length ? " " + t("schedIconKm", esc(kindName(hits[0].s.m.kind)), esc(hits[0].s.label || "—")) : "") : t("schedIcons")}</div>` : ""}
       ${repeat ? `<div class="hint">“${esc(repeat.replace(/^\s*\d+\.\s*/, ""))}”${L() === "el" && /[A-Za-z]{4}/.test(repeat) ? ` <span class="tr">(${t("repeatTr")})</span>` : ""}</div>` : ""}
       ${main.legend ? `<div class="hint">${esc(main.legend)}</div>` : ""}
     </div>
     <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", main.page)}</div></div>
     <div class="extra">
       ${srcLine({m: main.m, page: main.page, label: main.label})}
-      ${main.iconOnly ? `<div class="hint">${t("schedIcons")}</div>` : ""}
       ${listFrom ? `<details class="others"${hits.length || main.iconOnly ? "" : " open"}><summary>${t("fullSchedule", listFrom.rows.length)}${listFrom !== main ? ` · ${esc(kindName(listFrom.m.kind))} ${t("pAbbr")} ${esc(listFrom.label || "—")}` : ""}</summary>${scheduleTableHTML(listFrom)}</details>` : ""}
-      ${scheds.filter(s => s !== main && s !== listFrom).map(s => `<div class="hint">${t("alsoIn")} ${esc(kindName(s.m.kind))} · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`).join("")}
+      ${scheds.filter(s => s !== main && s !== listFrom && s.m !== main.m).map(s => `<div class="hint">${t("alsoIn")} ${esc(kindName(s.m.kind))} · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`).join("")}
       <div class="hint">${t("schedVerbatim")}</div>
     </div></article>`;
   const gs = out.querySelector("[data-gosvc]"); if (gs) gs.onclick = () => tab("svc");
   const holder = out.querySelector(".pageimg");
   const hitObj = {m: main.m, page: main.page, hitCells: []};
-  const strong = hits.filter(h => h.s === main).flatMap(h => h.r.cells);
+  const strong = iconHit && iconHit.s === main ? [iconHit.nm.cell] : hits.filter(h => h.s === main).flatMap(h => h.r.cells);
   try{
-    const c = await renderPage(main.m, main.page, holder.clientWidth || 700, {weak: [], strong, strongOutline: hits.filter(h => h.s === main).map(h => h.r.cell)});
+    const c = await renderPage(main.m, main.page, holder.clientWidth || 700, {weak: [], strong, strongOutline: iconHit && iconHit.s === main ? [iconHit.nm.cell] : hits.filter(h => h.s === main).map(h => h.r.cell)});
     c.style.cssText = "width:100%;height:auto;display:block"; holder.innerHTML = ""; holder.appendChild(c);
     holder.onclick = () => openViewer({...hitObj, pairs: []}, []); addShare(out);
   }catch(err){ holder.innerHTML = `<div class="loading">${t("renderFail", esc(err.message || String(err)))}</div>`; }
@@ -4283,8 +4296,8 @@ async function renderService(){
          ${!recs.filter(r => !r.quick).length ? `<p class="svchint" id="svcNoLog" role="button" tabindex="0">${t("svcNoLog")}</p>` : ""}
          ${st.next ? `<div class="bigdue"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div>
             ${st.annual ? `<div class="meta">${t("orByDate", fmtDate(st.annual.due))}</div>` : ""}
-            <p class="svcsum">${t("svcSum", st.next.items.length, st.next.items.filter(x => REPL_CODES.has(x.code)).length)}</p>
-            ${groupedItems(st.next.items)}`
+            ${plan.rows.length ? `<p class="svcsum">${t("svcSum", st.next.items.length, st.next.items.filter(x => REPL_CODES.has(x.code)).length)}</p>
+            ${groupedItems(st.next.items)}` : `<p class="svchint">${t("svcIconsOnly")}</p><div class="mrow"><button type="button" class="btn small" id="svcSchedPage">${t("svcSeePage", esc(plan.sc.label || "—"))}</button></div>`}`
           : `<p class="mnote">${t("beyondTable")}</p>`}
          ${st.every.length ? `<details class="svcfold"><summary>${t("everyTitle")}<span class="n">${st.every.length}</span><span class="fchev" aria-hidden="true"></span></summary><ul class="due-items">${st.every.map((e, i) => `<li><span>${esc(e.row.item)}${trHTML(e.row.item)}</span> <span class="cm">${esc(e.row.every)}${e.dueKm ? ` · ${t("nextAt", fmtKm(e.dueKm))}` : ""}</span> <button type="button" class="btn small" data-quick="${i}">${t("doneNow")}</button></li>`).join("")}</ul></details>` : ""}
          ${st.yearly.length ? `<details class="svcfold"><summary>${t("yearlyTitle")}<span class="n">${st.yearly.length}</span><span class="fchev" aria-hidden="true"></span></summary><ul class="due-items">${st.yearly.map(y => `<li><span>${esc(y.row.item)}${trHTML(y.row.item)}</span> <span class="cm">${esc(y.row.regular)} · ${y.due ? t("nextBy", fmtDate(y.due)) : t("notLogged")}</span></li>`).join("")}</ul></details>` : ""}
@@ -4326,6 +4339,7 @@ async function renderService(){
   box._plan = plan; box._status = st;
   box.querySelectorAll("details[data-sfold]").forEach(d => d.addEventListener("toggle", () => { settings.svcFold = {...(settings.svcFold || {}), [d.dataset.sfold]: d.open}; saveSettings(); }));
   const nl = $("svcNoLog"); if (nl) nl.onclick = nl.onkeydown = e => { if (e.type === "keydown" && e.key !== "Enter") return; const d = box.querySelector('[data-sfold="rec"]'); d.open = true; d.scrollIntoView({behavior: "smooth", block: "start"}); };
+  const sp = $("svcSchedPage"); if (sp) sp.onclick = () => openViewer({m: plan.sc.m, page: plan.sc.page, hitCells: [], pairs: []}, []);
   wireService(); wireDocsFuel();
 }
 

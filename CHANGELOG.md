@@ -1,5 +1,11 @@
 # Τι νέο / What's new
 
+## 3 Νοεμβρίου 2026 (62)
+- Πίνακες συντήρησης με «×» στην επικεφαλίδα («× 1,000 km») αναγνωρίζονται πλέον (πριν διαβαζόταν μόνο το «x»).
+- Owner's manual με πίνακα από σύμβολα: «πότε κάνω σέρβις» δίνει τα χιλιόμετρα των σέρβις και το επόμενο σέρβις από αυτό· «κάθε πότε αλλάζω λάδια / υγρό φρένων / μπουζί…» δείχνει τη σελίδα με τη γραμμή της εργασίας σημειωμένη, και ό,τι γράφει δίπλα της (π.χ. «2 Years»).
+- Καρτέλα Σέρβις με μόνο τέτοιο owner's manual: βγαίνει το επόμενο σέρβις, και αντί για λίστα εργασιών ένα κουμπί για τη σελίδα του πίνακα.
+- *Schedule headers with "×" are recognised; symbol-only owner's tables now give the service distances, the next service, and the asked item's row outlined on the page.*
+
 ## 3 Νοεμβρίου 2026 (61)
 - «Πότε κάνω σέρβις»: η απάντηση έρχεται πρώτα από το owner's manual, ακόμα κι όταν ο πίνακάς του δείχνει τις εργασίες με σύμβολα αντί για γράμματα (π.χ. Honda): τα χιλιόμετρα των σέρβις και η σελίδα είναι από το owner's manual, και από κάτω η λίστα ανά εργασία από το service manual.
 - *"When is the service": the owner's manual comes first, even when its table marks the work with symbols; the item list comes from the service manual.*
