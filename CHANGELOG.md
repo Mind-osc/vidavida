@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 3 Νοεμβρίου 2026 (61)
+- «Πότε κάνω σέρβις»: η απάντηση έρχεται πρώτα από το owner's manual, ακόμα κι όταν ο πίνακάς του δείχνει τις εργασίες με σύμβολα αντί για γράμματα (π.χ. Honda): τα χιλιόμετρα των σέρβις και η σελίδα είναι από το owner's manual, και από κάτω η λίστα ανά εργασία από το service manual.
+- *"When is the service": the owner's manual comes first, even when its table marks the work with symbols; the item list comes from the service manual.*
+
 ## 3 Νοεμβρίου 2026 (60)
 - Ημερομηνίες (καύσιμα, γρήγορο γέμισμα, καταχώρηση σέρβις, λήξεις εγγράφων): αντί για το ημερολόγιο του κινητού ανοίγει γυάλινο ημερολόγιο, ίδιο με τις λίστες — μήνας με ‹ ›, η σημερινή μέρα με δαχτυλίδι, η επιλεγμένη στο χρώμα του θέματος, κουμπί «Σήμερα». Ανοίγει κάτω από το πεδίο ή από πάνω αν δεν χωράει, χωρίς να κρύβεται πίσω από την κάτω μπάρα.
 - *Date fields open a glass calendar (month arrows, today ring, "Today" button) instead of the phone's picker.*

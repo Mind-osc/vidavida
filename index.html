@@ -1838,6 +1838,7 @@ const T = {
   procPage: ["Διαδικασία: σελ.", "Procedure: p."], item: ["Εργασία", "Item"], annualShort: ["Ετήσια", "Annual"], regularShort: ["Αντικ.", "Replace"],
   repeatTr: ["σε μεγαλύτερα χιλιόμετρα, επανάλαβε με την ίδια συχνότητα", "at higher readings, repeat at the same interval"],
   fullSchedule: [n => `Όλο το πρόγραμμα (${n} εργασίες)`, n => `Full schedule (${n} items)`],
+  schedIcons: ["Στο owner's manual ο πίνακας δείχνει τις εργασίες με σύμβολα — δες τη σελίδα από κάτω. Η λίστα ανά εργασία είναι από το άλλο manual.", "In the owner's manual the table marks the work with symbols — see the page below. The item-by-item list comes from the other manual."],
   alsoIn: ["Υπάρχει και στο", "Also in the"],
   schedVerbatim: ["Τα γράμματα (I, R, C, A, L) και τα χιλιόμετρα είναι αυτούσια από τον πίνακα του manual· στη σελίδα η γραμμή έχει πορτοκαλί πλαίσιο.", "The letters (I, R, C, A, L) and mileages are verbatim from the manual's table; on the page the row has an orange frame."],
   ctx: ["κείμενο πάνω από την τιμή", "text above the value"], ctxTitle: ["Η τιμή δεν έχει δική της ετικέτα· δες τη σελίδα.", "The value has no label of its own; check the page."],
@@ -2984,7 +2985,8 @@ function parseSchedule(p){
     rows.push({cell: it, item: it.s.replace(/^\*+\s*/, "").trim(), stars, codes, annual, regular, every, ref, note,
       cells: [it, ...rc.filter(c => /^[ICRAL]$/.test(c.s.trim()) || /^EVERY/i.test(c.s) || c.s === regular)]});
   }
-  if (rows.length < 3) return null;                  // icons-only tables give no usable rows
+  // a table whose marks are symbols (no I/R letters): no rows, but its mileage columns still say when the services are
+  if (rows.length < 3) return cols.length >= 3 && items.length >= 5 ? {cols: cols.map(c => c.n), rows: [], iconOnly: true, legend: "", hdr} : null;
   return {cols: cols.map(c => c.n), rows, legend: legend ? legend.s : "", hdr};
 }
 /* Schedule tables of other makes (e.g. in Greek): a header row "km | 1000 | ΚΑΘΕ 5000 | ΚΑΘΕ 10000", a "ΜΗΝΕΣ" row,
@@ -3247,6 +3249,7 @@ async function answerSchedule(q, out){
     if (!hits.length) return false;                   // the item isn't in the schedule → normal search
   }
   const main = hits.length ? hits[0].s : sc;
+  const listFrom = main.rows.length ? main : scheds.filter(o => o.rows.length).sort((a, b) => b.rows.length - a.rows.length)[0];
   for (const h of hits){
     if (h.r.note){ const n = h.r.note.match(/\d+/)[0];
       h.r.noteText = (await scheduleNote(h.s, new RegExp("^\\s*(NOTE\\s*)?" + n + "\\s*[:.]\\s+[A-Za-z]", "i"))).replace(/^\s*(NOTE\s*)?\d+\s*[:.]\s*/i, ""); }
@@ -3280,8 +3283,9 @@ async function answerSchedule(q, out){
     <div class="pageimg" title="${t("tapZoom")}"><div class="loading">${t("loadingPage", main.page)}</div></div>
     <div class="extra">
       ${srcLine({m: main.m, page: main.page, label: main.label})}
-      <details class="others"${hits.length ? "" : " open"}><summary>${t("fullSchedule", main.rows.length)}</summary>${scheduleTableHTML(main)}</details>
-      ${scheds.filter(s => s !== main).map(s => `<div class="hint">${t("alsoIn")} ${esc(kindName(s.m.kind))} · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`).join("")}
+      ${main.iconOnly ? `<div class="hint">${t("schedIcons")}</div>` : ""}
+      ${listFrom ? `<details class="others"${hits.length || main.iconOnly ? "" : " open"}><summary>${t("fullSchedule", listFrom.rows.length)}${listFrom !== main ? ` · ${esc(kindName(listFrom.m.kind))} ${t("pAbbr")} ${esc(listFrom.label || "—")}` : ""}</summary>${scheduleTableHTML(listFrom)}</details>` : ""}
+      ${scheds.filter(s => s !== main && s !== listFrom).map(s => `<div class="hint">${t("alsoIn")} ${esc(kindName(s.m.kind))} · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`).join("")}
       <div class="hint">${t("schedVerbatim")}</div>
     </div></article>`;
   const gs = out.querySelector("[data-gosvc]"); if (gs) gs.onclick = () => tab("svc");
@@ -4146,7 +4150,8 @@ async function getRecords(bike){
 }
 // the schedule used for planning: the table with most rows, with note texts resolved and rows for other versions removed
 async function planSchedule(bike){
-  const all = await findSchedules(bike);
+  let all = await findSchedules(bike);
+  if (all.some(o => o.rows.length)) all = all.filter(o => o.rows.length);
   if (!all.length) return null;
   let sc = all.slice().sort((a, b) => b.rows.length - a.rows.length)[0];
   const same = all.filter(o => o.m === sc.m && o.cols.join() === sc.cols.join());
