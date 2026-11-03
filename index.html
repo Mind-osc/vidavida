@@ -1634,7 +1634,9 @@ const T = {
   hiddenSched: [n => `${n === 1 ? "Κρύφτηκε 1 εργασία" : `Κρύφτηκαν ${n} εργασίες`} που κατά το manual αφορούν άλλη έκδοση.`, n => `${n} item${n === 1 ? "" : "s"} that the manual lists for another version ${n === 1 ? "is" : "are"} hidden.`],
   schedTitle: ["Πρόγραμμα συντήρησης", "Maintenance schedule"], schedNoTable: ["Αυτό το manual δεν έχει πίνακα συντήρησης· να τι γράφει στο κείμενο:", "This manual has no maintenance table; this is what its text says:"], schedPicItem: ["Βρες τον αριθμό αυτό στην αριστερή στήλη του πίνακα: τα σημάδια δείχνουν σε ποια χιλιόμετρα/μήνες γίνεται (τα γράμματα a, b… παραπέμπουν στα διαστήματα).", "Find this number in the table's left column: the marks show at which distance/months it is due (letters a, b… refer to the intervals)."],
   schedPicNote: ["Το κείμενο είναι αυτούσιο από το manual· ο πίνακας διαβάζεται μόνο από την εικόνα της σελίδας.", "The text is verbatim from the manual; the table itself can only be read from the page image."], schedPicture: ["Ο πίνακας σε αυτό το manual είναι εικόνα· δες τη σελίδα από κάτω. Τα διαστήματα όπως τα γράφει:", "The table in this manual is a picture; see the page below. The intervals as printed:"], schedWord: ["πρόγραμμα συντήρησης", "maintenance schedule"],
-  serviceAt: ["Σέρβις στα", "Service at"], plusAnnual: ["και ετήσιος έλεγχος", "plus an annual check"],
+  serviceAt: ["Σέρβις στα", "Service at"], schedGoSvc: ["Άνοιξε την καρτέλα Σέρβις", "Open the Service tab"],
+  schedNeedOdo: ["Βάλε τα χιλιόμετρα της μηχανής στην καρτέλα Σέρβις και θα σου λέω πότε είναι το επόμενο σέρβις και τι περιλαμβάνει.", "Enter the odometer in the Service tab to see when the next service is due and what it includes."],
+  schedNoNext: ["Ο πίνακας του manual δεν καλύπτει πια τα χιλιόμετρα της μηχανής· δες τον πλήρη πίνακα από κάτω.", "The manual's table doesn't reach the current odometer; see the full table below."], plusAnnual: ["και ετήσιος έλεγχος", "plus an annual check"],
   annualCheck: ["Ετήσιος έλεγχος", "Annual check"], regularReplace: ["Τακτική αντικατάσταση", "Regular replace"],
   procPage: ["Διαδικασία: σελ.", "Procedure: p."], item: ["Εργασία", "Item"], annualShort: ["Ετήσια", "Annual"], regularShort: ["Αντικ.", "Replace"],
   repeatTr: ["σε μεγαλύτερα χιλιόμετρα, επανάλαβε με την ίδια συχνότητα", "at higher readings, repeat at the same interval"],
@@ -2066,8 +2068,8 @@ function tab(which){
 }
 $("tabAsk").onclick = () => tab("ask"); $("tabCard").onclick = () => tab("card"); $("tabLib").onclick = () => tab("lib"); $("tabSvc").onclick = () => tab("svc");
 
-const EXAMPLES = {el: ["ροπή βίδας αποστράγγισης λαδιού", "πίεση ελαστικών", "χωρητικότητα λαδιού κινητήρα", "τζόγος αλυσίδας", "ροπή παξιμάδι άξονα πίσω τροχού", "διάκενο μπουζί", "ροπή βίδας δαγκάνας μπροστά"],
-  en: ["engine oil drain bolt torque", "tire pressure", "engine oil capacity", "drive chain slack", "rear wheel axle nut torque", "spark plug gap", "front brake caliper mounting bolt torque"]};
+const EXAMPLES = {el: ["πότε κάνω σέρβις", "πίεση ελαστικών", "χωρητικότητα λαδιού κινητήρα", "πώς ρυθμίζω την αλυσίδα", "ροπή βίδας αποστράγγισης λαδιού", "κάθε πότε αλλάζω υγρό φρένων", "διάκενο μπουζί", "τζόγος αλυσίδας", "πώς ελέγχω τη στάθμη λαδιού", "ροπή παξιμάδι άξονα πίσω τροχού"],
+  en: ["when is the service due", "tire pressure", "engine oil capacity", "how to adjust the drive chain", "engine oil drain bolt torque", "how often to change brake fluid", "spark plug gap", "drive chain slack", "how to check the engine oil level", "rear wheel axle nut torque"]};
 function renderExamples(){ $("examples").innerHTML = EXAMPLES[L()].map(x => `<button type="button" class="chip">${x}</button>`).join(""); }
 renderExamples();
 $("examples").addEventListener("click", e => { const c = e.target.closest(".chip"); if (c){ $("q").value = c.textContent; $("askForm").requestSubmit(); } });
@@ -2449,8 +2451,8 @@ async function answerHowto(q, out){
    Reads schedule tables with a header "x 1,000 km  1 12 24 36 48", then one row per item with code letters
    (I, R, C, A, L) placed under the mileage columns, plus Annual check / Regular replace / Refer-to-page columns.
    Every code is taken from its position on the page; nothing is inferred. Tables drawn with icons (no text) are skipped. */
-const SCHED_Q = /(καθε ποτε|ποσο συχνα|ανα ποσα|\bποτε\b|διαστημ|προγραμμα (συντηρ|σερβισ)|\bσερβισ|συντηρησ|how often|\binterval|\bschedule|\bmaintenance\b|\bwhen\b)/;
-const SCHED_IGNORE = new Set(["σερβι","σερβισ","συντηρ","συντηρη","συντηρησ","maintenance","service","interval","schedule","change","replacement","replace","check","inspection","inspect","adjust","adjustment","setting","lubricate","lubrication","lubricant","grease","code","dtc","every","when","often","how"]);
+const SCHED_Q = /(καθε ποτε|ποσο συχνα|ανα ποσα|(?<![α-ω])ποτε(?![α-ω])|διαστημ|προγραμμα (συντηρ|σερβισ)|(?<![α-ω])σερβισ|συντηρησ|how often|\binterval|\bschedule|\bmaintenance\b|\bwhen\b|next service)/;   // (\b does not see Greek letters as word characters)
+const SCHED_IGNORE = new Set(["επομεν","next","σερβι","σερβισ","συντηρ","συντηρη","συντηρησ","maintenance","service","interval","schedule","change","replacement","replace","check","inspection","inspect","adjust","adjustment","setting","lubricate","lubrication","lubricant","grease","code","dtc","every","when","often","how"]);
 const CODE_MEAN = {
   I: ["Έλεγχος (καθάρισμα, ρύθμιση, λίπανση ή αντικατάσταση αν χρειάζεται)", "Inspect (clean, adjust, lubricate or replace if necessary)"],
   C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"]};
@@ -2787,9 +2789,16 @@ async function answerSchedule(q, out){
   const general = `<div class="row big"><div class="rl"><span class="lbl">${t("serviceAt")}</span></div>
       <div class="rv"><span class="val">${main.colLabels ? main.colLabels.map(esc).join(" · ") : main.cols.map(kmFmt).join(" · ") + " km"}</span>
       ${main.rows.some(r => r.annual) && !main.colLabels ? `<span class="conv">${t("plusAnnual")}</span>` : ""}</div></div>`;
+  let nextHTML = "";
+  if (!hits.length){
+    let st = null; try{ const plan = await planSchedule(currentBike); if (plan && currentBike.odo) st = computeStatus(currentBike, plan, await getRecords(currentBike)); }catch(e){ console.error(e); }
+    nextHTML = st && st.next ? `<div class="rows"><div class="row big"><div class="rl"><span class="lbl">${t("nextTitle")}</span></div><div class="rv"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div></div></div>`
+      : `<div class="hint">${t(currentBike.odo ? "schedNoNext" : "schedNeedOdo")}</div>`;
+    nextHTML += `<div class="mrow"><button type="button" class="btn small" data-gosvc>${t("schedGoSvc")}</button></div>`;
+  }
   out.innerHTML = `<article class="result">
     <div class="answer"><div class="eyebrow">${t("schedTitle")}</div>
-      ${srcHead(main)}
+      ${srcHead(main)}${nextHTML}
       ${hits.length ? `<div class="rows">${hits.map(h => scheduleRowHTML(h.r, h.s, pq, hits.length === 1)).join("")}</div>` : `<div class="rows">${general}</div>`}
       ${hiddenSched ? `<div class="hint">${t("hiddenSched", hiddenSched)}</div>` : ""}
       ${repeat ? `<div class="hint">“${esc(repeat.replace(/^\s*\d+\.\s*/, ""))}”${L() === "el" && /[A-Za-z]{4}/.test(repeat) ? ` <span class="tr">(${t("repeatTr")})</span>` : ""}</div>` : ""}
@@ -2802,6 +2811,7 @@ async function answerSchedule(q, out){
       ${scheds.filter(s => s !== main).map(s => `<div class="hint">${t("alsoIn")} ${esc(kindName(s.m.kind))} · ${t("pAbbr")} ${esc(s.label || "—")} (PDF ${s.page})</div>`).join("")}
       <div class="hint">${t("schedVerbatim")}</div>
     </div></article>`;
+  const gs = out.querySelector("[data-gosvc]"); if (gs) gs.onclick = () => tab("svc");
   const holder = out.querySelector(".pageimg");
   const hitObj = {m: main.m, page: main.page, hitCells: []};
   const strong = hits.filter(h => h.s === main).flatMap(h => h.r.cells);
@@ -2896,7 +2906,8 @@ async function answerSchedulePage(q, out){
 const DIST_RE = /\d[\d.,]*\s*(km|χλμ|mi|miles)\b|\d+\s*(μήν|μην|months?|χρόν|years?)/i;
 async function answerScheduleText(q, out){
   const pq = parseQuery(q), objs = pq.objects.filter(o => !o.alts.every(a => SCHED_IGNORE.has(a)));
-  if (!objs.length) return false;
+  // a general "when is the service?" with no table: every sentence that gives a distance interval, in page order
+  const general = !objs.length;
   const acts = pq.concepts.filter(c => c.act);
   const found = [];
   for (const m of manuals.filter(m => m.bikeId === currentBike.id)){
@@ -2906,14 +2917,16 @@ async function answerScheduleText(q, out){
       const nb = p.cells.filter(o => o !== c && Math.abs(o.x0 - c.x0) < 20 && Math.abs(o.y - c.y) < c.fh * 1.7 && !/^\s*(\d{1,2}[.)]|•)\s/.test(c.y > o.y ? o.s : c.s)).sort((a, b) => b.y - a.y);
       const cells = [...nb.filter(o => o.y > c.y), c, ...nb.filter(o => o.y < c.y)].slice(0, 3);
       const text = cells.map(o => o.s).join(" ").replace(/([a-zα-ώ])- ([a-zα-ώ])/g, "$1$2"), n = norm(text);
-      if (!objs.every(o => conceptIn(n, o))) continue;
+      if (general ? !(/(^|\s)(καθε|every|πρωτα|first|μετα απο|after)\s/.test(n) && /αλλα[ξγ]|ελεγ[ξχ]|καθαρ|αντικατ|λιπαν|ρυθμ|change|replace|check|inspect|clean|lubric|adjust/.test(n)) : !objs.every(o => conceptIn(n, o))) continue;
+      if (general && found.some(f => f.p === p && f.cells.some(o => cells.includes(o)))) continue;
       found.push({m, p, ix, cells, text, sc: 1 + (acts.some(a => conceptIn(n, a)) ? 1 : 0) + (/καθε|every|κάθε/.test(n) ? .5 : 0) + (m.kind === "owner" ? .2 : 0)});
     }
   }
   if (!found.length) return false;
-  found.sort((a, b) => b.sc - a.sc);
+  if (general) found.sort((a, b) => (a.m.kind === "owner" ? 0 : 1) - (b.m.kind === "owner" ? 0 : 1) || a.p.pi - b.p.pi);
+  else found.sort((a, b) => b.sc - a.sc);
   const best = found[0], page = best.p.pi + 1, label = best.ix.labels[best.p.pi];
-  const same = found.filter(f => f.m === best.m && f.p === best.p).slice(0, 3), more = found.filter(f => f.p !== best.p).slice(0, 2);
+  const same = found.filter(f => f.m === best.m && f.p === best.p).slice(0, general ? 4 : 3), more = found.filter(f => f.p !== best.p).slice(0, general ? 5 : 2);
   out.innerHTML = `<article class="result">
     <div class="answer"><div class="eyebrow">${t("schedTitle")}</div>
       <div class="srchead"><b>${esc(kindName(best.m.kind))}</b> · ${t("pAbbr")} ${esc(label || "—")} (PDF ${page})</div>
