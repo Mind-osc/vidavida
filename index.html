@@ -588,6 +588,32 @@ header{padding-block:10px 12px;gap:8px 14px}
 .svcitems > summary::-webkit-details-marker{display:none}
 .svcitems[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
 .svcitems[open] > summary{margin-bottom:6px}
+/* next service: one row per system (engine, brakes…), its items fold open underneath */
+.svcsum{color:var(--muted);font-size:14px;margin:2px 0 4px}
+.cats{display:grid;grid-template-columns:minmax(0,1fr);border-top:1px solid var(--line)}
+.card.due{min-width:0}
+.cat{border-bottom:1px solid var(--line)}
+.cat > summary{list-style:none;display:flex;align-items:center;gap:10px;padding:11px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cat > summary::-webkit-details-marker{display:none}
+.cat .cico{flex:none;width:30px;height:30px;border-radius:8px;display:grid;place-content:center;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
+.cat .cico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.cat .cname{flex:1;min-width:0;font-weight:600;font-size:15px}
+.cat .cname small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat .cbadge{flex:none;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.cat[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
+.cat ul{list-style:none;margin:0 0 10px;padding:0 0 0 40px;display:grid;gap:7px}
+.cat li{display:flex;gap:8px;align-items:baseline;font-size:14.5px;line-height:1.35}
+.cat li .code{flex:none;display:inline-grid;place-content:center;min-width:20px;height:20px;padding:0 4px;border-radius:4px;border:1px solid var(--line);font:700 11.5px var(--f-body);color:var(--muted)}
+.cat li .code.rep{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.cat li .tr{color:var(--muted);font-size:13px}
+.svcfold{border-bottom:1px solid var(--line)}
+.svcfold > summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 2px;cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);-webkit-tap-highlight-color:transparent}
+.svcfold > summary::-webkit-details-marker{display:none}
+.svcfold > summary .n{margin-left:auto;color:var(--muted);font-weight:400;font-size:13px}
+.svcfold[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
+.svcfold > .due-items,.svcfold > .legend{margin:0 0 12px}
+.legend{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.svchint{font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:4px 0}
 </style>
 </head>
 <body>
@@ -1583,6 +1609,10 @@ const T = {
   atThatService: ["Τι προβλέπει το manual σε αυτό το σέρβις:", "What the manual lists for that service:"],
   beyondTable: ["Τα χιλιόμετρα ξεπερνούν τον πίνακα του manual και δεν βρέθηκε οδηγία επανάληψης. Δες τη σελίδα του πίνακα.", "The odometer is past the manual's table and no repeat rule was found. Check the schedule page."],
   everyTitle: ["Ανά χιλιόμετρα", "By distance"], yearlyTitle: ["Ανά χρόνια", "By time"],
+  svcSum: [(n, r) => `${n} ${n === 1 ? "εργασία" : "εργασίες"}${r ? ` · ${r} ${r === 1 ? "αντικατάσταση" : "αντικαταστάσεις"}` : ""}`, (n, r) => `${n} ${n === 1 ? "item" : "items"}${r ? ` · ${r} to replace` : ""}`],
+  svcRepl: [n => `${n} αντικατ.`, n => `${n} replace`], svcChk: [n => `${n} ${n === 1 ? "έλεγχος" : "έλεγχοι"}`, n => `${n} ${n === 1 ? "check" : "checks"}`],
+  svcOther: [n => `+${n} ακόμα`, n => `+${n} more`], svcNoLog: ["Δεν έχεις καταχωρήσει σέρβις ακόμα — πρόσθεσέ το παρακάτω για σωστές υπενθυμίσεις.", "No service logged yet — add it below for accurate reminders."],
+  svcCodes: ["Τι σημαίνουν τα γράμματα", "What the letters mean"],
   nextAt: [k => `επόμενο στα ${k}`, k => `next at ${k}`], nextBy: [d => `επόμενη έως ${d}`, d => `next by ${d}`], notLogged: ["δεν έχει καταχωρηθεί αλλαγή", "no change logged yet"],
   addCalendar: ["Υπενθύμιση στο ημερολόγιο (.ics)", "Add reminders to calendar (.ics)"], icsDone: ["Κατέβηκε το αρχείο. Άνοιξέ το για να μπουν οι υπενθυμίσεις στο ημερολόγιο.", "File downloaded. Open it to add the reminders to your calendar."],
   planSource: [(k, p) => `Υπολογισμός από τον πίνακα συντήρησης: ${k}, σελ. ${p}.`, (k, p) => `Calculated from the maintenance schedule: ${k}, p. ${p}.`],
@@ -3697,14 +3727,36 @@ function computeStatus(bike, plan, recs){
 /* ---------- rendering ---------- */
 const CODE_SHORT = {I: ["Έλεγχος", "Inspect"], C: ["Καθάρισμα", "Clean"], R: ["Αντικατάσταση", "Replace"], A: ["Ρύθμιση", "Adjust"], L: ["Λίπανση", "Lubricate"],
   "Ε": ["Έλεγχος", "Check"], "Α": ["Αντικατάσταση", "Replace"], "Κ": ["Καθάρισμα", "Clean"], "Ρ": ["Ρύθμιση", "Adjust"], "Λ": ["Λίπανση", "Lubricate"], "Σ": ["Σφίξιμο", "Tighten"], "ΔΕ": ["Διαγνωστικός έλεγχος", "Diagnostic check"]};
+/* the items of a service, sorted into systems by plain words in the item (English or Greek) or in its translation;
+   anything not recognised goes to "Other" — nothing is ever dropped */
+const SVC_CATS = [
+  {k: "brakes", n: ["Φρένα", "Brakes"], re: /brake|caliper|abs\b|φρέν|φρεν|τακάκ|τακακ|δισκόφρ|δαγκάν/i, ico: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/><path d="M12 4v2M20 12h-2M12 20v-2M4 12h2"/>'},
+  {k: "cool", n: ["Ψύξη", "Cooling"], re: /coolant|radiator|cooling|antifreeze|ψυκτ|ψύξ|ψυξ|ψυγε|ψυγεί|αντιψυκτ/i, ico: '<path d="M12 3v18M5 7.5l14 9M19 7.5l-14 9"/>'},
+  {k: "drive", n: ["Μετάδοση", "Drive"], re: /chain|sprocket|final drive|drive shaft|cardan|belt|αλυσ|γραναζ|γρανάζ|γρανάζι|κάρνταν|ιμάντ/i, ico: '<circle cx="7" cy="12" r="3.5"/><circle cx="17" cy="12" r="3.5"/><path d="M7 8.5h10M7 15.5h10"/>'},
+  {k: "oil", n: ["Λάδια & κινητήρας", "Oil & engine"], re: /\boil\b|λάδ|λαδ|λιπαντ|spark|plug|valve|idle|clutch|engine|cylinder|cam\b|timing|μπουζ|βαλβ|ρελαντ|συμπλέκ|συμπλεκ|κινητήρ|κινητηρ|κύλινδρ/i, ico: '<path d="M12 3c3 4.5 5 7.4 5 10a5 5 0 0 1-10 0c0-2.6 2-5.5 5-10z"/>'},
+  {k: "fuel", n: ["Αέρας & καύσιμο", "Air & fuel"], re: /\bair\b|fuel|throttle|petrol|injector|carb|evap|canister|καύσιμ|καυσιμ|βενζίν|βενζιν|αέρα|αερα|γκάζ|γκαζ|ψεκασ|πεταλούδ/i, ico: '<path d="M4 9h11a3 3 0 1 0-3-3M4 15h14a3 3 0 1 1-3 3"/>'},
+  {k: "chassis", n: ["Τροχοί & ανάρτηση", "Wheels & suspension"], re: /wheel|tyre|tire|spoke|rim\b|suspension|fork|shock|damper|steering|swing ?arm|bearing|τροχ|ελαστ|λάστιχ|ακτίν|ζάντ|αναρτ|ανάρτ|πιρούν|αμορτ|τιμόν|τιμον|ψαλίδ|ρουλεμ/i, ico: '<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16"/>'},
+  {k: "elec", n: ["Ηλεκτρικά & φώτα", "Electrics & lights"], re: /batter|light|lamp|horn|headlight|electr|fuse|switch|wiring|μπαταρ|φώτ|φωτ|φαναρ|φανάρ|κόρνα|κορνα|ηλεκτρ|ασφάλει|διακόπτ/i, ico: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>'},
+  {k: "other", n: ["Πλαίσιο & λοιπά", "Frame & other"], re: /./, ico: '<path d="M14.5 6.5a4 4 0 0 0-5.3 5.3L4 17l3 3 5.2-5.2a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.5-.5-.5-2.5z"/>'}
+];
+const svcCat = item => { const txt = item + " " + (translate(item) || ""); return SVC_CATS.find(c => c.re.test(txt)); };
+const REPL_CODES = {has: c => /(^|\/)(R|Α)(\/|$)/.test(String(c).replace(/\s+/g, ""))};   // "replace" (English R, Greek Α), also inside combined codes like "Ε/Α"
 function groupedItems(items){
-  const g = {};
-  for (const x of items) (g[x.code] = g[x.code] || []).push(x.row);
-  const pri = ["R", "A", "C", "L", "I", "Α", "Ρ", "Κ", "Λ", "Σ", "ΔΕ", "Ε"];
-  const order = Object.keys(g).sort((a, b) => { const ia = pri.indexOf(a), ib = pri.indexOf(b); return (ia < 0 ? 50 : ia) - (ib < 0 ? 50 : ib) || a.localeCompare(b); });
-  return `<div class="groups">${order.filter(c => g[c]).map(c => `<div class="grpline"><span class="code">${c}</span> <b>${CODE_SHORT[c] ? CODE_SHORT[c][L() === "en" ? 1 : 0] : esc(codeMean(c))}</b>
-    <div class="glist">${g[c].map(r => `<span>${esc(r.item)}${trHTML(r.item)}</span>`).join("")}</div></div>`).join("")}
-    ${g.I ? `<p class="mnote">I = ${esc(codeMean("I"))}</p>` : ""}</div>`;
+  const g = new Map();
+  for (const x of items){ const c = svcCat(x.row.item); if (!g.has(c)) g.set(c, []); g.get(c).push(x); }
+  const li = x => `<li><span class="code${REPL_CODES.has(x.code) ? " rep" : ""}" title="${esc(codeMean(x.code))}">${esc(x.code)}</span><span>${esc(x.row.item)}${trHTML(x.row.item)}</span></li>`;
+  const en = L() === "en" ? 1 : 0;
+  const cats = SVC_CATS.filter(c => g.has(c)).map(c => {
+    const xs = g.get(c).sort((a, b) => REPL_CODES.has(b.code) - REPL_CODES.has(a.code)), nr = xs.filter(x => REPL_CODES.has(x.code)).length;
+    const peek = xs.slice(0, 2).map(x => translate(x.row.item) && !en ? translate(x.row.item) : x.row.item).join(", ") + (xs.length > 2 ? ` ${t("svcOther", xs.length - 2)}` : "");
+    return `<details class="cat"><summary><span class="cico" aria-hidden="true"><svg viewBox="0 0 24 24">${c.ico}</svg></span>
+      <span class="cname">${c.n[en]}<small>${esc(peek)}</small></span>${nr ? `<span class="cbadge">${t("svcRepl", nr)}</span>` : ""}<span class="fchev" aria-hidden="true"></span></summary>
+      <ul>${xs.map(li).join("")}</ul></details>`;
+  }).join("");
+  const used = [...new Set(items.map(x => x.code))];
+  const legend = `<details class="svcfold"><summary>${t("svcCodes")} <span class="fchev" aria-hidden="true"></span></summary>
+    <div class="legend">${used.map(c => `<div><b>${esc(c)}</b> = ${esc(codeMean(c))}</div>`).join("")}</div></details>`;
+  return `<div class="cats">${cats}${legend}</div>`;
 }
 async function renderService(){
   const box = $("svc"); if (!box) return;
@@ -3728,13 +3780,14 @@ async function renderService(){
       ${!plan ? `<p class="mnote">${t("noSchedule")}</p>`
       : !bike.odo ? `<p class="mnote">${t("needOdo")}</p>`
       : `${st.overdue.length ? `<div class="alert bad"><b>${t("attention")}</b><ul>${st.overdue.map(o => `<li>${esc(o.text)}</li>`).join("")}</ul></div>` : ""}
-         ${!recs.filter(r => !r.quick).length ? `<div class="alert"><b>${t("noRecordsTitle")}</b> ${t("noRecordsText")}</div>` : ""}
+         ${!recs.filter(r => !r.quick).length ? `<p class="svchint">${t("svcNoLog")}</p>` : ""}
          ${st.next ? `<div class="bigdue"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div>
             ${st.annual ? `<div class="meta">${t("orByDate", fmtDate(st.annual.due))}</div>` : ""}
-            <details class="svcitems"><summary>${t("atThatService").replace(/:\s*$/, "")} <span class="fchev" aria-hidden="true"></span></summary>${groupedItems(st.next.items)}</details>`
+            <p class="svcsum">${t("svcSum", st.next.items.length, st.next.items.filter(x => REPL_CODES.has(x.code)).length)}</p>
+            ${groupedItems(st.next.items)}`
           : `<p class="mnote">${t("beyondTable")}</p>`}
-         ${st.every.length ? `<div class="mlabel">${t("everyTitle")}</div><ul class="due-items">${st.every.map((e, i) => `<li><span>${esc(e.row.item)}${trHTML(e.row.item)}</span> <span class="cm">${esc(e.row.every)}${e.dueKm ? ` · ${t("nextAt", fmtKm(e.dueKm))}` : ""}</span> <button type="button" class="btn small" data-quick="${i}">${t("doneNow")}</button></li>`).join("")}</ul>` : ""}
-         ${st.yearly.length ? `<div class="mlabel">${t("yearlyTitle")}</div><ul class="due-items">${st.yearly.map(y => `<li><span>${esc(y.row.item)}${trHTML(y.row.item)}</span> <span class="cm">${esc(y.row.regular)} · ${y.due ? t("nextBy", fmtDate(y.due)) : t("notLogged")}</span></li>`).join("")}</ul>` : ""}
+         ${st.every.length ? `<details class="svcfold"><summary>${t("everyTitle")}<span class="n">${st.every.length}</span><span class="fchev" aria-hidden="true"></span></summary><ul class="due-items">${st.every.map((e, i) => `<li><span>${esc(e.row.item)}${trHTML(e.row.item)}</span> <span class="cm">${esc(e.row.every)}${e.dueKm ? ` · ${t("nextAt", fmtKm(e.dueKm))}` : ""}</span> <button type="button" class="btn small" data-quick="${i}">${t("doneNow")}</button></li>`).join("")}</ul></details>` : ""}
+         ${st.yearly.length ? `<details class="svcfold"><summary>${t("yearlyTitle")}<span class="n">${st.yearly.length}</span><span class="fchev" aria-hidden="true"></span></summary><ul class="due-items">${st.yearly.map(y => `<li><span>${esc(y.row.item)}${trHTML(y.row.item)}</span> <span class="cm">${esc(y.row.regular)} · ${y.due ? t("nextBy", fmtDate(y.due)) : t("notLogged")}</span></li>`).join("")}</ul></details>` : ""}
          <div class="mrow">${st.annual || st.yearly.some(y => y.due) ? `<button type="button" class="btn" id="icsBtn">${t("addCalendar")}</button>` : ""}</div>
          <p class="mnote">${t("planSource", esc(kindName(plan.sc.m.kind)), esc(plan.sc.label || "—"))}${plan.canRepeat ? "" : " " + t("noRepeat")}</p>`}
     </section>
