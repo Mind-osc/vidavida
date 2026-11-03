@@ -1864,7 +1864,8 @@ function openFeedback(){
   $("fbInfo").textContent = fbDetails(); $("fbInfo").hidden = !$("fbInc").checked;
   clearTimeout(closeFeedback._t);
   $("fbSheet").hidden = false; $("fbScrim").hidden = false; $("fbBtn").classList.add("on"); $("fbBtn").setAttribute("aria-expanded", "true");
-  requestAnimationFrame(() => requestAnimationFrame(() => $("fbSheet").classList.add("open"))); setTimeout(() => $("fbText").focus({preventScroll: true}), 380);
+  requestAnimationFrame(() => requestAnimationFrame(() => $("fbSheet").classList.add("open"))); // on a phone the keyboard would cover the card: you see it first and tap the field yourself; with a mouse the cursor is already there
+  if (matchMedia("(pointer:fine)").matches) setTimeout(() => $("fbText").focus({preventScroll: true}), 380);
 }
 function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hidden = true; $("fbBtn").classList.remove("on"); $("fbBtn").setAttribute("aria-expanded", "false");
   clearTimeout(closeFeedback._t); closeFeedback._t = setTimeout(() => { $("fbSheet").hidden = true; }, 280); }
