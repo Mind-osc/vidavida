@@ -460,6 +460,15 @@ body{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
   -webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);box-shadow:inset 0 1px 0 var(--glass-hi),0 10px 30px var(--glass-sh)}
 [data-pal="glass"] nav button{border-radius:999px}
 [data-pal="glass"] nav button[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px var(--glass-sh)}
+/* ---- the highlight of the selected tab slides to the tapped one: the leading edge runs ahead, the trailing edge catches up ---- */
+.tabpill{display:none}
+nav.slide .tabpill{display:block;position:absolute;z-index:0;top:5px;bottom:5px;left:var(--pl,5px);right:var(--pr,75%);border-radius:13px;background:var(--accent);pointer-events:none;
+  transition:left .34s cubic-bezier(.3,1.25,.5,1) var(--dl,0s),right .34s cubic-bezier(.3,1.25,.5,1) var(--dr,0s)}
+nav.slide button{position:relative;z-index:1;transition:color .22s ease}
+:root nav.slide button[aria-selected=true]:not(#_){background:transparent;box-shadow:none}
+nav.slide button:active{transform:scale(.94)}
+nav.slide button{transition:color .22s ease,transform .15s ease}
+[data-pal="glass"] nav.slide .tabpill{border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px var(--glass-sh)}
 /* ---- drop-down lists: a soft chevron inset from the edge ---- */
 select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 14px center/12px 8px,var(--panel)}
 [data-pal="glass"] select:not(#_){background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 16px center/12px 8px,linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper)}
@@ -627,6 +636,7 @@ header{padding-block:10px 12px;gap:8px 14px}
   <div class="warn transhint" id="transHint" hidden></div>
 </header>
 <nav role="tablist">
+  <span class="tabpill" aria-hidden="true"></span>
   <button role="tab" id="tabAsk" aria-selected="true" data-t="tabAsk"></button>
   <button role="tab" id="tabCard" aria-selected="false" data-t="tabCard"></button>
   <button role="tab" id="tabSvc" aria-selected="false" data-t="tabSvc"></button>
@@ -2065,7 +2075,23 @@ function tab(which){
   if (which === "svc") renderService();
   if (which === "card") renderCard();
   if (which === "ask") updateBanner();
+  movePill(true);
 }
+// the sliding highlight under the selected tab (the edge in the direction of travel leaves first, so it stretches and settles)
+function movePill(animate){
+  const nav = document.querySelector("nav[role=tablist]"), pill = nav && nav.querySelector(".tabpill"), b = nav && nav.querySelector("button[aria-selected=true]");
+  if (!pill || !b || !nav.offsetWidth) return;
+  const l = b.offsetLeft, r = nav.clientWidth - b.offsetLeft - b.offsetWidth, prevL = parseFloat(nav.style.getPropertyValue("--pl"));
+  const right = !isNaN(prevL) && l > prevL;
+  if (!animate) pill.style.transition = "none";
+  nav.style.setProperty("--dl", right ? ".08s" : "0s"); nav.style.setProperty("--dr", right ? "0s" : ".08s");
+  nav.style.setProperty("--pl", l + "px"); nav.style.setProperty("--pr", r + "px");
+  nav.classList.add("slide");
+  if (!animate){ pill.offsetWidth; pill.style.transition = ""; }
+}
+addEventListener("resize", () => movePill(false));
+requestAnimationFrame(() => movePill(false));
+if (document.fonts) document.fonts.ready.then(() => movePill(false));
 $("tabAsk").onclick = () => tab("ask"); $("tabCard").onclick = () => tab("card"); $("tabLib").onclick = () => tab("lib"); $("tabSvc").onclick = () => tab("svc");
 
 const EXAMPLES = {el: ["πότε κάνω σέρβις", "πίεση ελαστικών", "χωρητικότητα λαδιού κινητήρα", "πώς ρυθμίζω την αλυσίδα", "ροπή βίδας αποστράγγισης λαδιού", "κάθε πότε αλλάζω υγρό φρένων", "διάκενο μπουζί", "τζόγος αλυσίδας", "πώς ελέγχω τη στάθμη λαδιού", "ροπή παξιμάδι άξονα πίσω τροχού"],
