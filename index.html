@@ -654,6 +654,15 @@ header{padding-block:10px 12px;gap:8px 14px}
 .qasheet label.fbinc{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink)}
 .qasheet .acts{display:flex;justify-content:flex-end;gap:8px}
 @media (prefers-reduced-motion:reduce){.qaitem,.qasheet,.fab.qa > svg{transition:none}}
+/* round buttons: instead of the orange focus ring, the button glows softly around itself (keyboard focus and while its card is open) */
+.fab:focus-visible,.fab:focus{outline:none}
+.fab{--glow:color-mix(in srgb,var(--accent) 55%,transparent)}
+:root .fab:is(:focus-visible,.on):not(#_){box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 35%,transparent),0 0 16px 3px var(--glow),0 4px 14px rgba(0,0,0,.28)}
+:root[data-pal="glass"] .fab:is(:focus-visible,.on):not(#_){box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 16px 3px var(--glow),0 8px 22px var(--glass-sh)}
+.fab.on{animation:fabglow 2.4s ease-in-out infinite}
+@keyframes fabglow{50%{--glow:color-mix(in srgb,var(--accent) 30%,transparent)}}
+@property --glow{syntax:"<color>";inherits:true;initial-value:transparent}
+@media (prefers-reduced-motion:reduce){.fab.on{animation:none}}
 @media (prefers-reduced-motion:reduce){#fbSheet.drawer:not(#_),#fbSheet .dbody > *,.fab,.fab svg{transition:none}}
 /* answer card: the manual and page sit right under the value they belong to */
 .answer .srchead{padding-top:0;margin-top:-6px}
