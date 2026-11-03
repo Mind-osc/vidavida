@@ -523,6 +523,8 @@ header{padding-block:10px 12px;gap:8px 14px}
 .gtap:focus-visible{outline:none;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 60%,transparent),0 0 14px 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .gwrap.open select{border-color:color-mix(in srgb,var(--accent) 70%,var(--line))}
 @media (max-width:520px){.bikepick .gwrap{flex:1}}
+.mact .gwrap{flex:0 1 auto;max-width:65%}
+.gwrap select[data-setkind],.gwrap select[data-kind]{max-width:none}
 .gpop{position:fixed;z-index:60;min-width:200px;max-width:calc(100vw - 20px);max-height:min(60dvh,420px);overflow:auto;overscroll-behavior:contain;padding:6px;
   border-radius:20px;border:1px solid color-mix(in srgb,#fff 22%,var(--line));
   background:linear-gradient(180deg,color-mix(in srgb,#fff 14%,transparent),transparent 60%),color-mix(in srgb,var(--panel) 62%,transparent);
@@ -1878,7 +1880,7 @@ function wireDocsFuel(){
   const df = $("docForm"); if (df) df.onsubmit = async e => { e.preventDefault(); const date = $("docDate").value; if (!date) return;
     const type = $("docType").value, extra = type === "ins" ? {phone: $("docPhone").value.trim(), policy: $("docPolicy").value.trim()} : {};
     bike.docs.push({type, date, note: $("docNote").value.trim(), ...extra}); await putOne("bikes", bike); toast(t("saved")); renderService(); updateBanner(); };
-  const dt = $("docType"); if (dt){ const sync = () => df.classList.toggle("ins", dt.value === "ins"); dt.onchange = sync; sync(); }
+  const dt = $("docType"); glassSelect(dt); if (dt){ const sync = () => df.classList.toggle("ins", dt.value === "ins"); dt.onchange = sync; sync(); }
   const sb = $("docScanBtn"); if (sb){ sb.onclick = () => { $("docScanFile").value = ""; $("docScanFile").click(); };
     $("docScanFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; const outEl = $("docScanOut"); outEl.textContent = t("docScanning");
       let text = ""; try{ text = await fileText(f); }catch(err){ console.error(err); outEl.textContent = t("docScanFail"); return; }
@@ -2235,6 +2237,7 @@ function renderLib(){
       <div class="progress" data-prog hidden><div></div></div>
     </div>`;
   }).join("") || `<div class="empty">${t("noBikes")}</div>`;
+  $("bikes").querySelectorAll("select").forEach(glassSelect);
 }
 
 /* ---- "search online": opens a ready-made web search (a page cannot search or download from other sites by itself) ---- */
@@ -2347,6 +2350,7 @@ async function addBike(){
 $("addBike").addEventListener("submit", e => { e.preventDefault(); addBike(); });
 /* glass list for a select: opens under it with a spring, rows slide in, the chosen one is ticked; arrows/Enter/Escape work */
 function glassSelect(sel){
+  if (!sel || sel.parentElement.classList.contains("gwrap")) return;
   const wrap = document.createElement("span"); wrap.className = "gwrap"; sel.before(wrap); wrap.appendChild(sel);
   const tap = document.createElement("button"); tap.type = "button"; tap.className = "gtap"; tap.setAttribute("aria-haspopup", "listbox"); tap.setAttribute("aria-expanded", "false");
   wrap.appendChild(tap); sel.tabIndex = -1;
