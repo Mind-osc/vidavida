@@ -558,6 +558,22 @@ header{padding-block:10px 12px;gap:8px 14px}
 .gpop button[aria-selected=true]{font-weight:700;background:color-mix(in srgb,var(--accent) 16%,transparent)}
 .gpop button.gadd{color:var(--accent-text,var(--accent));font-weight:600;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:0 0 14px 14px;margin-top:4px}
 @media (prefers-reduced-motion:reduce){.gpop,.gpop button{transition:none}}
+/* glass calendar for dates (same glass as the lists) */
+.gwrap.gdate{display:block}
+.gwrap.gdate input{pointer-events:none;width:100%}
+.gtap.sq{border-radius:8px}
+.gpop.gcal{width:300px;padding:10px 10px 8px}
+.gcal .gch{display:flex;align-items:center;gap:6px;margin:0 2px 6px}
+.gcal .gch b{flex:1;text-align:center;font:700 15px var(--f-display);text-transform:capitalize}
+.gpop.gcal .gch button{width:36px;height:36px;flex:none;justify-content:center;padding:0;border-radius:50%;font-size:20px;line-height:1}
+.gcal .gwk,.gcal .gdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.gcal .gwk span{text-align:center;font:600 11px var(--f-display);color:var(--muted);padding:4px 0;text-transform:uppercase}
+.gpop.gcal .gdays button{justify-content:center;padding:0;height:36px;border-radius:50%;font:500 14px var(--f-body);font-variant-numeric:tabular-nums}
+.gpop.gcal .gdays button.out{opacity:.35}
+.gpop.gcal .gdays button.today{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.gpop.gcal .gdays button[aria-selected=true]{background:var(--accent-fill,var(--accent));color:var(--tabink,#111);font-weight:700}
+.gcal .gft{display:flex;justify-content:space-between;margin-top:6px;border-top:1px solid color-mix(in srgb,var(--line) 70%,transparent);padding-top:4px}
+.gpop.gcal .gft button{width:auto;color:var(--accent-text,var(--accent));font-weight:600;padding:8px 10px}
 /* glass: text printed in the page colour on a dark/ink chip must use the solid page colour (the glass one is see-through) */
 [data-pal="glass"] :is(#toast,.sline .code,.grpline .code,.due-items .code){color:var(--bar)}
 [data-pal="glass"] #toast{border-radius:18px;box-shadow:0 10px 30px var(--glass-sh)}
@@ -2395,6 +2411,51 @@ async function addBike(){
 }
 $("addBike").addEventListener("submit", e => { e.preventDefault(); addBike(); });
 /* glass list for a select: opens under it with a spring, rows slide in, the chosen one is ticked; arrows/Enter/Escape work */
+/* glass calendar for every date field (also ones added later): the field shows the date, a see-through button over it opens the calendar */
+function glassDate(inp){
+  if (!inp || inp.parentElement.classList.contains("gwrap")) return;
+  const wrap = document.createElement("span"); wrap.className = "gwrap gdate"; inp.before(wrap); wrap.appendChild(inp);
+  const tap = document.createElement("button"); tap.type = "button"; tap.className = "gtap sq"; tap.setAttribute("aria-haspopup", "dialog"); wrap.appendChild(tap); inp.tabIndex = -1;
+  const lab = inp.closest("label"); if (lab) lab.addEventListener("click", e => { if (e.target !== tap && !tap.contains(e.target)){ e.preventDefault(); } });
+  tap.addEventListener("focus", () => tap.setAttribute("aria-label", (lab ? lab.textContent.trim() + ": " : "") + (inp.value ? fmtDate(inp.value) : "—")));
+  let pop = null, view = null;
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const close = focus => { if (!pop) return; const p = pop; pop = null; p.classList.remove("open"); wrap.classList.remove("open");
+    setTimeout(() => p.remove(), 220); document.removeEventListener("pointerdown", outside, true); removeEventListener("resize", onResize); if (focus) tap.focus(); };
+  const outside = e => { if (pop && !pop.contains(e.target) && e.target !== tap) close(false); };
+  const onResize = () => close(false);
+  const set = v => { inp.value = v; inp.dispatchEvent(new Event("input", {bubbles: true})); inp.dispatchEvent(new Event("change", {bubbles: true})); close(true); };
+  const draw = () => {
+    const loc = L() === "en" ? "en-GB" : "el-GR", y = view.getFullYear(), m = view.getMonth(), first = new Date(y, m, 1), lead = (first.getDay() + 6) % 7, today = todayISO();
+    const wk = [...Array(7)].map((_, i) => new Date(2024, 0, 1 + i).toLocaleDateString(loc, {weekday: "narrow"}));
+    let days = ""; for (let i = 0; i < 42; i++){ const d = new Date(y, m, 1 - lead + i), v = iso(d);
+      days += `<button type="button" data-d="${v}" class="${d.getMonth() !== m ? "out" : ""}${v === today ? " today" : ""}" aria-selected="${v === inp.value}" aria-label="${d.toLocaleDateString(loc, {day: "numeric", month: "long", year: "numeric"})}">${d.getDate()}</button>`; }
+    pop.innerHTML = `<div class="gch"><button type="button" data-m="-1" aria-label="‹">‹</button><b>${first.toLocaleDateString(loc, {month: "long", year: "numeric"})}</b><button type="button" data-m="1" aria-label="›">›</button></div>
+      <div class="gwk">${wk.map(w => `<span>${w}</span>`).join("")}</div><div class="gdays">${days}</div>
+      <div class="gft"><button type="button" data-today>${L() === "en" ? "Today" : "Σήμερα"}</button>${inp.required ? "" : `<button type="button" data-clear>${L() === "en" ? "Clear" : "Καθαρισμός"}</button>`}</div>`;
+    requestAnimationFrame(() => pop && pop.querySelectorAll("button").forEach(b => { b.style.transitionDelay = "0ms"; }));
+  };
+  const open = () => {
+    if (pop) return close(true);
+    view = inp.value ? new Date(inp.value + "T12:00:00") : new Date(); view.setDate(1);
+    pop = document.createElement("div"); pop.className = "gpop gcal"; pop.setAttribute("role", "dialog"); document.body.appendChild(pop); draw();
+    const r = inp.getBoundingClientRect(), w = 300, left = Math.max(10, Math.min(r.left, innerWidth - w - 10)), h = pop.offsetHeight || 360;
+    const nav = document.querySelector("nav[role=tablist]"), floor = Math.min(innerHeight, nav ? nav.getBoundingClientRect().top : innerHeight) - 8;   // keep clear of the bottom bar
+    const below = floor - r.bottom >= h + 6 || r.top - h - 6 < 10, top = below ? Math.min(r.bottom + 6, Math.max(10, floor - h)) : r.top - h - 6;
+    pop.style.left = left + "px"; pop.style.top = top + "px"; pop.style.setProperty("--gx", (r.left + r.width / 2 - left) + "px"); if (!below) pop.style.transformOrigin = `var(--gx) bottom`;
+    pop.onclick = e => { const b = e.target.closest("button"); if (!b) return;
+      if (b.dataset.m){ view.setMonth(view.getMonth() + +b.dataset.m); draw(); pop.querySelectorAll("button").forEach(x => x.style.opacity = 1); }
+      else if (b.dataset.d) set(b.dataset.d); else if ("today" in b.dataset) set(todayISO()); else if ("clear" in b.dataset) set(""); };
+    pop.onkeydown = e => { if (e.key === "Escape"){ e.preventDefault(); close(true); } };
+    wrap.classList.add("open");
+    requestAnimationFrame(() => requestAnimationFrame(() => pop && pop.classList.add("open")));
+    setTimeout(() => document.addEventListener("pointerdown", outside, true)); addEventListener("resize", onResize);
+    if (matchMedia("(pointer:fine)").matches){ const s = pop.querySelector('[aria-selected=true]') || pop.querySelector(".today"); if (s) s.focus({preventScroll: true}); }
+  };
+  tap.onclick = open;
+  tap.onkeydown = e => { if (["ArrowDown", " ", "Enter"].includes(e.key)){ e.preventDefault(); open(); } };
+}
+new MutationObserver(() => document.querySelectorAll('input[type=date]').forEach(glassDate)).observe(document.body, {childList: true, subtree: true});
 function glassSelect(sel){
   if (!sel || sel.parentElement.classList.contains("gwrap")) return;
   const wrap = document.createElement("span"); wrap.className = "gwrap"; sel.before(wrap); wrap.appendChild(sel);
