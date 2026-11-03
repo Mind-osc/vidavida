@@ -532,6 +532,7 @@ header{padding-block:10px 12px;gap:8px 14px}
 .fold > summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .fold > summary::-webkit-details-marker{display:none}
 .fold > summary .eyebrow{flex:1;min-width:0;margin:0}
+.fcount.bad{background:var(--danger);color:#fff}
 .fcount{flex:none;min-width:22px;height:22px;padding:0 7px;border-radius:999px;display:grid;place-items:center;font:700 12px var(--f-body);background:var(--accent-fill,var(--accent));color:var(--accent-ink)}
 .fchev{flex:none;width:12px;height:12px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-3px) rotate(45deg);transition:transform .2s ease}
 .fold[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
@@ -613,7 +614,7 @@ header{padding-block:10px 12px;gap:8px 14px}
 .svcfold[open] > summary .fchev{transform:translateY(2px) rotate(225deg)}
 .svcfold > .due-items,.svcfold > .legend{margin:0 0 12px}
 .legend{display:grid;gap:4px;font-size:13px;color:var(--muted)}
-.svchint{font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:4px 0}
+.svchint{cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:4px 0}
 </style>
 </head>
 <body>
@@ -1611,7 +1612,7 @@ const T = {
   everyTitle: ["Ανά χιλιόμετρα", "By distance"], yearlyTitle: ["Ανά χρόνια", "By time"],
   svcSum: [(n, r) => `${n} ${n === 1 ? "εργασία" : "εργασίες"}${r ? ` · ${r} ${r === 1 ? "αντικατάσταση" : "αντικαταστάσεις"}` : ""}`, (n, r) => `${n} ${n === 1 ? "item" : "items"}${r ? ` · ${r} to replace` : ""}`],
   svcRepl: [n => `${n} αντικατ.`, n => `${n} replace`], svcChk: [n => `${n} ${n === 1 ? "έλεγχος" : "έλεγχοι"}`, n => `${n} ${n === 1 ? "check" : "checks"}`],
-  svcOther: [n => `+${n} ακόμα`, n => `+${n} more`], svcNoLog: ["Δεν έχεις καταχωρήσει σέρβις ακόμα — πρόσθεσέ το παρακάτω για σωστές υπενθυμίσεις.", "No service logged yet — add it below for accurate reminders."],
+  svcOther: [n => `+${n} ακόμα`, n => `+${n} more`], svcNoLog: ["Δεν έχεις καταχωρήσει σέρβις ακόμα — πάτα εδώ για να το προσθέσεις, ώστε να βγαίνουν σωστές υπενθυμίσεις.", "No service logged yet — tap here to add it for accurate reminders."],
   svcCodes: ["Τι σημαίνουν τα γράμματα", "What the letters mean"],
   nextAt: [k => `επόμενο στα ${k}`, k => `next at ${k}`], nextBy: [d => `επόμενη έως ${d}`, d => `next by ${d}`], notLogged: ["δεν έχει καταχωρηθεί αλλαγή", "no change logged yet"],
   addCalendar: ["Υπενθύμιση στο ημερολόγιο (.ics)", "Add reminders to calendar (.ics)"], icsDone: ["Κατέβηκε το αρχείο. Άνοιξέ το για να μπουν οι υπενθυμίσεις στο ημερολόγιο.", "File downloaded. Open it to add the reminders to your calendar."],
@@ -1671,10 +1672,13 @@ function docStatus(bike){
     else if (n <= 30) out.push({bad: false, text: t("docSoon", docName(d), n, fmtDate(d.date))}); }
   return out;
 }
+// Service tab: closed sections (log a service, documents, fuel); which ones are open is remembered
+const svcFold = (k, title, count, body, bad) => { const open = (settings.svcFold || {})[k];
+  return `<details class="card fold" data-sfold="${k}"${open ? " open" : ""}><summary><span class="eyebrow">${title}</span>${count ? `<span class="fcount${bad ? " bad" : ""}">${count}</span>` : ""}<span class="fchev" aria-hidden="true"></span></summary><div class="fbody">${body}</div></details>`; };
 function docsHTML(bike){
   const ds = (bike.docs || []).slice().sort((a, b) => (a.date || "").localeCompare(b.date || ""));
-  return `<section class="card">
-    <div class="eyebrow">${t("docsTitle")}</div>
+  const warn = ds.filter(d => d.date && daysUntil(d.date) <= 30).length;
+  return svcFold("docs", t("docsTitle"), warn || ds.length || "", `
     ${ds.length ? `<ul class="docs">${ds.map(d => { const n = d.date ? daysUntil(d.date) : null; const i = bike.docs.indexOf(d);
       return `<li class="${n !== null && n < 0 ? "bad" : n !== null && n <= 30 ? "soon" : ""}"><div><b>${esc(docName(d))}</b>${d.type === "other" || !d.note ? "" : ` <span class="meta">${esc(d.note)}</span>`}
         <div class="meta">${t("expires")}: ${fmtDate(d.date)}${n === null ? "" : n < 0 ? ` · <b>${t("expiredAgo", -n)}</b>` : ` · ${t("inDays", n)}`}</div></div>
@@ -1685,8 +1689,7 @@ function docsHTML(bike){
       <input id="docNote" placeholder="${t("docNotePh")}" aria-label="${t("partNote")}">
       <button class="btn" type="submit">${t("add")}</button>
     </form>
-    ${ds.length ? `<button type="button" class="btn small" id="docsIcs">📅 ${t("toCalendar")}</button>` : ""}
-  </section>`;
+    ${ds.length ? `<button type="button" class="btn small" id="docsIcs">📅 ${t("toCalendar")}</button>` : ""}`, warn > 0);
 }
 // consumption from full tank to full tank: litres put in after the previous full fill, over the km driven
 function fuelStats(bike){
@@ -1704,8 +1707,7 @@ function fuelStats(bike){
 function fuelHTML(bike){
   const st = fuelStats(bike), f = (bike.fuel || []).slice().sort((a, b) => b.km - a.km || (b.date || "").localeCompare(a.date || ""));
   const num = (v, d) => v === null ? "—" : v.toLocaleString(L() === "en" ? "en-US" : "el-GR", {minimumFractionDigits: d, maximumFractionDigits: d});
-  return `<section class="card">
-    <div class="eyebrow">${t("fuelTitle")}</div>
+  return svcFold("fuel", t("fuelTitle"), st.avg === null ? "" : `${num(st.avg, 1)} L/100`, `
     ${st.count ? `<div class="fstats">
       <div><span class="meta">${t("fuelAvg")}</span><b>${num(st.avg, 1)}</b><span class="meta">L/100 km</span></div>
       <div><span class="meta">${t("fuelLast")}</span><b>${num(st.last, 1)}</b><span class="meta">L/100 km</span></div>
@@ -1721,8 +1723,7 @@ function fuelHTML(bike){
       <button class="btn primary" type="submit">${t("fuelAdd")}</button>
     </form>
     ${f.length ? `<details class="others"><summary>${t("fuelHistory", f.length)}</summary><ul class="docs">${f.slice(0, 30).map(x => `<li><div><b>${fmtKm(x.km)}</b> · ${num(+x.liters, 2)} L${x.cost ? ` · ${num(+x.cost, 2)} €` : ""}${x.full ? "" : ` <span class="meta">(${t("partial")})</span>`}<div class="meta">${fmtDate(x.date)}</div></div>
-      <button type="button" class="iconbtn" data-delfuel="${x.id}" aria-label="${t("del")}">✕</button></li>`).join("")}</ul></details>` : ""}
-  </section>`;
+      <button type="button" class="iconbtn" data-delfuel="${x.id}" aria-label="${t("del")}">✕</button></li>`).join("")}</ul></details>` : ""}`);
 }
 function wireDocsFuel(){
   const bike = currentBike, box = $("svc"); bike.docs = bike.docs || []; bike.fuel = bike.fuel || [];
@@ -3780,7 +3781,7 @@ async function renderService(){
       ${!plan ? `<p class="mnote">${t("noSchedule")}</p>`
       : !bike.odo ? `<p class="mnote">${t("needOdo")}</p>`
       : `${st.overdue.length ? `<div class="alert bad"><b>${t("attention")}</b><ul>${st.overdue.map(o => `<li>${esc(o.text)}</li>`).join("")}</ul></div>` : ""}
-         ${!recs.filter(r => !r.quick).length ? `<p class="svchint">${t("svcNoLog")}</p>` : ""}
+         ${!recs.filter(r => !r.quick).length ? `<p class="svchint" id="svcNoLog" role="button" tabindex="0">${t("svcNoLog")}</p>` : ""}
          ${st.next ? `<div class="bigdue"><span class="val">${fmtKm(st.next.km)}</span><span class="conv">${t("inKm", fmtKm(st.next.inKm))}</span></div>
             ${st.annual ? `<div class="meta">${t("orByDate", fmtDate(st.annual.due))}</div>` : ""}
             <p class="svcsum">${t("svcSum", st.next.items.length, st.next.items.filter(x => REPL_CODES.has(x.code)).length)}</p>
@@ -3792,11 +3793,7 @@ async function renderService(){
          <p class="mnote">${t("planSource", esc(kindName(plan.sc.m.kind)), esc(plan.sc.label || "—"))}${plan.canRepeat ? "" : " " + t("noRepeat")}</p>`}
     </section>
 
-    ${docsHTML(bike)}
-    ${fuelHTML(bike)}
-
-    <section class="card">
-      <div class="eyebrow">${t("addRecord")}</div>
+    ${svcFold("rec", t("addRecord"), "", `
       <form id="recForm" class="recform">
         <div class="grid2">
           <label>${t("date")}<input type="date" id="recDate" value="${todayISO()}" required></label>
@@ -3811,8 +3808,10 @@ async function renderService(){
         </div>
         <div class="mrow"><button type="button" class="btn" id="recAttachBtn">${t("attachBtn")}</button><input type="file" id="recAttach" class="vh" multiple accept="application/pdf,image/*"><span class="meta" id="recAttachList"></span></div>
         <div class="mrow"><button class="btn primary" type="submit">${t("saveRecord")}</button><span class="meta" id="recStatus"></span></div>
-      </form>
-    </section>
+      </form>`)}
+
+    ${docsHTML(bike)}
+    ${fuelHTML(bike)}
 
     <section class="card">
       <div class="eyebrow">${t("history")} (${recs.length})</div>
@@ -3826,6 +3825,8 @@ async function renderService(){
           </div></details>`).join("") : `<p class="mnote">${t("noHistory")}</p>`}
     </section>`;
   box._plan = plan; box._status = st;
+  box.querySelectorAll("details[data-sfold]").forEach(d => d.addEventListener("toggle", () => { settings.svcFold = {...(settings.svcFold || {}), [d.dataset.sfold]: d.open}; saveSettings(); }));
+  const nl = $("svcNoLog"); if (nl) nl.onclick = nl.onkeydown = e => { if (e.type === "keydown" && e.key !== "Enter") return; const d = box.querySelector('[data-sfold="rec"]'); d.open = true; d.scrollIntoView({behavior: "smooth", block: "start"}); };
   wireService(); wireDocsFuel();
 }
 
