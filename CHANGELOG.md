@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 3 Νοεμβρίου 2026 (54)
+- Κάτω μπάρα σε στυλ «liquid glass» της Apple: διάφανη κάψουλα που θολώνει και φωτίζει ό,τι περνάει από κάτω, με φως στις άκρες της. Η επιλεγμένη καρτέλα είναι μια πιο φωτεινή γυάλινη «φούσκα» με απόχρωση του θέματος, και φουσκώνει λίγο όσο γλιστράει στην επόμενη. Σε Chrome/Android οι άκρες λυγίζουν και το περιεχόμενο από πίσω σαν φακός.
+- *Bottom bar in an Apple-style "liquid glass" look: clear blurred capsule with lit rim, a glass bubble for the selected tab that swells while it moves, and lens-like edges on Chrome/Android.*
+
 ## 3 Νοεμβρίου 2026 (53)
 - Γυάλινες λίστες (Μηχανή, Έκδοση, τύπος manual/εγγράφου): καθαρό, λεπτό περίγραμμα μίας γραμμής αντί για διπλή γραμμή στην πάνω άκρη, και πιο πυκνό «θολό γυαλί», ώστε να μη φαίνονται από πίσω τα περιγράμματα των πεδίων.
 - *Glass lists: one clean hairline edge instead of a doubled top line, and denser frosted glass so outlines behind don't show through.*
