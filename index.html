@@ -470,7 +470,7 @@ nav.slide button:active{transform:scale(.94)}
 nav.slide button{transition:color .22s ease,transform .15s ease}
 [data-pal="glass"] nav.slide .tabpill{border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 70%),var(--accent-fill,var(--accent));box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 4px 12px var(--glass-sh)}
 /* ---- bottom bar as "liquid glass" (Apple-style): a clear capsule that blurs and brightens what scrolls under it, light catching
-   its rim; the selected tab is a clear, lighter glass bubble; only its icon and label take the theme colour.
+   its rim; the selected tab is a glass bubble in the theme colour, with a black icon and label.
    Where the browser allows it (Chrome/Android), the rim also bends the content behind it like a lens. ---- */
 :root nav[role=tablist]:not(#_){border:0;border-radius:999px;padding:6px;isolation:isolate;
   background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 55%,rgba(255,255,255,.06)),color-mix(in srgb,var(--panel) 58%,transparent);
@@ -481,9 +481,9 @@ nav.slide button{transition:color .22s ease,transform .15s ease}
 :root nav[role=tablist]:not(#_)::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
   background:radial-gradient(120% 140% at 18% -30%,rgba(255,255,255,.28),transparent 46%),radial-gradient(90% 120% at 92% 140%,rgba(255,255,255,.12),transparent 50%);mix-blend-mode:screen}
 :root nav[role=tablist]:not(#_) button{border-radius:999px;color:var(--ink);opacity:.9;text-shadow:0 0 6px color-mix(in srgb,var(--panel) 70%,transparent)}
-:root nav.slide button[aria-selected=true]:not(#_){color:var(--accent-text,var(--accent));opacity:1}
+:root nav.slide button[aria-selected=true]:not(#_){color:#111;opacity:1;text-shadow:none}
 :root nav.slide:not(#_) .tabpill{top:6px;bottom:6px;border-radius:999px;
-  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.10) 60%,rgba(255,255,255,.16)),color-mix(in srgb,var(--ink) 10%,transparent);
+  background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 55%,rgba(255,255,255,.10)),var(--accent-fill,var(--accent));
   -webkit-backdrop-filter:blur(3px) brightness(1.18) saturate(200%);backdrop-filter:blur(3px) brightness(1.18) saturate(200%);
   box-shadow:inset 0 1px 1px rgba(255,255,255,.75),inset 0 -1px 1px rgba(255,255,255,.25),inset 0 0 0 .5px rgba(255,255,255,.35),0 4px 14px rgba(0,0,0,.18)}
 @media (prefers-reduced-transparency:reduce){:root nav[role=tablist]:not(#_){background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}}

@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 3 Νοεμβρίου 2026 (57)
+- Κάτω μπάρα: η επιλεγμένη καρτέλα είναι πάλι στο χρώμα του θέματος (με γυάλινη λάμψη από πάνω), με μαύρο εικονίδιο και γράμματα.
+- *Bottom bar: the selected tab is back in the theme colour (with a glass sheen) and has a black icon and label.*
+
 ## 3 Νοεμβρίου 2026 (56)
 - Κάτω μπάρα: η φούσκα της επιλεγμένης καρτέλας είναι πλέον ουδέτερο, διάφανο γυαλί (χωρίς κίτρινη απόχρωση)· μόνο το εικονίδιο και το όνομα της καρτέλας παίρνουν το χρώμα του θέματος, όπως στο iPhone.
 - *Bottom bar: the selected-tab bubble is now neutral clear glass; only its icon and label take the theme colour.*
