@@ -526,10 +526,10 @@ header{padding-block:10px 12px;gap:8px 14px}
 .mact .gwrap{flex:0 1 auto;max-width:65%}
 .gwrap select[data-setkind],.gwrap select[data-kind]{max-width:none}
 .gpop{position:fixed;z-index:60;min-width:200px;max-width:calc(100vw - 20px);max-height:min(60dvh,420px);overflow:auto;overscroll-behavior:contain;padding:6px;
-  border-radius:20px;border:1px solid color-mix(in srgb,#fff 22%,var(--line));
-  background:linear-gradient(180deg,color-mix(in srgb,#fff 14%,transparent),transparent 60%),color-mix(in srgb,var(--panel) 62%,transparent);
-  -webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
-  box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 35%,transparent),0 18px 44px rgba(0,0,0,.35);
+  border-radius:20px;border:0;background-clip:padding-box;
+  background:linear-gradient(180deg,color-mix(in srgb,#fff 7%,transparent),transparent 40%),linear-gradient(color-mix(in srgb,var(--panel) 86%,transparent),color-mix(in srgb,var(--panel) 86%,transparent)),color-mix(in srgb,var(--bar,var(--paper)) 60%,transparent);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--ink) 13%,transparent),0 18px 44px rgba(0,0,0,.35);
   transform-origin:var(--gx,50%) top;transform:translateY(-6px) scale(.9);opacity:0;transition:transform .2s cubic-bezier(.4,0,.6,1),opacity .15s ease}
 .gpop.open{transform:none;opacity:1;transition:transform .38s cubic-bezier(.26,1.36,.46,1),opacity .14s ease}
 .gpop button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:transparent;color:var(--ink);font:500 15px var(--f-body);padding:11px 12px;border-radius:14px;cursor:pointer;
