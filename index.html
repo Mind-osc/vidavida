@@ -614,12 +614,39 @@ header{padding-block:10px 12px;gap:8px 14px}
 .qadial.open .qaitem{opacity:1;transform:none}
 .qadial.open .qaitem:nth-child(2){transition-delay:.05s}
 .qadial.open .qaitem:nth-child(3){transition-delay:.1s}
+.qadial.open .qaitem:nth-child(4){transition-delay:.15s}
+.qaitem.sos .qi{background:#d92d20;border-color:#d92d20;color:#fff;font:800 13px var(--f-body);letter-spacing:.04em}
+.qaitem.sos .ql{color:#d92d20;font-weight:700}
+/* SOS card: big buttons (gloves), the emergency number first */
+.qasheet.sos{border-color:#d92d20}
+.sosgrid{display:grid;gap:8px}
+.sosbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;text-decoration:none;font:600 16px var(--f-display);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:56px;cursor:pointer}
+.sosbtn .si{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:18px;background:var(--panel);border:1px solid var(--line)}
+.sosbtn small{display:block;font:400 13px var(--f-body);color:var(--muted)}
+.sosbtn.em{background:#d92d20;border-color:#d92d20;color:#fff;font-size:20px;min-height:64px}
+.sosbtn.em .si{background:rgba(255,255,255,.18);border-color:transparent;color:#fff;font:800 12px var(--f-body)}
+.sosbtn.em small{color:rgba(255,255,255,.85)}
+.sosbtn.off{opacity:.75}
+.sosinfo{font-size:13px;color:var(--muted);display:grid;gap:2px}
+.sosinfo b{color:var(--ink);font-weight:600}
+.sosset{display:grid;grid-template-columns:minmax(0,1fr);gap:6px}
+.sosset .row2{display:flex;gap:6px}
+.sosset input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.qasheet.sos{max-height:calc(100dvh - max(10px,env(safe-area-inset-bottom,0px)) - 150px);overflow:auto}
+.docs a.tel{color:var(--accent-text,var(--ink));font-weight:600}
+.docins{display:none;flex-wrap:wrap;gap:6px;width:100%}
+.partform.ins .docins{display:flex}
+.docins input{flex:1 1 140px}
+.phonesugg{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+.phonesugg .chip small{color:var(--muted)}
 .qasheet{position:fixed;z-index:41;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 138px);width:min(340px,calc(100vw - 24px));
   background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.35);
   transform-origin:calc(100% - 88px) calc(100% + 34px);transform:scale(.12);opacity:0;transition:transform .26s cubic-bezier(.4,0,.6,1),opacity .18s ease .06s}
 .qasheet.open{transform:none;opacity:1;transition:transform .42s cubic-bezier(.26,1.36,.46,1),opacity .14s ease}
 [data-pal="glass"] .qasheet{border-radius:26px;-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);background:var(--nav-bg,var(--panel))}
-.qasheet form{display:grid;gap:10px}
+.qasheet form{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.sosgrid > *{min-width:0}
+.sosbtn > span:last-child{min-width:0}
 .qasheet h3{margin:0;font-size:17px}
 .qasheet .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .qasheet label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
@@ -725,6 +752,7 @@ header{padding-block:10px 12px;gap:8px 14px}
   <button type="button" class="qaitem" data-qa="fuel"><span class="ql" data-t="qaFuel"></span><span class="qi" aria-hidden="true">⛽</span></button>
   <button type="button" class="qaitem" data-qa="svc"><span class="ql" data-t="qaSvc"></span><span class="qi" aria-hidden="true">🔧</span></button>
   <button type="button" class="qaitem" data-qa="odo"><span class="ql" data-t="qaOdo"></span><span class="qi" aria-hidden="true">📍</span></button>
+  <button type="button" class="qaitem sos" data-qa="sos"><span class="ql" data-t="qaSos"></span><span class="qi" aria-hidden="true">SOS</span></button>
 </div>
 <aside class="qasheet" id="qaSheet" role="dialog" aria-modal="true" hidden><form id="qaForm"></form></aside>
 <button type="button" class="fab qa" id="qaBtn" data-tlabel="qaOpen" data-ttitle="qaOpen" aria-expanded="false">
@@ -1672,7 +1700,19 @@ const T = {
   odoUpdated: [d => `Ενημερώθηκε: ${d}`, d => `Updated: ${d}`], odoNever: ["Δεν έχεις βάλει ακόμα χιλιόμετρα.", "No odometer reading yet."],
   odoSaved: [k => `Αποθηκεύτηκε: ${k}`, k => `Saved: ${k}`],
   qaOpen: ["Γρήγορη καταχώρηση", "Quick entry"], qaFuel: ["Γέμισμα", "Fill-up"], qaSvc: ["Σέρβις", "Service"], qaOdo: ["Χιλιόμετρα", "Odometer"],
-  qaFuelTitle: ["Νέο γέμισμα", "New fill-up"], qaOdoTitle: ["Χιλιόμετρα μηχανής", "Odometer"], nextTitle: ["Επόμενο σέρβις", "Next service"],
+  qaFuelTitle: ["Νέο γέμισμα", "New fill-up"], qaSos: ["SOS", "SOS"],
+  sosTitle: ["Βοήθεια τώρα", "Help now"], sosEm: ["Κλήση 112", "Call 112"], sosEmSub: ["Ασθενοφόρο, αστυνομία, πυροσβεστική — παντού στην Ευρώπη", "Ambulance, police, fire — anywhere in Europe"],
+  sosRoad: ["Οδική βοήθεια", "Roadside assistance"], sosRoadNone: ["Δεν έχεις βάλει αριθμό — γράψ' τον εδώ ή στην ασφάλεια (Έγγραφα)", "No number yet — type it here or in your insurance (Documents)"],
+  sosLoc: ["Στείλε τη θέση μου (SMS)", "Send my location (SMS)"], sosLocSub: ["Συντεταγμένες και χάρτης· το GPS δουλεύει και χωρίς internet", "Coordinates and a map link; GPS works without internet"],
+  sosLocWait: ["Βρίσκω τη θέση σου…", "Finding your location…"], sosLocFail: ["Δεν βρέθηκε θέση (άνοιξε το GPS / την τοποθεσία). Ανοίγω το SMS χωρίς αυτή.", "No location (turn on GPS / location). Opening the SMS without it."],
+  sosMsg: ["Χρειάζομαι βοήθεια με τη μηχανή.", "I need help with the motorbike."], sosMsgAt: ["Είμαι εδώ:", "I'm here:"],
+  sosShop: ["Συνεργεία κοντά μου", "Workshops near me"], sosShopSub: ["Ανοίγει τους Χάρτες (θέλει internet και τοποθεσία)", "Opens Maps (needs internet and location)"], sosShopQ: ["συνεργείο μοτοσυκλετών", "motorcycle repair shop"],
+  sosPhonePh: ["Τηλέφωνο οδικής βοήθειας", "Roadside assistance phone"], sosContactPh: ["π.χ. 69…", "e.g. +30 69…"], sosContactLbl: ["Σε ποιον πάει το SMS με τη θέση (προαιρετικό· αλλιώς το διαλέγεις τότε):", "Who gets the location SMS (optional; otherwise you pick then):"],
+  sosPolicy: ["Συμβόλαιο", "Policy"], sosBike: ["Μηχανή", "Bike"],
+  sosTip: ["Συμβουλή: άνοιξε στο κινητό σου την «Ανίχνευση σύγκρουσης» (iPhone) ή «Ανίχνευση τροχαίου» (Android, όπου υπάρχει) — καλεί μόνο του αν πέσεις.", "Tip: turn on your phone's Crash Detection (iPhone) or Car Crash Detection (Android, where available) — it calls by itself after a fall."],
+  docPhonePh: ["Τηλ. οδικής βοήθειας", "Roadside phone"], docPolicyPh: ["Αρ. συμβολαίου", "Policy no."], docScan: ["📄 Βρες τα από το συμβόλαιο", "📄 Find them in the policy"],
+  docScanning: ["Διαβάζω το συμβόλαιο…", "Reading the policy…"], docScanNone: ["Δεν βρήκα τηλέφωνα στο αρχείο· γράψ' τα με το χέρι.", "No phone numbers found in the file; type them in."],
+  docScanPick: ["Διάλεξε τον αριθμό της οδικής βοήθειας:", "Pick the roadside assistance number:"], docScanFail: ["Δεν διαβάστηκε το αρχείο (για φωτογραφία χρειάζεται internet την πρώτη φορά).", "Couldn't read the file (a photo needs internet the first time)."], qaOdoTitle: ["Χιλιόμετρα μηχανής", "Odometer"], nextTitle: ["Επόμενο σέρβις", "Next service"],
   noSchedule: ["Δεν βρέθηκε πίνακας συντήρησης με κείμενο στα manual αυτής της μηχανής, οπότε δεν μπορώ να υπολογίσω το επόμενο σέρβις. Μπορείς να καταχωρείς τα σέρβις κανονικά.", "No text-based maintenance schedule was found in this bike's manuals, so the next service can't be calculated. You can still log services."],
   needOdo: ["Βάλε τα χιλιόμετρα της μηχανής πάνω για να υπολογίσω το επόμενο σέρβις.", "Enter the odometer above to calculate the next service."],
   attention: ["Προσοχή:", "Attention:"], reminder: ["Υπενθύμιση:", "Reminder:"],
@@ -1754,12 +1794,15 @@ function docsHTML(bike){
   return svcFold("docs", t("docsTitle"), warn || ds.length || "", `
     ${ds.length ? `<ul class="docs">${ds.map(d => { const n = d.date ? daysUntil(d.date) : null; const i = bike.docs.indexOf(d);
       return `<li class="${n !== null && n < 0 ? "bad" : n !== null && n <= 30 ? "soon" : ""}"><div><b>${esc(docName(d))}</b>${d.type === "other" || !d.note ? "" : ` <span class="meta">${esc(d.note)}</span>`}
+        ${d.phone || d.policy ? `<div class="meta">${d.phone ? `${t("sosRoad")}: <a class="tel" href="tel:${esc(telOf(d.phone))}">${esc(d.phone)}</a>` : ""}${d.phone && d.policy ? " · " : ""}${d.policy ? `${t("sosPolicy")}: ${esc(d.policy)}` : ""}</div>` : ""}
         <div class="meta">${t("expires")}: ${fmtDate(d.date)}${n === null ? "" : n < 0 ? ` · <b>${t("expiredAgo", -n)}</b>` : ` · ${t("inDays", n)}`}</div></div>
         <button type="button" class="iconbtn" data-deldoc="${i}" aria-label="${t("del")}" title="${t("del")}">✕</button></li>`; }).join("")}</ul>` : `<p class="mnote">${t("docsEmpty")}</p>`}
     <form id="docForm" class="partform">
       <select id="docType" aria-label="${t("docsTitle")}">${Object.keys(DOC_TYPES).map(k => `<option value="${k}">${DOC_TYPES[k][L() === "en" ? 1 : 0]}</option>`).join("")}</select>
       <input type="date" id="docDate" required aria-label="${t("expires")}">
       <input id="docNote" placeholder="${t("docNotePh")}" aria-label="${t("partNote")}">
+      <div class="docins"><input type="tel" id="docPhone" placeholder="${t("docPhonePh")}" aria-label="${t("docPhonePh")}"><input id="docPolicy" placeholder="${t("docPolicyPh")}" aria-label="${t("docPolicyPh")}">
+        <button type="button" class="btn small" id="docScanBtn">${t("docScan")}</button><input type="file" id="docScanFile" class="vh" accept="application/pdf,image/*"><div class="phonesugg" id="docScanOut"></div></div>
       <button class="btn" type="submit">${t("add")}</button>
     </form>
     ${ds.length ? `<button type="button" class="btn small" id="docsIcs">📅 ${t("toCalendar")}</button>` : ""}`, warn > 0);
@@ -1801,7 +1844,18 @@ function fuelHTML(bike){
 function wireDocsFuel(){
   const bike = currentBike, box = $("svc"); bike.docs = bike.docs || []; bike.fuel = bike.fuel || [];
   const df = $("docForm"); if (df) df.onsubmit = async e => { e.preventDefault(); const date = $("docDate").value; if (!date) return;
-    bike.docs.push({type: $("docType").value, date, note: $("docNote").value.trim()}); await putOne("bikes", bike); toast(t("saved")); renderService(); updateBanner(); };
+    const type = $("docType").value, extra = type === "ins" ? {phone: $("docPhone").value.trim(), policy: $("docPolicy").value.trim()} : {};
+    bike.docs.push({type, date, note: $("docNote").value.trim(), ...extra}); await putOne("bikes", bike); toast(t("saved")); renderService(); updateBanner(); };
+  const dt = $("docType"); if (dt){ const sync = () => df.classList.toggle("ins", dt.value === "ins"); dt.onchange = sync; sync(); }
+  const sb = $("docScanBtn"); if (sb){ sb.onclick = () => { $("docScanFile").value = ""; $("docScanFile").click(); };
+    $("docScanFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; const outEl = $("docScanOut"); outEl.textContent = t("docScanning");
+      let text = ""; try{ text = await fileText(f); }catch(err){ console.error(err); outEl.textContent = t("docScanFail"); return; }
+      const {phones, policy} = findPolicyContacts(text);
+      if (policy && !$("docPolicy").value) $("docPolicy").value = policy;
+      if (!phones.length){ outEl.textContent = t("docScanNone"); return; }
+      outEl.innerHTML = `<span class="meta" style="width:100%">${t("docScanPick")}</span>` + phones.map(p => `<button type="button" class="chip" data-ph="${esc(p.num)}">${esc(p.num)}${p.ctx ? ` <small>${esc(p.ctx)}</small>` : ""}</button>`).join("");
+      outEl.querySelectorAll("[data-ph]").forEach(b => b.onclick = () => { $("docPhone").value = b.dataset.ph; outEl.innerHTML = ""; });
+    }; }
   const ff = $("fuelForm"); if (ff) ff.onsubmit = async e => { e.preventDefault();
     const km = parseInt($("fuelKm").value, 10), liters = parseFloat($("fuelL").value); if (!(km >= 0) || !(liters > 0)) return;
     bike.fuel.push({id: uid(), date: $("fuelDate").value || todayISO(), km, liters, cost: parseFloat($("fuelC").value) || 0, full: $("fuelFull").checked});
@@ -1913,6 +1967,84 @@ function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hi
 // the side panels (help, feedback) carry the same header as the menu: the app's name and logo
 document.querySelectorAll(".brandslot").forEach(sl => { const b = $("drawerTitle").cloneNode(true); b.removeAttribute("id"); sl.replaceWith(b); });
 
+/* ---- reading an insurance policy (PDF text, or OCR for a photo/scan) for the roadside number; the user confirms the number ---- */
+const telOf = s => String(s).replace(/[^\d+]/g, "");
+async function fileText(f){
+  const buf = new Uint8Array(await f.arrayBuffer());
+  if (/pdf/i.test(f.type) || /\.pdf$/i.test(f.name)){
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise; let text = "";
+    for (let i = 1; i <= Math.min(pdf.numPages, 12); i++){ const c = await (await pdf.getPage(i)).getTextContent(); text += c.items.map(x => x.str + (x.hasEOL ? "\n" : " ")).join("") + "\n"; }
+    if (text.replace(/\s/g, "").length > 60) return text;
+    const pg = await pdf.getPage(1), vp = pg.getViewport({scale: 2.5}), cv = document.createElement("canvas"); cv.width = vp.width; cv.height = vp.height;
+    await pg.render({canvasContext: cv.getContext("2d"), viewport: vp}).promise; return ocrImage(cv);
+  }
+  return ocrImage(await createImageBitmap(f));
+}
+async function ocrImage(img){
+  const cfg = window.VV_OCR || {js: OCR_JS, workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/worker.min.js",
+    corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1", langPath: "https://tessdata.projectnaptha.com/4.0.0"};
+  await loadScript(cfg.js);
+  const w = await Tesseract.createWorker(["ell", "eng"], 1, {workerPath: cfg.workerPath, corePath: cfg.corePath, langPath: cfg.langPath});
+  try{ return (await w.recognize(img)).data.text || ""; } finally { w.terminate(); }
+}
+// phone numbers in the text, best first: those next to words like "οδική βοήθεια" / "assistance" / "24ωρη"
+function findPolicyContacts(text){
+  const plain = text.replace(/[\u00a0\t]+/g, " "), low = norm(plain);
+  const KEY = /οδικ|βοηθει|assistance|roadside|breakdown|ρυμουλκ|towing/, KEY2 = /24ωρ|24\/7|24 ωρ|τηλεφωνικ|γραμμη|helpline|ατυχημ|claims|ζημι/;
+  const re = /(?<![\d])(?:\+|00)?(?:30[\s.-]?)?(?:\d[\s.-]?){3,11}\d(?![\d])/g, seen = new Map();
+  for (const m of plain.matchAll(re)){
+    const num = m[0].trim(), d = telOf(num).replace(/^(\+|00)30/, "");
+    if (!(/^(2\d{9}|69\d{8}|80[01]\d{7}|1\d{3,4}|18\d{3})$/.test(d))) continue;   // Greek landline, mobile, 800/801, short codes
+    if (/^(19|20)\d{2}$/.test(d)) continue;                                            // a year, not a number
+    const at = m.index, ctx = low.slice(Math.max(0, at - 60), at).split("\n").pop(), near = ctx.slice(-30);
+    const sc = (KEY.test(ctx) ? 10 : 0) + (KEY.test(near) ? 4 : 0) + (KEY2.test(near) ? 3 : 0) + (/^(1\d{3,4}|80[01])/.test(d) ? 1 : 0) + (/fax|φαξ/.test(ctx.slice(-12)) ? -8 : 0);
+    const label = (plain.slice(Math.max(0, at - 60), at).split("\n").pop() || "").replace(/[\s:,.-]+$/, "").split(/[,;]/).pop().trim().slice(-26);
+    if (!seen.has(d) || seen.get(d).sc < sc) seen.set(d, {num, sc, ctx: label});
+  }
+  const phones = [...seen.values()].sort((a, b) => b.sc - a.sc).slice(0, 5);
+  const pm = plain.match(/(?:αρ(?:ιθμ[οό]ς)?\.?\s*συμβολα[ιί]ου|συμβ[οό]λαιο\s*(?:αρ\.?|no\.?)?|policy\s*(?:no\.?|number|#))\s*[:#]?\s*([A-Z0-9][A-Z0-9\/.-]{4,24})/i);
+  return {phones, policy: pm ? pm[1] : ""};
+}
+function sosData(bike){
+  const ins = (bike.docs || []).filter(d => d.type === "ins").sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const withPhone = ins.find(d => d.phone);
+  return {phone: (withPhone && withPhone.phone) || bike.sosPhone || "", policy: (ins.find(d => d.policy) || {}).policy || ""};
+}
+function sosShow(){
+  const bike = currentBike, f = $("qaForm"), sd = bike ? sosData(bike) : {phone: "", policy: ""}, contact = settings.sosContact || "";
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  $("qaSheet").classList.add("sos");
+  f.innerHTML = `<h3>${t("sosTitle")}</h3>
+    <div class="sosgrid">
+      <a class="sosbtn em" href="tel:112"><span class="si">112</span><span>${t("sosEm")}<small>${t("sosEmSub")}</small></span></a>
+      ${sd.phone ? `<a class="sosbtn" href="tel:${esc(telOf(sd.phone))}"><span class="si">📞</span><span>${t("sosRoad")}<small>${esc(sd.phone)}</small></span></a>`
+        : `<div class="sosset"><span class="meta">${t("sosRoadNone")}</span><div class="row2"><input type="tel" id="sosPhoneIn" placeholder="${t("sosPhonePh")}"><button type="button" class="btn" id="sosPhoneSave">${t("save")}</button></div></div>`}
+      <button type="button" class="sosbtn" id="sosLoc"><span class="si">📍</span><span>${t("sosLoc")}<small id="sosLocSub">${t("sosLocSub")}</small></span></button>
+      <a class="sosbtn" id="sosShop" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent(t("sosShopQ"))}"><span class="si">🔧</span><span>${t("sosShop")}<small>${t("sosShopSub")}</small></span></a>
+    </div>
+    ${bike ? `<div class="sosinfo"><div>${t("sosBike")}: <b>${esc(bike.name)}</b></div>${sd.policy ? `<div>${t("sosPolicy")}: <b>${esc(sd.policy)}</b></div>` : ""}</div>` : ""}
+    <div class="sosset"><span class="meta">${t("sosContactLbl")}</span><input type="tel" id="sosContact" value="${esc(contact)}" placeholder="${t("sosContactPh")}" aria-label="${t("sosContactPh")}"></div>
+    <p class="mnote">${t("sosTip")}</p>
+    <div class="acts"><button type="button" class="btn" data-qacancel>${t("close")}</button></div>`;
+  f.onsubmit = e => e.preventDefault();
+  f.querySelector("[data-qacancel]").onclick = qaCloseAll;
+  const ps = $("sosPhoneSave"); if (ps) ps.onclick = async () => { const v = $("sosPhoneIn").value.trim(); if (!v || !bike) return;
+    bike.sosPhone = v; await putOne("bikes", bike); toast(t("saved")); sosShow(); $("qaSheet").classList.add("open"); };
+  $("sosContact").onchange = () => { settings.sosContact = $("sosContact").value.trim(); saveSettings(); };
+  $("sosLoc").onclick = () => {
+    settings.sosContact = $("sosContact").value.trim(); saveSettings();
+    const to = telOf(settings.sosContact || ""), send = body => { location.href = `sms:${to}${ios ? "&" : "?"}body=${encodeURIComponent(body)}`; };
+    const base = t("sosMsg") + (bike ? ` (${bike.name})` : "");
+    if (!navigator.geolocation){ toast(t("sosLocFail"), true); send(base); return; }
+    $("sosLocSub").textContent = t("sosLocWait");
+    navigator.geolocation.getCurrentPosition(pos => {
+      const {latitude: la, longitude: lo, accuracy: ac} = pos.coords, ll = `${la.toFixed(5)},${lo.toFixed(5)}`;
+      $("sosLocSub").textContent = `${ll} (±${Math.round(ac)} m)`;
+      $("sosShop").href = `https://www.google.com/maps/search/${encodeURIComponent(t("sosShopQ"))}/@${ll},13z`;
+      send(`${base} ${t("sosMsgAt")} ${ll} (±${Math.round(ac)} m) https://maps.google.com/?q=${ll}`);
+    }, () => { $("sosLocSub").textContent = t("sosLocSub"); toast(t("sosLocFail"), true); send(base); }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 60000});
+  };
+}
 /* ---- quick entry ("+"): fill-up, odometer, or jump to logging a service ---- */
 function qaOpenDial(){
   closeQaSheet(true); $("qaDial").hidden = false; $("qaScrim").hidden = false; $("qaBtn").classList.add("on"); $("qaBtn").setAttribute("aria-expanded", "true");
@@ -1925,6 +2057,9 @@ function qaCloseAll(){
 function closeQaSheet(now){ $("qaSheet").classList.remove("open"); clearTimeout(closeQaSheet._t);
   if (now) $("qaSheet").hidden = true; else closeQaSheet._t = setTimeout(() => { if (!$("qaSheet").classList.contains("open")) $("qaSheet").hidden = true; }, 280); }
 function qaShow(kind){
+  $("qaSheet").classList.remove("sos");
+  if (kind === "sos"){ sosShow(); $("qaDial").classList.remove("open"); setTimeout(() => { if (!$("qaDial").classList.contains("open")) $("qaDial").hidden = true; }, 260);
+    $("qaSheet").hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => $("qaSheet").classList.add("open"))); return; }
   const bike = currentBike; if (!bike){ qaCloseAll(); toast(t("emptyNoBike"), true); return; }
   if (kind === "svc"){   // the full form (with the manual's checklist) lives in the Service tab: open it there
     qaCloseAll(); settings.svcFold = {...(settings.svcFold || {}), rec: true}; saveSettings(); tab("svc");
