@@ -593,11 +593,40 @@ header{padding-block:10px 12px;gap:8px 14px}
 #fbSheet:not(.open) .dbody > *{opacity:0;transform:translateY(8px)}
 #fbScrim{background:rgba(8,12,16,.3)}
 .fab{transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .2s ease}
-.fab.on{z-index:42;transform:rotate(90deg)}
+#fbBtn.on{z-index:42;transform:rotate(90deg)}
 .fab .ico-x{position:absolute;opacity:0;transform:rotate(-90deg) scale(.5);transition:opacity .18s ease,transform .28s ease}
-.fab > svg:first-child{transition:opacity .18s ease,transform .28s ease}
-.fab.on > svg:first-child{opacity:0;transform:scale(.5)}
-.fab.on .ico-x{opacity:1;transform:rotate(-90deg) scale(1)}
+#fbBtn > svg:first-child{transition:opacity .18s ease,transform .28s ease}
+#fbBtn.on > svg:first-child{opacity:0;transform:scale(.5)}
+#fbBtn.on .ico-x{opacity:1;transform:rotate(-90deg) scale(1)}
+/* quick entry: a "+" left of the help button; its choices rise above it one after the other, and each opens a small card out of it */
+.fab.qa{right:calc(max(16px,env(safe-area-inset-right,0px)) + 60px);background:var(--panel);color:var(--accent);border:2px solid var(--accent)}
+[data-pal="glass"] .fab.qa:not(.on):not(#_){background:var(--nav-bg,var(--panel));color:var(--accent)}
+.fab.qa > svg{transition:transform .32s cubic-bezier(.3,1.4,.5,1)}
+.fab.qa.on{z-index:42;transform:none;background:var(--accent);color:var(--accent-ink)}
+.fab.qa.on > svg{transform:rotate(135deg)}
+#qaScrim{background:rgba(8,12,16,.3)}
+.qadial{position:fixed;z-index:42;right:calc(max(16px,env(safe-area-inset-right,0px)) + 60px);bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 140px);display:flex;flex-direction:column-reverse;align-items:flex-end;gap:10px}
+.qaitem{display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;cursor:pointer;color:var(--ink);
+  opacity:0;transform:translateY(24px) scale(.6);transform-origin:right center;transition:opacity .16s ease,transform .3s cubic-bezier(.3,1.4,.5,1)}
+.qaitem .ql{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:600 14px var(--f-display);box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.qaitem .qi{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:var(--panel);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.qadial:not(.open){pointer-events:none}
+.qadial.open .qaitem{opacity:1;transform:none}
+.qadial.open .qaitem:nth-child(2){transition-delay:.05s}
+.qadial.open .qaitem:nth-child(3){transition-delay:.1s}
+.qasheet{position:fixed;z-index:41;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(max(10px,env(safe-area-inset-bottom,0px)) + 138px);width:min(340px,calc(100vw - 24px));
+  background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.35);
+  transform-origin:calc(100% - 88px) calc(100% + 34px);transform:scale(.12);opacity:0;transition:transform .26s cubic-bezier(.4,0,.6,1),opacity .18s ease .06s}
+.qasheet.open{transform:none;opacity:1;transition:transform .42s cubic-bezier(.26,1.36,.46,1),opacity .14s ease}
+[data-pal="glass"] .qasheet{border-radius:26px;-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);background:var(--nav-bg,var(--panel))}
+.qasheet form{display:grid;gap:10px}
+.qasheet h3{margin:0;font-size:17px}
+.qasheet .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qasheet label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.qasheet input[type=number],.qasheet input[type=date]{font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-width:0;width:100%}
+.qasheet label.fbinc{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink)}
+.qasheet .acts{display:flex;justify-content:flex-end;gap:8px}
+@media (prefers-reduced-motion:reduce){.qaitem,.qasheet,.fab.qa > svg{transition:none}}
 @media (prefers-reduced-motion:reduce){#fbSheet.drawer:not(#_),#fbSheet .dbody > *,.fab,.fab svg{transition:none}}
 /* answer card: the manual and page sit right under the value they belong to */
 .answer .srchead{padding-top:0;margin-top:-6px}
@@ -691,6 +720,16 @@ header{padding-block:10px 12px;gap:8px 14px}
 </section>
 </div>
 
+<div class="scrim" id="qaScrim" hidden></div>
+<div class="qadial" id="qaDial" hidden>
+  <button type="button" class="qaitem" data-qa="fuel"><span class="ql" data-t="qaFuel"></span><span class="qi" aria-hidden="true">⛽</span></button>
+  <button type="button" class="qaitem" data-qa="svc"><span class="ql" data-t="qaSvc"></span><span class="qi" aria-hidden="true">🔧</span></button>
+  <button type="button" class="qaitem" data-qa="odo"><span class="ql" data-t="qaOdo"></span><span class="qi" aria-hidden="true">📍</span></button>
+</div>
+<aside class="qasheet" id="qaSheet" role="dialog" aria-modal="true" hidden><form id="qaForm"></form></aside>
+<button type="button" class="fab qa" id="qaBtn" data-tlabel="qaOpen" data-ttitle="qaOpen" aria-expanded="false">
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+</button>
 <button type="button" class="fab" id="fbBtn" data-tlabel="fbOpen" data-ttitle="fbOpen">
   <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 9.5h8M8 12.5h5"/></svg>
   <svg class="ico-x" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
@@ -1631,7 +1670,9 @@ const T = {
   kindDetected: [k => `Το PDF γράφει ότι είναι ${k}· το κατέταξα έτσι.`, k => `The PDF says it's a ${k}; filed it as such.`], doneNow: ["Έγινε τώρα", "Done now"],
   quickSaved: [(i, k) => `Καταχωρήθηκε: ${i} στα ${k}.`, (i, k) => `Logged: ${i} at ${k}.`], odoTitle: ["Χιλιόμετρα τώρα", "Current odometer"], odoPh: ["π.χ. 23500", "e.g. 23500"], save: ["Αποθήκευση", "Save"],
   odoUpdated: [d => `Ενημερώθηκε: ${d}`, d => `Updated: ${d}`], odoNever: ["Δεν έχεις βάλει ακόμα χιλιόμετρα.", "No odometer reading yet."],
-  odoSaved: [k => `Αποθηκεύτηκε: ${k}`, k => `Saved: ${k}`], nextTitle: ["Επόμενο σέρβις", "Next service"],
+  odoSaved: [k => `Αποθηκεύτηκε: ${k}`, k => `Saved: ${k}`],
+  qaOpen: ["Γρήγορη καταχώρηση", "Quick entry"], qaFuel: ["Γέμισμα", "Fill-up"], qaSvc: ["Σέρβις", "Service"], qaOdo: ["Χιλιόμετρα", "Odometer"],
+  qaFuelTitle: ["Νέο γέμισμα", "New fill-up"], qaOdoTitle: ["Χιλιόμετρα μηχανής", "Odometer"], nextTitle: ["Επόμενο σέρβις", "Next service"],
   noSchedule: ["Δεν βρέθηκε πίνακας συντήρησης με κείμενο στα manual αυτής της μηχανής, οπότε δεν μπορώ να υπολογίσω το επόμενο σέρβις. Μπορείς να καταχωρείς τα σέρβις κανονικά.", "No text-based maintenance schedule was found in this bike's manuals, so the next service can't be calculated. You can still log services."],
   needOdo: ["Βάλε τα χιλιόμετρα της μηχανής πάνω για να υπολογίσω το επόμενο σέρβις.", "Enter the odometer above to calculate the next service."],
   attention: ["Προσοχή:", "Attention:"], reminder: ["Υπενθύμιση:", "Reminder:"],
@@ -1872,6 +1913,53 @@ function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hi
 // the side panels (help, feedback) carry the same header as the menu: the app's name and logo
 document.querySelectorAll(".brandslot").forEach(sl => { const b = $("drawerTitle").cloneNode(true); b.removeAttribute("id"); sl.replaceWith(b); });
 
+/* ---- quick entry ("+"): fill-up, odometer, or jump to logging a service ---- */
+function qaOpenDial(){
+  closeQaSheet(true); $("qaDial").hidden = false; $("qaScrim").hidden = false; $("qaBtn").classList.add("on"); $("qaBtn").setAttribute("aria-expanded", "true");
+  requestAnimationFrame(() => requestAnimationFrame(() => $("qaDial").classList.add("open")));
+}
+function qaCloseAll(){
+  $("qaDial").classList.remove("open"); closeQaSheet(); $("qaScrim").hidden = true; $("qaBtn").classList.remove("on"); $("qaBtn").setAttribute("aria-expanded", "false");
+  clearTimeout(qaCloseAll._t); qaCloseAll._t = setTimeout(() => { if (!$("qaDial").classList.contains("open")) $("qaDial").hidden = true; }, 260);
+}
+function closeQaSheet(now){ $("qaSheet").classList.remove("open"); clearTimeout(closeQaSheet._t);
+  if (now) $("qaSheet").hidden = true; else closeQaSheet._t = setTimeout(() => { if (!$("qaSheet").classList.contains("open")) $("qaSheet").hidden = true; }, 280); }
+function qaShow(kind){
+  const bike = currentBike; if (!bike){ qaCloseAll(); toast(t("emptyNoBike"), true); return; }
+  if (kind === "svc"){   // the full form (with the manual's checklist) lives in the Service tab: open it there
+    qaCloseAll(); settings.svcFold = {...(settings.svcFold || {}), rec: true}; saveSettings(); tab("svc");
+    setTimeout(() => { const d = document.querySelector('[data-sfold="rec"]'); if (d){ d.open = true; d.scrollIntoView({behavior: "smooth", block: "start"}); } }, 250); return;
+  }
+  const f = $("qaForm");
+  f.innerHTML = kind === "odo" ? `<h3>${t("qaOdoTitle")} · ${esc(bike.name)}</h3>
+      <label>km<input type="number" inputmode="numeric" min="0" step="1" id="qaKm" value="${bike.odo || ""}" required></label>
+      <div class="acts"><button type="button" class="btn" data-qacancel>${t("cancel")}</button><button class="btn primary" type="submit">${t("save")}</button></div>`
+    : `<h3>${t("qaFuelTitle")} · ${esc(bike.name)}</h3>
+      <div class="g2"><label>${t("liters")}<input type="number" inputmode="decimal" step="0.01" min="0" id="qaL" required></label>
+        <label>${t("costEur")}<input type="number" inputmode="decimal" step="0.01" min="0" id="qaC"></label></div>
+      <div class="g2"><label>km<input type="number" inputmode="numeric" min="0" id="qaKm" value="${bike.odo || ""}" required></label>
+        <label>${t("date")}<input type="date" id="qaD" value="${todayISO()}" required></label></div>
+      <label class="fbinc"><input type="checkbox" id="qaFull" checked> <span>${t("fullTank")}</span></label>
+      <div class="acts"><button type="button" class="btn" data-qacancel>${t("cancel")}</button><button class="btn primary" type="submit">${t("fuelAdd")}</button></div>`;
+  f.querySelector("[data-qacancel]").onclick = qaCloseAll;
+  f.onsubmit = async e => {
+    e.preventDefault(); const km = parseInt($("qaKm").value, 10); if (!(km >= 0)) return;
+    if (kind === "odo"){ bike.odo = km; bike.odoDate = todayISO(); await putOne("bikes", bike); toast(t("odoSaved", fmtKm(km))); }
+    else { const liters = parseFloat($("qaL").value); if (!(liters > 0)) return; bike.fuel = bike.fuel || [];
+      bike.fuel.push({id: uid(), date: $("qaD").value || todayISO(), km, liters, cost: parseFloat($("qaC").value) || 0, full: $("qaFull").checked});
+      if (km > (bike.odo || 0)){ bike.odo = km; bike.odoDate = todayISO(); }
+      await putOne("bikes", bike); toast(t("fuelSaved")); }
+    qaCloseAll(); if (!$("pSvc").hidden) renderService(); updateBanner();
+  };
+  $("qaDial").classList.remove("open"); setTimeout(() => { if (!$("qaDial").classList.contains("open")) $("qaDial").hidden = true; }, 260); $("qaSheet").hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => $("qaSheet").classList.add("open")));
+  // a keyboard would cover the card on a phone: only a mouse gets the cursor in the first field
+  if (matchMedia("(pointer:fine)").matches) setTimeout(() => f.querySelector("input").focus({preventScroll: true}), 380);
+}
+$("qaBtn").onclick = () => $("qaBtn").classList.contains("on") ? qaCloseAll() : qaOpenDial();
+$("qaScrim").onclick = qaCloseAll;
+$("qaDial").onclick = e => { const b = e.target.closest("[data-qa]"); if (b) qaShow(b.dataset.qa); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("qaBtn").classList.contains("on")) qaCloseAll(); });
 $("fbBtn").onclick = () => $("fbSheet").classList.contains("open") ? closeFeedback() : openFeedback(); $("fbClose").onclick = closeFeedback; $("fbCancel").onclick = closeFeedback; $("fbScrim").onclick = closeFeedback;
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("fbSheet").hidden) closeFeedback(); });
 $("fbInc").onchange = () => { $("fbInfo").hidden = !$("fbInc").checked; };
