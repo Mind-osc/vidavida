@@ -624,13 +624,14 @@ header{padding-block:10px 12px;gap:8px 14px}
 [data-pal="glass"] .drawer:not(#_){border-radius:26px}
 @media (prefers-reduced-motion:reduce){.drawer.sizing{transition:none}}
 /* main menu: grows out of the ☰ button, right under it (spring), and folds back into it; the ☰ turns into ✕ */
-#drawer.drawer:not(#_){top:var(--mtop,62px);left:var(--mleft,10px);
+#drawer.drawer:not(#_){top:var(--mtop,62px);left:var(--mleft,10px);border-radius:var(--mrad,26px);
   max-height:calc(100dvh - var(--mtop,62px) - max(10px,env(safe-area-inset-bottom,0px)));
   transform-origin:var(--mox,22px) var(--moy,-30px);transform:scale(.12);opacity:0;
   transition:transform .26s cubic-bezier(.4,0,.6,1),opacity .18s ease .06s,height .26s cubic-bezier(.2,.8,.2,1);box-shadow:0 18px 50px rgba(0,0,0,.35)}
 #drawer.drawer.open:not(#_){transform:none;opacity:1;transition:transform .42s cubic-bezier(.26,1.36,.46,1),opacity .14s ease,height .26s cubic-bezier(.2,.8,.2,1)}
 #drawer #menuBody > *{transition:opacity .25s ease .1s,transform .3s ease .08s}
 #drawer:not(.open) #menuBody > *{opacity:0;transform:translateY(-6px)}
+#drawer #menuBody section:last-child{padding-bottom:0}   /* the last button sits as far from the bottom edge as from the sides, so the corners stay concentric */
 .menubtn{position:relative;transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .2s ease}
 .menubtn span{transition:transform .3s cubic-bezier(.3,1.4,.5,1),opacity .15s ease}
 .menubtn[aria-expanded=true]{z-index:42;box-shadow:0 0 16px 3px color-mix(in srgb,var(--accent) 45%,transparent)}
@@ -3957,7 +3958,11 @@ const fmtBytes = b => b > 1e9 ? (b / 1e9).toFixed(1) + " GB" : (b / 1e6).toFixed
 function placeMenu(){ const r = $("menuBtn").getBoundingClientRect(), d = $("drawer"), left = Math.max(10, Math.min(r.left, innerWidth - Math.min(360, innerWidth - 20) - 10)), top = Math.max(10, r.bottom + 8);   // scrolled down: the menu stays on screen and still grows from where the button is
   d.style.setProperty("--mtop", top + "px"); d.style.setProperty("--mleft", left + "px");
   d.style.setProperty("--mox", (r.left + r.width / 2 - left) + "px"); d.style.setProperty("--moy", (r.top + r.height / 2 - top) + "px"); }
-function openMenu(){ clearTimeout(closeMenu._t); placeMenu(); menuPage = null; renderMenu(); $("drawer").hidden = false; $("scrim").hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => $("drawer").classList.add("open"))); $("menuBtn").setAttribute("aria-expanded", "true"); }
+// the menu's corners follow its buttons: same curve, just larger by the gap between them and the edge (concentric, like iOS)
+function menuCorners(){ const d = $("drawer"), it = d.querySelector(".mitem"); if (!it) return;
+  const r = Math.min(parseFloat(getComputedStyle(it).borderTopLeftRadius) || 0, it.offsetHeight / 2), gap = (() => { let x = 0, e = it; while (e && e !== d){ x += e.offsetLeft; e = e.offsetParent; } return e === d ? x : 0; })();   // layout offset (the menu may still be scaled while it opens)
+  if (r > 0 && gap > 0) d.style.setProperty("--mrad", Math.round(r + gap) + "px"); }
+function openMenu(){ clearTimeout(closeMenu._t); placeMenu(); menuPage = null; renderMenu(); $("drawer").hidden = false; menuCorners(); $("scrim").hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => $("drawer").classList.add("open"))); $("menuBtn").setAttribute("aria-expanded", "true"); }
 function closeMenu(){ $("drawer").classList.remove("open"); $("scrim").hidden = true; $("menuBtn").setAttribute("aria-expanded", "false"); clearTimeout(closeMenu._t); closeMenu._t = setTimeout(() => { $("drawer").hidden = true; }, 280); }
 $("drawer").addEventListener("pointerdown", e => {
   const area = e.target.closest("#cpSV, #cpHue, #cpAlpha"); if (!area) return;
