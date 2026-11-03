@@ -481,7 +481,7 @@ nav.slide button{transition:color .22s ease,transform .15s ease}
 :root nav[role=tablist]:not(#_)::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
   background:radial-gradient(120% 140% at 18% -30%,rgba(255,255,255,.28),transparent 46%),radial-gradient(90% 120% at 92% 140%,rgba(255,255,255,.12),transparent 50%);mix-blend-mode:screen}
 :root nav[role=tablist]:not(#_) button{border-radius:999px;color:var(--ink);opacity:.9;text-shadow:0 0 6px color-mix(in srgb,var(--panel) 70%,transparent)}
-:root nav.slide button[aria-selected=true]:not(#_){color:#111;opacity:1;text-shadow:none}
+:root nav.slide button[aria-selected=true]:not(#_){color:var(--tabink,#111);opacity:1;text-shadow:none}
 :root nav.slide:not(#_) .tabpill{top:6px;bottom:6px;border-radius:999px;
   background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 55%,rgba(255,255,255,.10)),var(--accent-fill,var(--accent));
   -webkit-backdrop-filter:blur(3px) brightness(1.18) saturate(200%);backdrop-filter:blur(3px) brightness(1.18) saturate(200%);
@@ -2238,7 +2238,17 @@ function applyLook(){
   // "only light" stops browsers (Samsung Internet / Chrome dark mode) from repainting the light theme dark
   const cs = document.getElementById("colorScheme"); if (cs) cs.content = settings.theme === "light" ? "only light" : settings.theme === "dark" ? "dark" : "light dark";
   document.body.classList.toggle("bigtext", !!settings.big);
+  requestAnimationFrame(tabInk);
 }
+// black icon/label on the selected tab, or white when the theme colour is too dark for black to read well
+function tabInk(){
+  const nav = document.querySelector("nav[role=tablist]"), pill = nav && nav.querySelector(".tabpill"); if (!pill) return;
+  const cv = document.createElement("canvas"); cv.width = cv.height = 1; const cx = cv.getContext("2d", {willReadFrequently: true});
+  cx.fillStyle = getComputedStyle(pill).backgroundColor; cx.fillRect(0, 0, 1, 1); const [r, g, b] = cx.getImageData(0, 0, 1, 1).data;
+  const lin = v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }, L = .2126 * lin(r) + .7152 * lin(g) + .0722 * lin(b);
+  nav.style.setProperty("--tabink", (L + .05) / .05 >= 1.05 / (L + .05) ? "#111" : "#fff");
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => requestAnimationFrame(tabInk));
 
 const KIND = {owner:"Owner's manual", service:"Service manual", other:"Manual"};
 const kindName = k => k === "other" ? t("kindOther") : (KIND[k] || "Manual");
@@ -2439,7 +2449,7 @@ function movePill(animate){
   if (!animate) pill.style.transition = "none";
   nav.style.setProperty("--dl", right ? ".08s" : "0s"); nav.style.setProperty("--dr", right ? "0s" : ".08s");
   nav.style.setProperty("--pl", l + "px"); nav.style.setProperty("--pr", r + "px");
-  nav.classList.add("slide");
+  nav.classList.add("slide"); if (!nav.style.getPropertyValue("--tabink")) tabInk();
   if (!animate){ pill.offsetWidth; pill.style.transition = ""; }
 }
 addEventListener("resize", () => movePill(false));
