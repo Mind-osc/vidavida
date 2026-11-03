@@ -580,6 +580,25 @@ header{padding-block:10px 12px;gap:8px 14px}
 #menuBody{padding-bottom:16px}
 [data-pal="glass"] .drawer:not(#_){border-radius:26px}
 @media (prefers-reduced-motion:reduce){.drawer.sizing{transition:none}}
+/* feedback: a card that grows out of the help button, right above it (spring), and folds back into it */
+#fbSheet.drawer:not(#_){--fbb:calc(max(10px,env(safe-area-inset-bottom,0px)) + 80px);
+  top:auto;left:auto;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--fbb) + 58px);width:min(360px,calc(100vw - 24px));
+  max-height:calc(100dvh - var(--fbb) - 58px - max(12px,env(safe-area-inset-top,0px)));border-radius:22px;
+  transform-origin:calc(100% - 28px) calc(100% + 34px);transform:scale(.12);opacity:0;
+  transition:transform .26s cubic-bezier(.4,0,.6,1),opacity .18s ease .06s;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+#fbSheet.drawer.open:not(#_){transform:none;opacity:1;transition:transform .42s cubic-bezier(.26,1.36,.46,1),opacity .14s ease}
+#fbSheet .dhead{display:none}
+#fbSheet .dbody{overflow:auto;padding-top:16px}
+#fbSheet .dbody > *{transition:opacity .25s ease .1s,transform .3s ease .08s}
+#fbSheet:not(.open) .dbody > *{opacity:0;transform:translateY(8px)}
+#fbScrim{background:rgba(8,12,16,.3)}
+.fab{transition:transform .3s cubic-bezier(.3,1.4,.5,1),box-shadow .2s ease}
+.fab.on{z-index:42;transform:rotate(90deg)}
+.fab .ico-x{position:absolute;opacity:0;transform:rotate(-90deg) scale(.5);transition:opacity .18s ease,transform .28s ease}
+.fab > svg:first-child{transition:opacity .18s ease,transform .28s ease}
+.fab.on > svg:first-child{opacity:0;transform:scale(.5)}
+.fab.on .ico-x{opacity:1;transform:rotate(-90deg) scale(1)}
+@media (prefers-reduced-motion:reduce){#fbSheet.drawer:not(#_),#fbSheet .dbody > *,.fab,.fab svg{transition:none}}
 /* answer card: the manual and page sit right under the value they belong to */
 .answer .srchead{padding-top:0;margin-top:-6px}
 .answer .row{padding-top:6px;padding-bottom:8px}
@@ -674,6 +693,7 @@ header{padding-block:10px 12px;gap:8px 14px}
 
 <button type="button" class="fab" id="fbBtn" data-tlabel="fbOpen" data-ttitle="fbOpen">
   <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M4 5h16v11H9l-5 4z"/><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M8 9.5h8M8 12.5h5"/></svg>
+  <svg class="ico-x" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>
 </button>
 <div class="scrim" id="fbScrim" hidden></div>
 <aside class="drawer" id="fbSheet" role="dialog" aria-modal="true" aria-labelledby="fbTitle" hidden>
@@ -1842,13 +1862,16 @@ function fbDetails(){
 }
 function openFeedback(){
   $("fbInfo").textContent = fbDetails(); $("fbInfo").hidden = !$("fbInc").checked;
-  $("fbSheet").hidden = false; $("fbScrim").hidden = false; requestAnimationFrame(() => $("fbSheet").classList.add("open")); setTimeout(() => $("fbText").focus(), 220);
+  clearTimeout(closeFeedback._t);
+  $("fbSheet").hidden = false; $("fbScrim").hidden = false; $("fbBtn").classList.add("on"); $("fbBtn").setAttribute("aria-expanded", "true");
+  requestAnimationFrame(() => requestAnimationFrame(() => $("fbSheet").classList.add("open"))); setTimeout(() => $("fbText").focus({preventScroll: true}), 380);
 }
-function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hidden = true; setTimeout(() => { $("fbSheet").hidden = true; }, 200); }
+function closeFeedback(){ $("fbSheet").classList.remove("open"); $("fbScrim").hidden = true; $("fbBtn").classList.remove("on"); $("fbBtn").setAttribute("aria-expanded", "false");
+  clearTimeout(closeFeedback._t); closeFeedback._t = setTimeout(() => { $("fbSheet").hidden = true; }, 280); }
 // the side panels (help, feedback) carry the same header as the menu: the app's name and logo
 document.querySelectorAll(".brandslot").forEach(sl => { const b = $("drawerTitle").cloneNode(true); b.removeAttribute("id"); sl.replaceWith(b); });
 
-$("fbBtn").onclick = openFeedback; $("fbClose").onclick = closeFeedback; $("fbCancel").onclick = closeFeedback; $("fbScrim").onclick = closeFeedback;
+$("fbBtn").onclick = () => $("fbSheet").classList.contains("open") ? closeFeedback() : openFeedback(); $("fbClose").onclick = closeFeedback; $("fbCancel").onclick = closeFeedback; $("fbScrim").onclick = closeFeedback;
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("fbSheet").hidden) closeFeedback(); });
 $("fbInc").onchange = () => { $("fbInfo").hidden = !$("fbInc").checked; };
 $("fbTopics").onclick = e => { const b = e.target.closest("[data-topic]"); if (!b) return; fbTopic = b.dataset.topic;
