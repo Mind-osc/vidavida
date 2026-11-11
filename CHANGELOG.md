@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 11 Νοεμβρίου 2026 (64)
+- Κάτω μπάρα σε νέο στυλ: οι καρτέλες δείχνουν μόνο το εικονίδιο· η επιλεγμένη απλώνει σε κάψουλα με εικονίδιο και όνομα δίπλα-δίπλα, και η κάψουλα γλιστράει στην καρτέλα που πατάς.
+- *Bottom bar: tabs show only their icon; the selected one widens into a capsule with icon and label, sliding to the tapped tab.*
+
 ## 3 Νοεμβρίου 2026 (63)
 - Κάτω μπάρα: πιο κομψή — έφυγαν τα έντονα άσπρα περιγράμματα και η άσπρη λάμψη στην πάνω άκρη της επιλεγμένης καρτέλας· έμεινε μόνο μια πολύ λεπτή, διακριτική γραμμή φωτός.
 - *Bottom bar: the strong white rims and the white top edge on the selected tab are gone; only a faint hairline of light remains.*

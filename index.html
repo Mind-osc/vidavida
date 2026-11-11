@@ -487,6 +487,12 @@ nav.slide button{transition:color .22s ease,transform .15s ease}
   -webkit-backdrop-filter:blur(3px) brightness(1.18) saturate(200%);backdrop-filter:blur(3px) brightness(1.18) saturate(200%);
   box-shadow:inset 0 .5px 0 rgba(255,255,255,.28),0 3px 10px rgba(0,0,0,.18)}
 @media (prefers-reduced-transparency:reduce){:root nav[role=tablist]:not(#_){background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}}
+/* ---- compact bar: the tabs show only their icon; the selected one widens into a capsule with icon and label side by side ---- */
+nav[role=tablist]{--grow:2.4}
+nav[role=tablist] button{flex:1 1 0;flex-direction:row;justify-content:center;gap:0;padding:9px 4px;font-size:0;text-overflow:clip;
+  transition:flex-grow .34s cubic-bezier(.3,1.25,.5,1),color .22s ease,transform .15s ease}
+nav[role=tablist] button[aria-selected=true]{flex-grow:var(--grow);gap:7px;font-size:14px}
+@media (prefers-reduced-motion:reduce){nav[role=tablist] button{transition:none}}
 /* ---- drop-down lists: a soft chevron inset from the edge ---- */
 select{-webkit-appearance:none;appearance:none;padding-right:38px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 14px center/12px 8px,var(--panel)}
 [data-pal="glass"] select:not(#_){background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1.5 1.5l4.5 4.5 4.5-4.5' fill='none' stroke='%238a909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") no-repeat right 16px center/12px 8px,linear-gradient(180deg,var(--glass-hi) -160%,transparent 60%),var(--paper)}
@@ -2512,7 +2518,11 @@ function tab(which){
 function movePill(animate){
   const nav = document.querySelector("nav[role=tablist]"), pill = nav && nav.querySelector(".tabpill"), b = nav && nav.querySelector("button[aria-selected=true]");
   if (!pill || !b || !nav.offsetWidth) return;
-  const l = b.offsetLeft, r = nav.clientWidth - b.offsetLeft - b.offsetWidth, prevL = parseFloat(nav.style.getPropertyValue("--pl"));
+  // the tabs change width as well (the selected one widens), so the pill goes to where the tab will END, not where it is now
+  const cs = getComputedStyle(nav), bs = [...nav.querySelectorAll("button")], g = parseFloat(cs.columnGap) || 0, pad = parseFloat(cs.paddingLeft) || 0;
+  const bcs = getComputedStyle(b), bp = (parseFloat(bcs.paddingLeft) || 0) + (parseFloat(bcs.paddingRight) || 0);   // a tab's padding sits outside its share of the space
+  const grow = parseFloat(cs.getPropertyValue("--grow")) || 1, unit = (nav.clientWidth - pad - (parseFloat(cs.paddingRight) || 0) - g * (bs.length - 1) - bp * bs.length) / (bs.length - 1 + grow);
+  const l = pad + bs.indexOf(b) * (unit + bp + g), r = nav.clientWidth - l - unit * grow - bp, prevL = parseFloat(nav.style.getPropertyValue("--pl"));
   const right = !isNaN(prevL) && l > prevL;
   if (!animate) pill.style.transition = "none";
   nav.style.setProperty("--dl", right ? ".08s" : "0s"); nav.style.setProperty("--dr", right ? "0s" : ".08s");
