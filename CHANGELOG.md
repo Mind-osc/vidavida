@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 11 Νοεμβρίου 2026 (65)
+- Κάτω μπάρα: η επιλεγμένη καρτέλα ανοίγει λιγότερο — όσο χρειάζεται για εικονίδιο και όνομα.
+- *Bottom bar: the selected tab widens less, just enough for icon and label.*
+
 ## 11 Νοεμβρίου 2026 (64)
 - Κάτω μπάρα σε νέο στυλ: οι καρτέλες δείχνουν μόνο το εικονίδιο· η επιλεγμένη απλώνει σε κάψουλα με εικονίδιο και όνομα δίπλα-δίπλα, και η κάψουλα γλιστράει στην καρτέλα που πατάς.
 - *Bottom bar: tabs show only their icon; the selected one widens into a capsule with icon and label, sliding to the tapped tab.*
