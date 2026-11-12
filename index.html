@@ -4040,7 +4040,7 @@ function renderMenuBody(){
   } else {
     $("menuBody").innerHTML = `
     ${installEvt && !isStandalone() ? `<section><h3>${t("installTitle")}</h3><p class="mnote">${t("installNote")}</p><button type="button" class="btn primary" id="installBtn">${t("installBtn")}</button></section>` : ""}
-    <ul class="mlist">${Object.entries(PAGES).map(([k, [title, , sub]]) => `<li><button type="button" class="mitem" data-mpage="${k}"><span class="mico">${ico(k)}</span><span class="mtxt"><b>${title}</b>${sub() ? `<small>${esc(sub())}</small>` : ""}</span><span class="mchev">›</span></button></li>`).join("")}</ul>`;
+    <ul class="mlist">${Object.entries(PAGES).map(([k, [title, , sub]]) => `<li><button type="button" class="mitem" data-mpage="${k}"><span class="mico">${ico(k)}</span><span class="mtxt"><b>${title}</b></span><span class="mchev">›</span></button></li>`).join("")}</ul>`;
   }
   try{ if ($("storageUse")) navigator.storage?.estimate?.().then(e => { if (e && e.quota && $("storageUse")) $("storageUse").textContent = t("storageUse", fmtBytes(e.usage), fmtBytes(e.quota)); }); }catch(_){}
 }

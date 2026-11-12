@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 12 Νοεμβρίου 2026 (67)
+- Μενού: κάθε επιλογή δείχνει μόνο τον τίτλο της — έφυγε η δεύτερη γραμμή με την επεξήγηση.
+- *Menu: each entry shows only its title; the second explanatory line is gone.*
+
 ## 12 Νοεμβρίου 2026 (66)
 - Μενού: τα εικονίδια χωρίς χρωματιστό κύκλο από πίσω — απλά, στο χρώμα του κειμένου, πιο καθαρή εικόνα.
 - *Menu: icons no longer sit on a coloured disc; plain line icons in the text colour.*
