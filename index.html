@@ -792,6 +792,10 @@ header{padding-block:10px 12px;gap:8px 14px}
 .svcfold > .due-items,.svcfold > .legend{margin:0 0 12px}
 .legend{display:grid;gap:4px;font-size:13px;color:var(--muted)}
 .svchint{cursor:pointer;font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin:4px 0}
+/* tab change: the new page fades in instead of appearing at once (opacity only, so fixed elements inside keep their place) */
+#pAsk,#pCard,#pSvc,#pLib{animation:tabfade .4s ease-out}
+@keyframes tabfade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#pAsk,#pCard,#pSvc,#pLib{animation:none}}
 /* menu icons: plain line icons in the text colour, no coloured disc behind them */
 .mico:not(#_):not(#_){background:none;box-shadow:none;border-color:transparent;color:var(--ink)}
 </style>
@@ -4471,6 +4475,20 @@ $("vZoomOut").onclick = () => { vState.zoom = Math.max(vState.zoom / 1.4, .6); d
 $("vClose").onclick = () => { $("viewer").hidden = true; document.body.style.overflow = ""; };
 document.addEventListener("keydown", e => { if ($("viewer").hidden) return;
   if (e.key === "Escape") $("vClose").click(); if (e.key === "ArrowLeft" && !$("vPrev").disabled) $("vPrev").click(); if (e.key === "ArrowRight" && !$("vNext").disabled) $("vNext").click(); });
+
+/* ---------- the phone's Back button (Android app): close what is open, step back a level; false = nothing left, leave the app ---------- */
+window.vvBack = () => {
+  const esc = el => el.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape", bubbles: true}));
+  const gp = document.querySelector(".gpop.open"); if (gp){ esc(gp); return true; }
+  if (!$("viewer").hidden){ $("vClose").click(); return true; }
+  if ($("drawer").classList.contains("open")){ const b = $("mBack"); if (b) b.click(); else closeMenu(); return true; }
+  if ($("fbSheet").classList.contains("open")){ closeFeedback(); return true; }
+  if ($("qaBtn").classList.contains("on")){ qaCloseAll(); return true; }
+  if (!$("qhist").hidden){ hideHist(); return true; }
+  const first = document.querySelector("nav[role=tablist] button");
+  if (first && first.getAttribute("aria-selected") !== "true"){ first.click(); return true; }
+  return false;
+};
 
 /* ================= installable app (PWA) ================= */
 let installEvt = null;

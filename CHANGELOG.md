@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 12 Νοεμβρίου 2026 (69)
+- Αλλαγή καρτέλας πιο ομαλή: η νέα σελίδα εμφανίζεται με απαλό σβήσιμο-εμφάνιση (~0,4 δευτ.) αντί να «πετάγεται».
+- *Switching tabs: the new page fades in (~0.4 s) instead of appearing abruptly.*
+
 ## 12 Νοεμβρίου 2026 (68)
 - Κάτω μπάρα πιο διακριτική: η επιλεγμένη καρτέλα είναι πλέον ημιδιάφανη απόχρωση αντί για συμπαγές χρώμα, και η ίδια η μπάρα πιο διάφανη.
 - *Bottom bar: the selected tab is a soft translucent tint instead of solid colour; the bar itself is more see-through.*
