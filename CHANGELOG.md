@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 12 Νοεμβρίου 2026 (68)
+- Κάτω μπάρα πιο διακριτική: η επιλεγμένη καρτέλα είναι πλέον ημιδιάφανη απόχρωση αντί για συμπαγές χρώμα, και η ίδια η μπάρα πιο διάφανη.
+- *Bottom bar: the selected tab is a soft translucent tint instead of solid colour; the bar itself is more see-through.*
+
 ## 12 Νοεμβρίου 2026 (67)
 - Μενού: κάθε επιλογή δείχνει μόνο τον τίτλο της — έφυγε η δεύτερη γραμμή με την επεξήγηση.
 - *Menu: each entry shows only its title; the second explanatory line is gone.*
