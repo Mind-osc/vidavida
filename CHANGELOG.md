@@ -1,5 +1,9 @@
 # Τι νέο / What's new
 
+## 12 Νοεμβρίου 2026 (66)
+- Μενού: τα εικονίδια χωρίς χρωματιστό κύκλο από πίσω — απλά, στο χρώμα του κειμένου, πιο καθαρή εικόνα.
+- *Menu: icons no longer sit on a coloured disc; plain line icons in the text colour.*
+
 ## 11 Νοεμβρίου 2026 (65)
 - Κάτω μπάρα: η επιλεγμένη καρτέλα ανοίγει λιγότερο — όσο χρειάζεται για εικονίδιο και όνομα.
 - *Bottom bar: the selected tab widens less, just enough for icon and label.*
